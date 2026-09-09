@@ -1,0 +1,2877 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+  />
+
+  <meta name="theme-color" content="#1677ff" />
+
+  <title>活动报名 / イベント申込</title>
+
+  <style>
+
+    /* =====================================================
+       全局
+    ===================================================== */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+
+      margin: 0;
+      padding: 0;
+
+      overflow-x: hidden;
+    }
+
+    html {
+      min-height: 100%;
+
+      background:
+        linear-gradient(
+          180deg,
+          #eef7ff 0%,
+          #f7f9fc 100%
+        );
+    }
+
+    body {
+      min-height: 100dvh;
+
+      background:
+        linear-gradient(
+          180deg,
+          #eef7ff 0%,
+          #f7f9fc 100%
+        );
+
+      color: #1f2937;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft YaHei",
+        "Hiragino Sans GB",
+        "Yu Gothic",
+        Meiryo,
+        Arial,
+        sans-serif;
+
+      font-size: 22px;
+      line-height: 1.55;
+
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
+    button {
+      touch-action: manipulation;
+    }
+
+
+    /* =====================================================
+       顶部工具栏
+    ===================================================== */
+
+    .top-tools {
+      position: fixed;
+
+      top: max(8px, env(safe-area-inset-top));
+      right: 8px;
+
+      z-index: 1000;
+
+      display: flex;
+      align-items: center;
+
+      gap: 6px;
+    }
+
+    .tool-btn {
+      border: 1px solid #dbe5f0;
+
+      background: rgba(255, 255, 255, 0.96);
+      color: #334155;
+
+      padding: 8px 11px;
+
+      border-radius: 10px;
+
+      font-size: 15px;
+      font-weight: 700;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 4px 14px rgba(15, 23, 42, 0.10);
+
+      backdrop-filter: blur(8px);
+    }
+
+    .tool-btn:hover {
+      background: #f5f9ff;
+
+      border-color: #91caff;
+
+      color: #1677ff;
+    }
+
+    .language-btn {
+      color: #1677ff;
+
+      border-color: #b6d7ff;
+    }
+
+
+    /* =====================================================
+       页面主体
+    ===================================================== */
+
+    .container {
+      width: 100%;
+      max-width: none;
+
+      margin: 0;
+
+      padding:
+        max(65px, calc(env(safe-area-inset-top) + 55px))
+        8px
+        max(24px, env(safe-area-inset-bottom));
+    }
+
+
+    /* =====================================================
+       顶部标题
+    ===================================================== */
+
+    .page-header {
+      width: 100%;
+
+      text-align: center;
+
+      padding: 14px 4px 20px;
+    }
+
+    .page-icon {
+      width: 72px;
+      height: 72px;
+
+      margin: 0 auto 12px;
+
+      border-radius: 21px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          #1677ff,
+          #4096ff
+        );
+
+      color: white;
+
+      font-size: 38px;
+
+      box-shadow:
+        0 8px 22px rgba(22, 119, 255, 0.22);
+    }
+
+    .page-title {
+      margin: 0;
+
+      font-size: 38px;
+
+      line-height: 1.25;
+
+      font-weight: 900;
+
+      color: #111827;
+
+      letter-spacing: 0.5px;
+    }
+
+    .page-subtitle {
+      margin-top: 7px;
+
+      font-size: 20px;
+
+      line-height: 1.4;
+
+      color: #6b7280;
+    }
+
+
+    /* =====================================================
+       消息
+    ===================================================== */
+
+    .message {
+      display: none;
+
+      width: 100%;
+
+      padding: 15px 14px;
+
+      margin-bottom: 14px;
+
+      border-radius: 12px;
+
+      font-size: 22px;
+
+      line-height: 1.5;
+
+      font-weight: 700;
+    }
+
+    .message.success {
+      display: block;
+
+      background: #f0fff4;
+      color: #237804;
+
+      border: 2px solid #b7eb8f;
+    }
+
+    .message.error {
+      display: block;
+
+      background: #fff2f0;
+      color: #cf1322;
+
+      border: 2px solid #ffccc7;
+    }
+
+    .message.warning {
+      display: block;
+
+      background: #fffbe6;
+      color: #ad6800;
+
+      border: 2px solid #ffe58f;
+    }
+
+
+    /* =====================================================
+       Card
+    ===================================================== */
+
+    .card {
+      width: 100%;
+
+      background: rgba(255, 255, 255, 0.97);
+
+      border-radius: 14px;
+
+      padding: 18px 10px;
+
+      margin-bottom: 12px;
+
+      border: 1px solid #e2e8f0;
+
+      box-shadow:
+        0 3px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+
+      font-size: 28px;
+
+      line-height: 1.3;
+
+      font-weight: 900;
+
+      margin-bottom: 18px;
+
+      color: #111827;
+    }
+
+    .section-number {
+      width: 40px;
+      height: 40px;
+
+      flex: 0 0 40px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 11px;
+
+      background: #eaf3ff;
+
+      color: #1677ff;
+
+      font-size: 21px;
+
+      font-weight: 900;
+    }
+
+
+    /* =====================================================
+       表单
+    ===================================================== */
+
+    .form-group {
+      margin-bottom: 17px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+
+      margin-bottom: 7px;
+
+      font-size: 24px;
+
+      line-height: 1.4;
+
+      font-weight: 800;
+
+      color: #374151;
+    }
+
+    input,
+    select,
+    textarea {
+      display: block;
+
+      width: 100%;
+
+      border: 2px solid #d5dbe3;
+
+      border-radius: 11px;
+
+      padding: 12px 14px;
+
+      font-size: 24px;
+
+      line-height: 1.4;
+
+      color: #111827;
+
+      background: #fff;
+
+      outline: none;
+
+      appearance: auto;
+
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
+    }
+
+    input,
+    select {
+      min-height: 66px;
+    }
+
+    textarea {
+      min-height: 125px;
+
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #1677ff;
+
+      background: #fff;
+
+      box-shadow:
+        0 0 0 4px rgba(22, 119, 255, 0.10);
+    }
+
+
+    /* =====================================================
+       报名人提示
+    ===================================================== */
+
+    .booker-tip {
+      margin-top: 9px;
+
+      padding: 11px 12px;
+
+      border-radius: 10px;
+
+      background: #f5f9ff;
+
+      color: #52719b;
+
+      font-size: 19px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       Level 说明
+    ===================================================== */
+
+    .level-description {
+      margin-top: 8px;
+
+      padding: 10px 12px;
+
+      border-radius: 10px;
+
+      background: #f5f9ff;
+
+      border: 1px solid #d6e8ff;
+
+      color: #52719b;
+
+      font-size: 18px;
+
+      line-height: 1.5;
+
+      min-height: 0;
+
+      transition:
+        background 0.2s,
+        border-color 0.2s;
+    }
+
+    .level-description:empty {
+      display: none;
+    }
+
+
+    /* =====================================================
+       活动列表
+    ===================================================== */
+    .activity-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .activity-item {
+      position: relative;
+
+      width: 100%;
+
+      border: 2px solid #e1e6ed;
+
+      border-radius: 12px;
+
+      padding: 13px;
+
+      cursor: pointer;
+
+      background: #fff;
+
+      transition: 0.2s;
+    }
+
+    .activity-item:hover {
+      border-color: #91caff;
+    }
+
+    .activity-item.selected {
+      border-color: #1677ff;
+
+      background: #f2f8ff;
+
+      box-shadow:
+        0 4px 12px rgba(22, 119, 255, 0.09);
+    }
+
+    .activity-top {
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 10px;
+    }
+
+    .activity-checkbox {
+      width: 27px;
+      height: 27px;
+
+      min-width: 27px;
+
+      margin-top: 2px;
+
+      accent-color: #1677ff;
+    }
+
+    .activity-title {
+      font-size: 25px;
+
+      line-height: 1.35;
+
+      font-weight: 900;
+
+      color: #111827;
+    }
+
+    .activity-info {
+      margin-top: 9px;
+
+      padding-left: 37px;
+
+      font-size: 20px;
+
+      line-height: 1.55;
+
+      color: #667085;
+    }
+
+    .activity-info-row {
+      margin-bottom: 2px;
+    }
+
+    .selected-summary {
+      margin-top: 12px;
+
+      padding: 13px;
+
+      border-radius: 11px;
+
+      background: #f5f7fa;
+
+      color: #475467;
+
+      font-size: 20px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       参加人员
+    ===================================================== */
+
+    .participant {
+      width: 100%;
+
+      border: 2px solid #e4e8ee;
+
+      border-radius: 13px;
+
+      padding: 14px;
+
+      margin-bottom: 12px;
+
+      background:
+        linear-gradient(
+          180deg,
+          #ffffff,
+          #fafcff
+        );
+
+      box-shadow:
+        0 3px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .participant.first {
+      border-color: #b6d7ff;
+
+      background:
+        linear-gradient(
+          180deg,
+          #f7fbff,
+          #ffffff
+        );
+    }
+
+    .participant-header {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 10px;
+
+      margin-bottom: 14px;
+    }
+
+    .participant-title-wrap {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .participant-badge {
+      width: 36px;
+      height: 36px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 10px;
+
+      background: #1677ff;
+
+      color: white;
+
+      font-size: 19px;
+
+      font-weight: 900;
+    }
+
+    .participant-title {
+      font-size: 25px;
+
+      font-weight: 900;
+
+      color: #111827;
+    }
+
+    .participant-main {
+      padding: 11px;
+
+      margin-bottom: 13px;
+
+      border-radius: 10px;
+
+      background: #f5f9ff;
+
+      color: #52719b;
+
+      font-size: 18px;
+
+      line-height: 1.5;
+    }
+
+    .participant-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 12px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+
+    /* =====================================================
+       删除按钮
+    ===================================================== */
+
+    .remove-btn {
+      border: none;
+
+      background: #fff1f0;
+
+      color: #cf1322;
+
+      padding: 9px 12px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      font-size: 18px;
+
+      font-weight: 800;
+
+      white-space: nowrap;
+    }
+
+    .remove-btn:hover {
+      background: #ffccc7;
+    }
+
+
+    /* =====================================================
+       添加按钮
+    ===================================================== */
+
+    .add-btn {
+      width: 100%;
+
+      border: 2px dashed #91caff;
+
+      background: #f5f9ff;
+
+      color: #1677ff;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      font-size: 23px;
+
+      font-weight: 800;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+    }
+
+    .add-btn:hover {
+      background: #e6f4ff;
+    }
+
+    .add-btn:active {
+      transform: scale(0.99);
+    }
+
+
+    /* =====================================================
+       提交按钮
+    ===================================================== */
+
+    .submit-btn {
+      width: 100%;
+
+      border: none;
+
+      border-radius: 14px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #1677ff,
+          #4096ff
+        );
+
+      color: #fff;
+
+      padding: 16px;
+
+      min-height: 70px;
+
+      font-size: 27px;
+
+      line-height: 1.35;
+
+      font-weight: 900;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 7px 18px rgba(22, 119, 255, 0.20);
+
+      transition: 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.99);
+    }
+
+    .submit-btn:disabled {
+      background: #aeb8c4;
+
+      box-shadow: none;
+
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+
+      text-align: center;
+
+      color: #667085;
+
+      padding-top: 14px;
+
+      font-size: 20px;
+    }
+
+
+    /* =====================================================
+       结果
+    ===================================================== */
+
+    .result-box {
+      margin-top: 6px;
+
+      padding: 6px;
+
+      border-radius: 11px;
+
+      background: #f7f8fa;
+
+      font-size: 20px;
+
+      line-height: 1.5;
+    }
+
+    .result-item {
+      border-bottom: 1px solid #e5e7eb;
+
+      padding: 12px 7px;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-confirmed {
+      color: #389e0d;
+
+      font-weight: 900;
+    }
+
+    .status-waitlist {
+      color: #d48806;
+
+      font-weight: 900;
+    }
+
+    .status-failed {
+      color: #cf1322;
+
+      font-weight: 900;
+    }
+
+
+    /* =====================================================
+       空状态
+    ===================================================== */
+
+    .empty {
+      width: 100%;
+
+      color: #98a2b3;
+
+      text-align: center;
+
+      padding: 28px 10px;
+
+      font-size: 22px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       手机端
+    ===================================================== */
+
+    @media (max-width: 600px) {
+
+      html,
+      body {
+        width: 100%;
+        max-width: 100%;
+
+        margin: 0;
+
+        padding-left: 0;
+        padding-right: 0;
+
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: 100%;
+        max-width: none;
+
+        margin: 0;
+
+        padding:
+          max(62px, calc(env(safe-area-inset-top) + 52px))
+          8px
+          max(22px, env(safe-area-inset-bottom));
+      }
+
+      .page-header {
+        padding: 12px 3px 18px;
+      }
+
+      .page-icon {
+        width: 68px;
+        height: 68px;
+
+        font-size: 35px;
+
+        border-radius: 20px;
+      }
+
+      .page-title {
+        font-size: 36px;
+      }
+
+      .page-subtitle {
+        font-size: 19px;
+      }
+
+      .card {
+        padding: 17px 9px;
+
+        border-radius: 13px;
+
+        margin-bottom: 10px;
+      }
+
+      .card-title {
+        font-size: 27px;
+
+        margin-bottom: 16px;
+      }
+
+      .section-number {
+        width: 39px;
+        height: 39px;
+
+        flex-basis: 39px;
+
+        font-size: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        font-size: 23px;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 23px;
+
+        padding: 12px 13px;
+
+        border-radius: 10px;
+      }
+
+      input,
+      select {
+        min-height: 64px;
+      }
+
+      textarea {
+        min-height: 120px;
+      }
+
+      .booker-tip {
+        font-size: 18px;
+      }
+
+      .level-description {
+        font-size: 18px;
+      }
+
+      .activity-item {
+        padding: 10px;
+      }
+
+      .activity-title {
+        font-size: 24px;
+      }
+
+      .activity-info {
+        font-size: 19px;
+
+        padding-left: 37px;
+      }
+
+      .selected-summary {
+        font-size: 19px;
+      }
+
+      .participant {
+        padding: 13px;
+
+        margin-bottom: 10px;
+      }
+
+      .participant-title {
+        font-size: 24px;
+      }
+
+      .participant-grid {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+      }
+
+      .full-width {
+        grid-column: auto;
+      }
+
+      .remove-btn {
+        font-size: 17px;
+
+        padding: 8px 11px;
+      }
+
+      .add-btn {
+        font-size: 22px;
+
+        padding: 13px;
+      }
+
+      .submit-btn {
+        min-height: 68px;
+
+        padding: 15px;
+
+        font-size: 26px;
+      }
+
+      .result-box {
+        font-size: 19px;
+      }
+    }
+
+
+    /* =====================================================
+       小手机
+    ===================================================== */
+
+    @media (max-width: 380px) {
+
+      .container {
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      .page-title {
+        font-size: 33px;
+      }
+
+      .page-subtitle {
+        font-size: 18px;
+      }
+
+      .card {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .card-title {
+        font-size: 25px;
+      }
+
+      .form-group label {
+        font-size: 22px;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 22px;
+      }
+
+      .participant-title {
+        font-size: 22px;
+      }
+
+      .remove-btn {
+        font-size: 16px;
+      }
+
+      .submit-btn {
+        font-size: 24px;
+      }
+    }
+
+  </style>
+</head>
+
+  <body>
+    <!-- =====================================================
+     顶部按钮
+     ===================================================== -->
+
+    <div class="top-tools">
+      <button type="button" class="tool-btn" onclick="goHome()" id="homeBtn">
+        ← 返回主页
+      </button>
+
+      <button
+        type="button"
+        class="tool-btn language-btn"
+        onclick="toggleLanguage()"
+        id="languageBtn"
+      >
+        日本語
+      </button>
+    </div>
+
+    <div class="container">
+      <!-- =====================================================
+       页面标题
+       ===================================================== -->
+
+      <div class="page-header">
+        <div class="page-icon">🏸</div>
+
+        <h1 class="page-title" data-i18n="pageTitle">活动报名</h1>
+
+        <div class="page-subtitle" data-i18n="pageSubtitle">
+          请选择活动并填写参加人员
+        </div>
+      </div>
+
+      <!-- =====================================================
+       消息
+       ===================================================== -->
+
+      <div id="messageBox" class="message"></div>
+
+      <!-- =====================================================
+       ① 选择活动
+       ===================================================== -->
+
+      <div class="card">
+        <div class="card-title">
+          <span class="section-number"> ① </span>
+
+          <span data-i18n="selectActivity"> 选择活动 </span>
+        </div>
+
+        <div id="activityList" class="activity-list">
+          <div class="empty" data-i18n="loadingActivities">正在加载活动...</div>
+        </div>
+
+        <div
+          id="selectedActivitySummary"
+          class="selected-summary"
+          data-i18n="noActivitySelected"
+        >
+          尚未选择活动
+        </div>
+      </div>
+
+      <!-- =====================================================
+       ② 报名人
+       ===================================================== -->
+
+      <div class="card">
+        <div class="card-title">
+          <span class="section-number"> ② </span>
+
+          <span data-i18n="booker"> 报名人 </span>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="bookerName"> 报名人姓名 </label>
+
+          <input
+            id="bookerName"
+            type="text"
+            autocomplete="name"
+            data-i18n-placeholder="bookerPlaceholder"
+            placeholder="请输入报名人姓名"
+          />
+
+          <div class="booker-tip" data-i18n="bookerTip">
+            💡 第 1 位参加人员默认使用报名人的姓名。
+            如果需要替别人报名，可以继续添加参加人员。
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+       ③ 参加人员
+       ===================================================== -->
+
+      <div class="card">
+        <div class="card-title">
+          <span class="section-number"> ③ </span>
+
+          <span data-i18n="participants"> 参加人员 </span>
+        </div>
+
+        <div id="participantsContainer"></div>
+
+        <button
+          type="button"
+          class="add-btn"
+          onclick="addParticipant()"
+          data-i18n="addParticipant"
+        >
+          ＋ 添加参加人员
+        </button>
+      </div>
+
+      <!-- =====================================================
+       ④ 备注
+       ===================================================== -->
+
+      <div class="card">
+        <div class="card-title">
+          <span class="section-number"> ④ </span>
+
+          <span data-i18n="remark"> 备注 </span>
+        </div>
+
+        <div class="form-group">
+          <textarea
+            id="message"
+            data-i18n-placeholder="remarkPlaceholder"
+            placeholder="如有需要，请输入备注"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- =====================================================
+       提交
+       ===================================================== -->
+
+      <div class="card">
+        <button
+          id="submitBtn"
+          class="submit-btn"
+          type="button"
+          onclick="submitRegistration()"
+          data-i18n="submit"
+        >
+          提交报名
+        </button>
+
+        <div id="loading" class="loading" data-i18n="submitting">
+          正在提交报名，请稍候...
+        </div>
+      </div>
+
+      <!-- =====================================================
+       报名结果
+       ===================================================== -->
+
+      <div id="resultCard" class="card" style="display: none">
+        <div class="card-title">
+          <span class="section-number"> ✓ </span>
+
+          <span data-i18n="result"> 报名结果 </span>
+        </div>
+
+        <div id="resultBox" class="result-box"></div>
+      </div>
+    </div>
+
+    <script>
+      /****************************************************
+       * 全局数据
+       ****************************************************/
+
+      let activities = [];
+
+      let selectedMembers = [];
+
+      let participantCounter = 0;
+
+      /****************************************************
+       * 当前语言
+       *
+       * zh = 中文
+       * ja = 日本語
+       ****************************************************/
+
+      let currentLanguage = "zh";
+
+      /****************************************************
+       * 返回主页地址
+       ****************************************************/
+
+      const HOME_URL =
+        "https://script.google.com/macros/s/AKfycbytMNkX7m-3KE79Izj1i4o2TucGVoJB6vAqjsl3RjTxe-bPfkKWBwHh_gg3Ag4guLgGtg/exec";
+
+      /****************************************************
+       * 多语言
+       ****************************************************/
+
+      const I18N = {
+        zh: {
+          pageTitle: "活动报名",
+
+          pageSubtitle: "请选择活动并填写参加人员",
+
+          selectActivity: "选择活动",
+
+          loadingActivities: "正在加载活动...",
+
+          noActivitySelected: "尚未选择活动",
+
+          booker: "报名人",
+
+          bookerName: "报名人姓名",
+
+          bookerPlaceholder: "请输入报名人姓名",
+
+          bookerTip:
+            "💡 第 1 位参加人员默认使用报名人的姓名。如果需要替别人报名，可以继续添加参加人员。",
+
+          participants: "参加人员",
+
+          addParticipant: "＋ 添加参加人员",
+
+          remark: "备注",
+
+          remarkPlaceholder: "如有需要，请输入备注",
+
+          submit: "提交报名",
+
+          submitting: "正在提交报名，请稍候...",
+
+          result: "报名结果",
+
+          delete: "删除",
+
+          participant: "参加人员",
+
+          name: "姓名 *",
+
+          namePlaceholder: "请输入参加人员姓名",
+
+          level: "Level",
+
+          select: "请选择",
+
+          levelL1Name: "萌新",
+
+          levelL2Name: "娱乐",
+
+          levelL3Name: "进阶",
+
+          levelL4Name: "高手",
+
+          levelL1Description: "在场上经常挥空拍，或者用拍框打球。",
+
+          levelL2Description: "能打身前球，身后球接不到，或者回球质量极差。",
+
+          levelL3Description: "主动球能拉到对面后场，常见自学天花板。",
+
+          levelL4Description: "经过系统教练指导，具备战术组合拳。",
+
+          searchKey: "检索键",
+
+          searchKeyPlaceholder: "请输入检索键",
+
+          firstParticipantTip:
+            "👤 第一位参加人员默认使用报名人姓名。如需替别人报名，可以直接修改姓名。",
+
+          searchKeyTip:
+            "检索键默认使用参加人员姓名。手动修改后，将不再自动跟随姓名。",
+
+          activityDate: "日期",
+
+          activityTime: "时间",
+
+          capacity: "名额",
+
+          fee: "费用",
+
+          selectedActivities: "已选择",
+
+          activitiesUnit: "个活动",
+
+          noActivities: "暂时没有可以报名的活动",
+
+          atLeastActivity: "请选择至少一个活动",
+
+          atLeastParticipant: "至少需要一名参加人员",
+
+          fillParticipantName: "请填写第 {n} 位参加人员的姓名",
+
+          duplicateName:
+            "参加人员姓名不能重复：{name}（第 {a} 位和第 {b} 位参加人员相同）",
+
+          submittingShort: "正在提交...",
+
+          testMode: "测试模式：报名资料已经生成。",
+
+          registrationFailed: "报名失败：",
+
+          activityLoadFailed: "活动加载失败：",
+
+          serverNoResult: "服务器没有返回报名结果",
+
+          registrationFailedSimple: "报名失败",
+
+          partialSuccess: "部分报名成功",
+
+          allSuccess: "全部报名成功",
+
+          testModeTitle: "测试模式",
+
+          noDetail: "没有详细结果",
+
+          groupID: "报名单编号：",
+
+          bookerResult: "报名人：",
+
+          total: "总报名：",
+
+          success: "成功",
+
+          failed: "失败",
+
+          detail: "详细结果：",
+
+          waitlist: "候补",
+
+          statusSuccess: "成功",
+
+          statusFailed: "失败",
+
+          activity: "活动：",
+
+          languageButton: "日本語",
+
+          homeButton: "← 返回主页",
+
+          homeConfirm: "确定返回主页吗？",
+
+          homeConfirmYes: "确定",
+        },
+
+        ja: {
+          pageTitle: "イベント申込",
+
+          pageSubtitle: "イベントを選択し、参加者を入力してください",
+
+          selectActivity: "イベント選択",
+
+          loadingActivities: "イベントを読み込んでいます...",
+
+          noActivitySelected: "イベントが選択されていません",
+
+          booker: "申込者",
+
+          bookerName: "申込者氏名",
+
+          bookerPlaceholder: "申込者の氏名を入力してください",
+
+          bookerTip:
+            "💡 1人目の参加者は、デフォルトで申込者の氏名になります。他の方の代理申込の場合は、参加者の氏名を直接変更してください。",
+
+          participants: "参加者",
+
+          addParticipant: "＋ 参加者を追加",
+
+          remark: "備考",
+
+          remarkPlaceholder: "必要に応じて備考を入力してください",
+
+          submit: "申込を送信",
+
+          submitting: "申込を送信しています。しばらくお待ちください...",
+
+          result: "申込結果",
+
+          delete: "削除",
+
+          participant: "参加者",
+
+          name: "氏名 *",
+
+          namePlaceholder: "参加者の氏名を入力してください",
+
+          level: "Level",
+
+          select: "選択してください",
+
+          levelL1Name: "初心者",
+
+          levelL2Name: "エンジョイ",
+
+          levelL3Name: "中級",
+
+          levelL4Name: "上級",
+
+          levelL1Description:
+            "コート上で空振りが多く、ラケットのフレームで打ってしまうことがあるレベル。",
+
+          levelL2Description:
+            "体の前のシャトルは打てるが、体の後ろに来たシャトルは返せない、または返球の質がかなり低いレベル。",
+
+          levelL3Description:
+            "自分から打つショットを相手コートの奥まで飛ばせるレベル。独学ではこのあたりが一つの壁。",
+
+          levelL4Description:
+            "体系的なコーチングを受け、複数のショットを組み合わせた戦術を使えるレベル。",
+
+          searchKey: "検索キー",
+
+          searchKeyPlaceholder: "検索キーを入力してください",
+
+          firstParticipantTip:
+            "👤 1人目の参加者は、デフォルトで申込者の氏名になります。代理申込の場合は、氏名を直接変更してください。",
+
+          searchKeyTip:
+            "検索キーはデフォルトで参加者の氏名になります。手動で変更すると、その後は氏名に自動追従しません。",
+
+          activityDate: "日付",
+
+          activityTime: "時間",
+
+          capacity: "定員",
+
+          fee: "料金",
+
+          selectedActivities: "選択済み",
+
+          activitiesUnit: "件のイベント",
+
+          noActivities: "現在、申込可能なイベントはありません",
+
+          atLeastActivity: "少なくとも1つのイベントを選択してください",
+
+          atLeastParticipant: "少なくとも1名の参加者が必要です",
+
+          fillParticipantName: "{n}人目の参加者の氏名を入力してください",
+
+          duplicateName:
+            "参加者の氏名は重複できません：{name}（{a}人目と{b}人目）",
+
+          submittingShort: "送信中...",
+
+          testMode: "テストモード：申込データが生成されました。",
+
+          registrationFailed: "申込に失敗しました：",
+
+          activityLoadFailed: "イベントの読み込みに失敗しました：",
+
+          serverNoResult: "サーバーから申込結果が返されませんでした",
+
+          registrationFailedSimple: "申込に失敗しました",
+
+          partialSuccess: "一部の申込が成功しました",
+
+          allSuccess: "すべての申込が成功しました",
+
+          testModeTitle: "テストモード",
+
+          noDetail: "詳細結果はありません",
+
+          groupID: "申込グループID：",
+
+          bookerResult: "申込者：",
+
+          total: "申込合計：",
+
+          success: "成功",
+
+          failed: "失敗",
+
+          detail: "詳細結果：",
+
+          waitlist: "キャンセル待ち",
+
+          statusSuccess: "成功",
+
+          statusFailed: "失敗",
+
+          activity: "イベント：",
+
+          languageButton: "中文",
+
+          homeButton: "← ホームへ戻る",
+
+          homeConfirm: "ホームへ戻りますか？",
+
+          homeConfirmYes: "OK",
+        },
+      };
+
+      /****************************************************
+       * 获取语言文字
+       ****************************************************/
+
+      function t(key) {
+        return I18N[currentLanguage][key] || I18N.zh[key] || key;
+      }
+
+      /****************************************************
+       * 获取 Level 说明
+       ****************************************************/
+
+      function getLevelDescription(level) {
+        const keyMap = {
+          L1: "levelL1Description",
+
+          L2: "levelL2Description",
+
+          L3: "levelL3Description",
+
+          L4: "levelL4Description",
+        };
+
+        const key = keyMap[level];
+
+        if (!key) {
+          return "";
+        }
+
+        return t(key);
+      }
+
+      /****************************************************
+       * 初始化
+       ****************************************************/
+
+      document.addEventListener("DOMContentLoaded", function () {
+        applyLanguage();
+
+        addParticipant();
+
+        const bookerInput = document.getElementById("bookerName");
+
+        bookerInput.addEventListener("input", function () {
+          syncFirstParticipantWithBooker();
+        });
+
+        loadActivities();
+      });
+
+      /****************************************************
+       * 中日文切换
+       ****************************************************/
+
+      function toggleLanguage() {
+        currentLanguage = currentLanguage === "zh" ? "ja" : "zh";
+
+        applyLanguage();
+
+        renderParticipants();
+
+        updateSelectedActivitySummary();
+      }
+
+      /****************************************************
+       * 应用语言
+       ****************************************************/
+
+      function applyLanguage() {
+        document.documentElement.lang =
+          currentLanguage === "zh" ? "zh-CN" : "ja";
+
+        document.title =
+          t("pageTitle") +
+          " / " +
+          (currentLanguage === "zh" ? "イベント申込" : "活动报名");
+
+        document.querySelectorAll("[data-i18n]").forEach(function (element) {
+          const key = element.dataset.i18n;
+
+          element.textContent = t(key);
+        });
+
+        document
+          .querySelectorAll("[data-i18n-placeholder]")
+          .forEach(function (element) {
+            const key = element.dataset.i18nPlaceholder;
+
+            element.placeholder = t(key);
+          });
+
+        document.getElementById("languageBtn").textContent =
+          t("languageButton");
+
+        document.getElementById("homeBtn").textContent = t("homeButton");
+
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (!submitBtn.disabled) {
+          submitBtn.textContent = t("submit");
+        }
+
+        document.getElementById("loading").textContent = t("submitting");
+      }
+
+      /****************************************************
+       * 返回主页
+       ****************************************************/
+
+      function goHome() {
+        window.top.location.href = HOME_URL;
+      }
+
+      /****************************************************
+       * 加载活动
+       ****************************************************/
+
+      function loadActivities() {
+        if (
+          typeof google === "undefined" ||
+          !google.script ||
+          !google.script.run
+        ) {
+          renderActivities([]);
+
+          return;
+        }
+
+        google.script.run
+
+          .withSuccessHandler(function (result) {
+            if (Array.isArray(result)) {
+              activities = result;
+            } else if (result && Array.isArray(result.data)) {
+              activities = result.data;
+            } else {
+              activities = [];
+            }
+
+            renderActivities(activities);
+          })
+
+          .withFailureHandler(function (error) {
+            showMessage(
+              t("activityLoadFailed") +
+                (error && error.message ? error.message : error),
+              "error",
+            );
+
+            renderActivities([]);
+          })
+
+          .getActivities();
+      }
+
+      /****************************************************
+       * 显示活动
+       ****************************************************/
+
+      function renderActivities(list) {
+        const container = document.getElementById("activityList");
+
+        if (!list || list.length === 0) {
+          container.innerHTML = `
+
+      <div class="empty">
+        ${escapeHtml(t("noActivities"))}
+      </div>
+
+    `;
+
+          return;
+        }
+
+        container.innerHTML = "";
+
+        list.forEach(function (activity) {
+          const activityID = normalize(
+            activity.ActivityID || activity.activityID || activity.id,
+          );
+
+          const title = normalize(
+            activity.Title || activity.title || "未命名活动",
+          );
+
+          const date = normalize(
+            activity.ActivityDate || activity.Date || activity.date,
+          );
+
+          const startTime = normalize(activity.StartTime || activity.startTime);
+
+          const endTime = normalize(activity.EndTime || activity.endTime);
+
+          const capacity = normalize(activity.Capacity || activity.capacity);
+
+          const fee = normalize(activity.Fee || activity.fee);
+
+          const item = document.createElement("div");
+
+          item.className = "activity-item";
+
+          item.dataset.id = activityID;
+
+          item.innerHTML = `
+
+        <div class="activity-top">
+
+          <input
+            class="activity-checkbox"
+            type="checkbox"
+            value="${escapeHtml(activityID)}"
+          >
+
+          <div class="activity-title">
+            ${escapeHtml(title)}
+          </div>
+
+        </div>
+
+
+        <div class="activity-info">
+
+          ${
+            date
+              ? `
+                <div class="activity-info-row">
+                  📅 ${escapeHtml(t("activityDate"))}：
+                  ${escapeHtml(date)}
+                </div>
+              `
+              : ""
+          }
+
+
+          ${
+            startTime
+              ? `
+                <div class="activity-info-row">
+                  🕐 ${escapeHtml(t("activityTime"))}：
+                  ${escapeHtml(startTime)}
+                  ${endTime ? " - " + escapeHtml(endTime) : ""}
+                </div>
+              `
+              : ""
+          }
+
+
+          ${
+            capacity
+              ? `
+                <div class="activity-info-row">
+                  👥 ${escapeHtml(t("capacity"))}：
+                  ${escapeHtml(capacity)}
+                </div>
+              `
+              : ""
+          }
+
+
+          ${
+            fee !== ""
+              ? `
+                <div class="activity-info-row">
+                  💴 ${escapeHtml(t("fee"))}：
+                  ${escapeHtml(fee)}
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      `;
+
+          const checkbox = item.querySelector("input");
+
+          item.addEventListener("click", function (event) {
+            if (event.target !== checkbox) {
+              checkbox.checked = !checkbox.checked;
+            }
+
+            if (checkbox.checked) {
+              item.classList.add("selected");
+            } else {
+              item.classList.remove("selected");
+            }
+
+            updateSelectedActivitySummary();
+          });
+
+          container.appendChild(item);
+        });
+      }
+
+      /****************************************************
+       * 获取选择的活动
+       ****************************************************/
+
+      function getSelectedActivityIDs() {
+        const checkboxes = document.querySelectorAll(
+          "#activityList input[type='checkbox']:checked",
+        );
+
+        return Array.from(checkboxes)
+          .map(function (checkbox) {
+            return normalize(checkbox.value);
+          })
+          .filter(function (id) {
+            return id !== "";
+          });
+      }
+
+      /****************************************************
+       * 活动选择显示
+       ****************************************************/
+
+      function updateSelectedActivitySummary() {
+        const ids = getSelectedActivityIDs();
+
+        const box = document.getElementById("selectedActivitySummary");
+
+        if (ids.length === 0) {
+          box.innerHTML = escapeHtml(t("noActivitySelected"));
+
+          return;
+        }
+
+        box.innerHTML =
+          escapeHtml(t("selectedActivities")) +
+          " <strong>" +
+          ids.length +
+          "</strong> " +
+          escapeHtml(t("activitiesUnit")) +
+          "： " +
+          ids
+            .map(function (id) {
+              const activity = activities.find(function (a) {
+                return normalize(a.ActivityID || a.activityID || a.id) === id;
+              });
+
+              return escapeHtml(
+                activity ? activity.Title || activity.title || id : id,
+              );
+            })
+            .join("、");
+      }
+
+      /****************************************************
+       * 添加参加人员
+       ****************************************************/
+
+      function addParticipant(data) {
+        participantCounter++;
+
+        const id = "participant_" + participantCounter;
+
+        let participant;
+
+        if (data) {
+          participant = {
+            name: normalize(data.name),
+
+            searchKey: normalize(data.searchKey),
+
+            level: normalize(data.level),
+
+            searchKeyManuallyChanged: data.searchKeyManuallyChanged === true,
+          };
+        } else {
+          const isFirst = selectedMembers.length === 0;
+
+          const bookerInput = document.getElementById("bookerName");
+
+          const bookerName = bookerInput ? normalize(bookerInput.value) : "";
+
+          participant = {
+            name: isFirst ? bookerName : "",
+
+            searchKey: isFirst ? bookerName : "",
+
+            level: "",
+
+            searchKeyManuallyChanged: false,
+          };
+        }
+
+        selectedMembers.push({
+          id: id,
+
+          name: participant.name || "",
+
+          searchKey: participant.searchKey || "",
+
+          level: participant.level || "",
+
+          searchKeyManuallyChanged:
+            participant.searchKeyManuallyChanged === true,
+        });
+
+        if (selectedMembers.length === 1) {
+          selectedMembers[0].name = normalize(
+            document.getElementById("bookerName").value,
+          );
+
+          selectedMembers[0].searchKey =
+            selectedMembers[0].searchKey || selectedMembers[0].name;
+
+          selectedMembers[0].searchKeyManuallyChanged = false;
+        }
+
+        renderParticipants();
+      }
+
+      /****************************************************
+       * 同步第一位参加人员与报名人
+       ****************************************************/
+
+      function syncFirstParticipantWithBooker() {
+        const first = selectedMembers[0];
+
+        if (!first) {
+          return;
+        }
+
+        const bookerName = normalize(
+          document.getElementById("bookerName").value,
+        );
+
+        first.name = bookerName;
+
+        if (!first.searchKeyManuallyChanged) {
+          first.searchKey = bookerName;
+        }
+
+        const firstCard = document.querySelector(
+          '.participant[data-id="' + first.id + '"]',
+        );
+
+        if (!firstCard) {
+          return;
+        }
+
+        const nameInput = firstCard.querySelector('[data-field="name"]');
+
+        if (nameInput) {
+          nameInput.value = first.name;
+        }
+
+        const searchKeyInput = firstCard.querySelector(
+          '[data-field="searchKey"]',
+        );
+
+        if (searchKeyInput && !first.searchKeyManuallyChanged) {
+          searchKeyInput.value = first.searchKey;
+        }
+      }
+
+      /****************************************************
+       * 删除参加人员
+       ****************************************************/
+
+      function removeParticipant(id) {
+        if (selectedMembers.length <= 1) {
+          showMessage(t("atLeastParticipant"), "warning");
+
+          return;
+        }
+
+        const index = selectedMembers.findIndex(function (member) {
+          return member.id === id;
+        });
+
+        const wasFirst = index === 0;
+
+        selectedMembers = selectedMembers.filter(function (member) {
+          return member.id !== id;
+        });
+
+        if (wasFirst) {
+          const first = selectedMembers[0];
+
+          if (first) {
+            const bookerName = normalize(
+              document.getElementById("bookerName").value,
+            );
+
+            first.name = bookerName;
+
+            first.searchKey = bookerName;
+
+            first.searchKeyManuallyChanged = false;
+          }
+        }
+
+        renderParticipants();
+      }
+
+      /****************************************************
+       * 渲染参加人员
+       ****************************************************/
+
+      function renderParticipants() {
+        const container = document.getElementById("participantsContainer");
+
+        container.innerHTML = "";
+
+        selectedMembers.forEach(function (member, index) {
+          const div = document.createElement("div");
+
+          div.className = "participant" + (index === 0 ? " first" : "");
+
+          div.dataset.id = member.id;
+
+          div.innerHTML = `
+
+        <div class="participant-header">
+
+          <div class="participant-title-wrap">
+
+            <div class="participant-badge">
+              ${index + 1}
+            </div>
+
+            <div class="participant-title">
+              ${escapeHtml(t("participant"))}
+              ${index + 1}
+            </div>
+
+          </div>
+
+
+          ${
+            selectedMembers.length > 1
+              ? `
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeParticipant('${member.id}')"
+                >
+                  ${escapeHtml(t("delete"))}
+                </button>
+              `
+              : ""
+          }
+
+        </div>
+
+
+        ${
+          index === 0
+            ? `
+              <div class="participant-main">
+                ${escapeHtml(t("firstParticipantTip"))}
+              </div>
+            `
+            : ""
+        }
+
+
+        <div class="participant-grid">
+
+
+          <!-- 姓名 -->
+
+          <div class="form-group">
+
+            <label>
+              ${escapeHtml(t("name"))}
+            </label>
+
+
+            <input
+              type="text"
+              data-field="name"
+              value="${escapeHtml(member.name)}"
+              placeholder="${escapeHtml(t("namePlaceholder"))}"
+            >
+
+          </div>
+
+
+          <!-- Level -->
+
+          <div class="form-group">
+
+            <label>
+              ${escapeHtml(t("level"))}
+            </label>
+
+
+            <select
+              data-field="level"
+            >
+
+              <option value="">
+                ${escapeHtml(t("select"))}
+              </option>
+
+              <option
+                value="L1"
+                ${member.level === "L1" ? "selected" : ""}
+              >
+                L1 · ${escapeHtml(t("levelL1Name"))}
+              </option>
+
+              <option
+                value="L2"
+                ${member.level === "L2" ? "selected" : ""}
+              >
+                L2 · ${escapeHtml(t("levelL2Name"))}
+              </option>
+
+              <option
+                value="L3"
+                ${member.level === "L3" ? "selected" : ""}
+              >
+                L3 · ${escapeHtml(t("levelL3Name"))}
+              </option>
+
+              <option
+                value="L4"
+                ${member.level === "L4" ? "selected" : ""}
+              >
+                L4 · ${escapeHtml(t("levelL4Name"))}
+              </option>
+
+            </select>
+
+
+            <!-- Level 动态说明 -->
+
+            <div
+              class="level-description"
+            >
+              ${escapeHtml(getLevelDescription(member.level))}
+            </div>
+
+          </div>
+
+
+          <!-- 检索键 -->
+
+          <div class="form-group full-width">
+
+            <label>
+              ${escapeHtml(t("searchKey"))}
+            </label>
+
+
+            <input
+              type="text"
+              data-field="searchKey"
+              value="${escapeHtml(member.searchKey)}"
+              placeholder="${escapeHtml(t("searchKeyPlaceholder"))}"
+            >
+
+
+            <div
+              class="booker-tip"
+              style="margin-top:8px;"
+            >
+              ${escapeHtml(t("searchKeyTip"))}
+            </div>
+
+          </div>
+
+
+        </div>
+
+      `;
+
+          const inputs = div.querySelectorAll("[data-field]");
+
+          inputs.forEach(function (input) {
+            input.addEventListener("input", function () {
+              updateParticipantFromDOM(member.id, input, index);
+            });
+
+            input.addEventListener("change", function () {
+              updateParticipantFromDOM(member.id, input, index);
+            });
+          });
+
+          container.appendChild(div);
+        });
+      }
+
+      /****************************************************
+       * 从 HTML 更新参加人员
+       ****************************************************/
+
+      function updateParticipantFromDOM(id, input, index) {
+        const member = selectedMembers.find(function (item) {
+          return item.id === id;
+        });
+
+        if (!member) {
+          return;
+        }
+
+        const field = input.dataset.field;
+
+        /*
+         * ===============================
+         * 姓名
+         * ===============================
+         */
+
+        if (field === "name") {
+          member.name = input.value;
+
+          if (!member.searchKeyManuallyChanged) {
+            member.searchKey = input.value;
+
+            const card = input.closest(".participant");
+
+            if (card) {
+              const searchKeyInput = card.querySelector(
+                '[data-field="searchKey"]',
+              );
+
+              if (searchKeyInput) {
+                searchKeyInput.value = input.value;
+              }
+            }
+          }
+        } else if (field === "searchKey") {
+          /*
+           * ===============================
+           * 检索键
+           * ===============================
+           */
+          member.searchKey = input.value;
+
+          member.searchKeyManuallyChanged = true;
+        } else {
+          /*
+           * ===============================
+           * Level
+           * ===============================
+           */
+          member[field] = input.value;
+
+          /*
+           * Level 改变后，
+           * 立即更新 Level 说明
+           */
+
+          if (field === "level") {
+            const card = input.closest(".participant");
+
+            if (card) {
+              const description = card.querySelector(".level-description");
+
+              if (description) {
+                description.textContent = getLevelDescription(member.level);
+              }
+            }
+          }
+        }
+      }
+
+      /****************************************************
+       * 收集参加人员
+       ****************************************************/
+
+      function collectParticipants() {
+        const cards = document.querySelectorAll(".participant");
+
+        cards.forEach(function (card) {
+          const id = card.dataset.id;
+
+          const member = selectedMembers.find(function (item) {
+            return item.id === id;
+          });
+
+          if (!member) {
+            return;
+          }
+
+          const nameInput = card.querySelector('[data-field="name"]');
+
+          const levelInput = card.querySelector('[data-field="level"]');
+
+          const searchKeyInput = card.querySelector('[data-field="searchKey"]');
+
+          member.name = nameInput ? normalize(nameInput.value) : "";
+
+          member.level = levelInput ? normalize(levelInput.value) : "";
+
+          member.searchKey = searchKeyInput
+            ? normalize(searchKeyInput.value)
+            : "";
+
+          if (!member.searchKey && !member.searchKeyManuallyChanged) {
+            member.searchKey = member.name;
+          }
+        });
+
+        return selectedMembers.map(function (member) {
+          return {
+            name: normalize(member.name),
+
+            level: normalize(member.level),
+
+            searchKey: normalize(member.searchKey),
+          };
+        });
+      }
+
+      /****************************************************
+       * 检查参加人员姓名重复
+       ****************************************************/
+
+      function checkDuplicateParticipantNames(participants) {
+        const nameMap = {};
+
+        for (let i = 0; i < participants.length; i++) {
+          const name = normalize(participants[i].name);
+
+          if (!name) {
+            continue;
+          }
+
+          const key = name.toLowerCase();
+
+          if (nameMap[key] !== undefined) {
+            return {
+              duplicate: true,
+
+              name: name,
+
+              firstIndex: nameMap[key],
+
+              secondIndex: i,
+            };
+          }
+
+          nameMap[key] = i;
+        }
+
+        return {
+          duplicate: false,
+        };
+      }
+
+      /****************************************************
+       * 提交报名
+       ****************************************************/
+
+      function submitRegistration() {
+        clearMessage();
+
+        const activityIDs = getSelectedActivityIDs();
+
+        if (activityIDs.length === 0) {
+          showMessage(t("atLeastActivity"), "error");
+
+          return;
+        }
+
+        let bookerName = normalize(document.getElementById("bookerName").value);
+
+        const participants = collectParticipants();
+
+        if (participants.length === 0) {
+          showMessage(t("atLeastParticipant"), "error");
+
+          return;
+        }
+
+        if (!bookerName) {
+          bookerName = participants[0].name;
+
+          document.getElementById("bookerName").value = bookerName;
+        }
+
+        for (let i = 0; i < participants.length; i++) {
+          if (!participants[i].name) {
+            showMessage(
+              t("fillParticipantName").replace("{n}", i + 1),
+              "error",
+            );
+
+            return;
+          }
+        }
+
+        const duplicateCheck = checkDuplicateParticipantNames(participants);
+
+        if (duplicateCheck.duplicate) {
+          showMessage(
+            t("duplicateName")
+              .replace("{name}", duplicateCheck.name)
+              .replace("{a}", duplicateCheck.firstIndex + 1)
+              .replace("{b}", duplicateCheck.secondIndex + 1),
+            "error",
+          );
+
+          return;
+        }
+
+        const message = normalize(document.getElementById("message").value);
+
+        const data = {
+          activityIDs: activityIDs,
+
+          bookerName: bookerName,
+
+          participants: participants,
+
+          message: message,
+        };
+
+        setSubmitting(true);
+
+        /*
+         * 浏览器测试模式
+         */
+
+        if (
+          typeof google === "undefined" ||
+          !google.script ||
+          !google.script.run
+        ) {
+          console.log("registerActivities data:", data);
+
+          setSubmitting(false);
+
+          showMessage(t("testMode"), "warning");
+
+          showResult({
+            success: true,
+
+            partial: false,
+
+            message: t("testModeTitle"),
+
+            registrationGroupID: "TEST-GRP",
+
+            bookerName: bookerName,
+
+            total: activityIDs.length * participants.length,
+
+            successCount: activityIDs.length * participants.length,
+
+            failedCount: 0,
+
+            data: [],
+          });
+
+          return;
+        }
+
+        /*
+         * Google Apps Script
+         */
+
+        google.script.run
+
+          .withSuccessHandler(function (result) {
+            setSubmitting(false);
+
+            handleRegistrationResult(result);
+          })
+
+          .withFailureHandler(function (error) {
+            setSubmitting(false);
+
+            showMessage(
+              t("registrationFailed") +
+                (error && error.message ? error.message : String(error)),
+              "error",
+            );
+          })
+
+          .registerActivities(data);
+      }
+
+      /****************************************************
+       * 处理报名结果
+       ****************************************************/
+
+      function handleRegistrationResult(result) {
+        if (!result) {
+          showMessage(t("serverNoResult"), "error");
+
+          return;
+        }
+
+        if (result.success !== true) {
+          showMessage(result.message || t("registrationFailedSimple"), "error");
+
+          showResult(result);
+
+          return;
+        }
+
+        if (result.partial === true) {
+          showMessage(result.message || t("partialSuccess"), "warning");
+        } else {
+          showMessage(result.message || t("allSuccess"), "success");
+        }
+
+        showResult(result);
+      }
+
+      /****************************************************
+       * 显示报名结果
+       ****************************************************/
+
+      function showResult(result) {
+        const card = document.getElementById("resultCard");
+
+        const box = document.getElementById("resultBox");
+
+        card.style.display = "block";
+
+        let html = "";
+
+        if (result.registrationGroupID) {
+          html += `
+
+      <div class="result-item">
+
+        <strong>
+          ${escapeHtml(t("groupID"))}
+        </strong>
+
+        ${escapeHtml(result.registrationGroupID)}
+
+      </div>
+
+    `;
+        }
+
+        if (result.bookerName) {
+          html += `
+
+      <div class="result-item">
+
+        <strong>
+          ${escapeHtml(t("bookerResult"))}
+        </strong>
+
+        ${escapeHtml(result.bookerName)}
+
+      </div>
+
+    `;
+        }
+
+        if (result.total !== undefined) {
+          html += `
+
+      <div class="result-item">
+
+        <strong>
+          ${escapeHtml(t("total"))}
+        </strong>
+
+        ${result.total}
+
+        &nbsp;&nbsp;
+
+        <span class="status-confirmed">
+
+          ${escapeHtml(t("success"))}
+          ${result.successCount || 0}
+
+        </span>
+
+        &nbsp;&nbsp;
+
+        <span class="status-failed">
+
+          ${escapeHtml(t("failed"))}
+          ${result.failedCount || 0}
+
+        </span>
+
+      </div>
+
+    `;
+        }
+
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          html += `
+
+      <div class="result-item">
+
+        <strong>
+          ${escapeHtml(t("detail"))}
+        </strong>
+
+      </div>
+
+    `;
+
+          result.data.forEach(function (item) {
+            const participantName = normalize(item.participantName);
+
+            const activityID = normalize(item.activityID);
+
+            const r = item.result || {};
+
+            let statusClass = "status-failed";
+
+            let statusText = t("statusFailed");
+
+            if (r.success === true) {
+              if (r.status === "WAITLIST") {
+                statusClass = "status-waitlist";
+
+                statusText = t("waitlist");
+              } else {
+                statusClass = "status-confirmed";
+
+                statusText = t("statusSuccess");
+              }
+            }
+
+            html += `
+
+          <div class="result-item">
+
+            <div>
+
+              <strong>
+                ${escapeHtml(participantName)}
+              </strong>
+
+              →
+
+              ${escapeHtml(activityID)}
+
+            </div>
+
+
+            <div
+              class="${statusClass}"
+            >
+
+              ${escapeHtml(statusText)}
+
+              ${r.message ? "： " + escapeHtml(r.message) : ""}
+
+            </div>
+
+
+            ${
+              r.title
+                ? `
+                  <div>
+                    ${escapeHtml(t("activity"))}
+                    ${escapeHtml(r.title)}
+                  </div>
+                `
+                : ""
+            }
+
+          </div>
+
+        `;
+          });
+        }
+
+        if (!html) {
+          html = escapeHtml(t("noDetail"));
+        }
+
+        box.innerHTML = html;
+
+        card.scrollIntoView({
+          behavior: "smooth",
+
+          block: "start",
+        });
+      }
+
+      /****************************************************
+       * 提交按钮状态
+       ****************************************************/
+
+      function setSubmitting(submitting) {
+        const button = document.getElementById("submitBtn");
+
+        const loading = document.getElementById("loading");
+
+        button.disabled = submitting;
+
+        loading.style.display = submitting ? "block" : "none";
+
+        button.textContent = submitting ? t("submittingShort") : t("submit");
+      }
+
+      /****************************************************
+       * 显示消息
+       ****************************************************/
+
+      function showMessage(text, type) {
+        const box = document.getElementById("messageBox");
+
+        box.className = "message " + (type || "success");
+
+        box.innerHTML = escapeHtml(text || "");
+
+        box.style.display = "block";
+
+        box.scrollIntoView({
+          behavior: "smooth",
+
+          block: "start",
+        });
+      }
+
+      /****************************************************
+       * 清除消息
+       ****************************************************/
+
+      function clearMessage() {
+        const box = document.getElementById("messageBox");
+
+        box.className = "message";
+
+        box.innerHTML = "";
+
+        box.style.display = "none";
+      }
+
+      /****************************************************
+       * normalize
+       ****************************************************/
+
+      function normalize(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        return String(value).trim();
+      }
+
+      /****************************************************
+       * HTML Escape
+       ****************************************************/
+
+      function escapeHtml(value) {
+        return String(value === null || value === undefined ? "" : value)
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+    </script>
+  </body>
+</html>

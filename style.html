@@ -1,0 +1,936 @@
+<style>
+  /* =========================================================
+   全局
+========================================================= */
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: #f3f6fa;
+    color: #333;
+
+    font-family: Arial, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button,
+  input,
+  select {
+    font-family: inherit;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+
+  button:active {
+    opacity: 0.88;
+    transform: scale(0.98);
+  }
+
+  /* =========================================================
+   页面容器
+========================================================= */
+
+  .container {
+    width: 100%;
+    max-width: none;
+
+    margin: 0;
+
+    padding: 10px 7px 40px;
+  }
+
+  /* =========================================================
+   顶部
+========================================================= */
+
+  .header {
+    width: 100%;
+
+    background: linear-gradient(135deg, #1976d2 0%, #2196f3 55%, #42a5f5 100%);
+
+    color: white;
+
+    padding: 28px 22px;
+
+    border-radius: 15px;
+
+    margin-bottom: 14px;
+
+    box-shadow: 0 5px 15px rgba(25, 118, 210, 0.22);
+  }
+
+  /* 羽球活动 */
+
+  .home-header-title {
+    margin: 0;
+
+    font-size: 58px;
+
+    line-height: 1.35;
+
+    font-weight: 700;
+  }
+
+  /* 找到适合你的羽球活动 */
+
+  .home-header-subtitle {
+    margin: 10px 0 0;
+
+    font-size: 32px;
+
+    line-height: 1.55;
+
+    opacity: 0.94;
+  }
+
+  /* =========================================================
+   首页快捷按钮
+========================================================= */
+
+  .quick-actions {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 8px;
+
+    margin-bottom: 16px;
+  }
+
+  .quick-button {
+    width: 100%;
+
+    min-height: 100px;
+
+    padding: 18px 6px;
+
+    border: 0;
+
+    border-radius: 14px;
+
+    background: white;
+
+    color: #1976d2;
+
+    font-size: 30px;
+
+    font-weight: bold;
+
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.08);
+  }
+
+  /* 签到 */
+
+  .quick-button.checkin {
+    background: #43a047;
+
+    color: white;
+  }
+
+  /* =========================================================
+   查找活动区域
+========================================================= */
+
+  .filter-card {
+    width: 100%;
+
+    background: white;
+
+    padding: 24px;
+
+    border-radius: 16px;
+
+    margin-bottom: 20px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  /* =========================================================
+   🔎 查找活动
+   当前要求：48px
+========================================================= */
+
+  .search-title {
+    margin: 0 0 20px;
+
+    font-size: 48px !important;
+
+    line-height: 1.35;
+
+    font-weight: bold;
+
+    color: #333;
+  }
+
+  /* =========================================================
+   📅 日期 / 📍 场地
+   当前要求：40px
+========================================================= */
+
+  .search-label {
+    display: block;
+
+    font-size: 40px !important;
+
+    line-height: 1.4;
+
+    font-weight: bold;
+
+    color: #444;
+
+    margin: 18px 0 10px;
+  }
+
+  /* =========================================================
+   日期输入框
+========================================================= */
+
+  .search-input,
+  .search-select {
+    width: 100%;
+
+    min-height: 82px;
+
+    padding: 15px 18px;
+
+    border: 2px solid #ddd;
+
+    border-radius: 13px;
+
+    background: white;
+
+    color: #333;
+
+    font-size: 42px;
+
+    outline: none;
+  }
+
+  .search-input:focus,
+  .search-select:focus {
+    border-color: #1976d2;
+
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+  }
+
+  /* =========================================================
+   全部 / 本周 / 本月
+========================================================= */
+
+  .period-buttons {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 10px;
+
+    margin-top: 20px;
+  }
+
+  .filter-btn {
+    width: 100%;
+
+    min-height: 76px;
+
+    padding: 13px 7px;
+
+    margin: 0;
+
+    border: 2px solid #ddd;
+
+    border-radius: 11px;
+
+    background: #fafafa;
+
+    color: #666;
+
+    font-size: 38px;
+
+    font-weight: bold;
+  }
+
+  .filter-btn.active {
+    background: #1976d2;
+
+    color: white;
+
+    border-color: #1976d2;
+  }
+
+  /* =========================================================
+   活动列表标题
+========================================================= */
+
+  .section-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 26px 4px 14px;
+  }
+
+  .section-title h2 {
+    margin: 0;
+
+    font-size: 46px;
+
+    line-height: 1.35;
+
+    color: #333;
+  }
+
+  /* =========================================================
+   活动卡片
+========================================================= */
+
+  .activity-card {
+    width: 100%;
+
+    background: white;
+
+    padding: 26px 24px;
+
+    border-radius: 16px;
+
+    margin-bottom: 16px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  .activity-card h2 {
+    margin: 0 0 18px;
+
+    color: #1976d2;
+
+    font-size: 43px;
+
+    line-height: 1.45;
+
+    font-weight: bold;
+  }
+
+  .activity-info {
+    margin: 11px 0;
+
+    font-size: 36px;
+
+    line-height: 1.85;
+
+    color: #555;
+  }
+
+  .activity-info span {
+    margin-right: 8px;
+  }
+
+  /* =========================================================
+   活动按钮
+========================================================= */
+
+  .activity-card button {
+    width: 100%;
+
+    min-height: 82px;
+
+    padding: 16px;
+
+    margin-top: 20px;
+
+    background: #1976d2;
+
+    color: white;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    font-size: 40px;
+
+    font-weight: bold;
+  }
+
+  .activity-card button:hover {
+    background: #1565c0;
+  }
+
+  /* =========================================================
+   没有活动
+========================================================= */
+
+  .empty-card {
+    width: 100%;
+
+    background: white;
+
+    padding: 50px 24px;
+
+    text-align: center;
+
+    border-radius: 15px;
+
+    color: #888;
+
+    font-size: 42px;
+
+    line-height: 1.6;
+
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.06);
+  }
+
+  /* =========================================================
+   签到区域
+========================================================= */
+
+  .checkin-card {
+    width: 100%;
+
+    background: white;
+
+    padding: 24px;
+
+    border-radius: 15px;
+
+    margin-bottom: 16px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  .checkin-card h3 {
+    margin: 0 0 8px;
+
+    font-size: 43px;
+
+    line-height: 1.4;
+
+    color: #333;
+  }
+
+  .checkin-card p {
+    margin: 0;
+
+    font-size: 34px;
+
+    line-height: 1.8;
+
+    color: #777;
+  }
+
+  .checkin-btn {
+    width: 100%;
+
+    min-height: 82px;
+
+    padding: 16px;
+
+    margin-top: 18px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    background: #43a047;
+
+    color: white;
+
+    font-size: 40px;
+
+    font-weight: bold;
+  }
+
+  /* =========================================================
+   我的报名
+========================================================= */
+
+  .my-registration-card {
+    width: 100%;
+
+    background: white;
+
+    padding: 24px;
+
+    border-radius: 15px;
+
+    margin-bottom: 16px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  .my-registration-card h3 {
+    margin: 0 0 8px;
+
+    font-size: 43px;
+
+    line-height: 1.4;
+  }
+
+  .my-registration-card p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 34px;
+
+    line-height: 1.8;
+  }
+
+  /* =========================================================
+   管理员
+========================================================= */
+
+  .admin-card {
+    width: 100%;
+
+    margin-top: 28px;
+
+    background: white;
+
+    padding: 24px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  .admin-title {
+    margin: 0 0 8px;
+
+    font-size: 43px;
+
+    line-height: 1.4;
+  }
+
+  .admin-description {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 34px;
+
+    line-height: 1.8;
+  }
+
+  .admin-button {
+    width: 100%;
+
+    min-height: 82px;
+
+    padding: 16px;
+
+    margin-top: 16px;
+
+    background: #455a64;
+
+    color: white;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    font-size: 40px;
+
+    font-weight: bold;
+  }
+
+  .admin-button:hover {
+    background: #37474f;
+  }
+
+  /* =========================================================
+   管理员登录弹窗
+========================================================= */
+
+  .admin-login-overlay {
+    position: fixed;
+
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 9999;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+  }
+
+  .admin-login-box {
+    width: 100%;
+
+    max-width: 600px;
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 20px;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .admin-login-box h3 {
+    margin: 0 0 12px;
+
+    font-size: 48px;
+
+    line-height: 1.4;
+  }
+
+  .admin-login-box p {
+    margin: 0 0 20px;
+
+    font-size: 36px;
+
+    line-height: 1.7;
+
+    color: #777;
+  }
+
+  .admin-login-box input {
+    width: 100%;
+
+    min-height: 88px;
+
+    margin: 0;
+
+    padding: 15px;
+
+    font-size: 44px;
+
+    text-align: center;
+
+    border: 2px solid #ddd;
+
+    border-radius: 12px;
+  }
+
+  .admin-login-buttons {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 18px;
+  }
+
+  .admin-login-buttons button {
+    width: 100%;
+
+    min-height: 82px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    font-size: 40px;
+
+    font-weight: bold;
+  }
+
+  .admin-login-confirm {
+    background: #1976d2;
+
+    color: white;
+  }
+
+  .admin-login-cancel {
+    background: #eee;
+
+    color: #555;
+  }
+
+  .admin-login-error {
+    margin-top: 12px;
+
+    color: #d32f2f;
+
+    font-size: 36px;
+
+    line-height: 1.5;
+
+    display: none;
+  }
+
+  /* =========================================================
+   手机
+========================================================= */
+
+  @media (max-width: 600px) {
+    .container {
+      width: 100%;
+      max-width: none;
+
+      padding: 10px 7px 40px;
+    }
+
+    /* 顶部 */
+
+    .header {
+      padding: 28px 22px;
+
+      border-radius: 15px;
+    }
+
+    .home-header-title {
+      font-size: 58px;
+    }
+
+    .home-header-subtitle {
+      font-size: 32px;
+    }
+
+    /* 快捷按钮 */
+
+    .quick-button {
+      min-height: 100px;
+
+      font-size: 44px;
+    }
+
+    /* =====================================================
+     查找活动
+     保持刚才要求的大小
+  ===================================================== */
+
+    .search-title {
+      font-size: 48px !important;
+    }
+
+    .search-label {
+      font-size: 40px !important;
+    }
+
+    /* 输入框 */
+
+    .search-input,
+    .search-select {
+      min-height: 82px;
+
+      font-size: 42px;
+    }
+
+    /* 时间按钮 */
+
+    .filter-btn {
+      min-height: 76px;
+
+      font-size: 38px;
+    }
+
+    /* 活动列表 */
+
+    .section-title h2 {
+      font-size: 46px;
+    }
+
+    .activity-card h2 {
+      font-size: 43px;
+    }
+
+    .activity-info {
+      font-size: 36px;
+    }
+
+    .activity-card button {
+      min-height: 82px;
+
+      font-size: 40px;
+    }
+
+    /* 其他 */
+
+    .checkin-card h3,
+    .my-registration-card h3,
+    .admin-title {
+      font-size: 43px;
+    }
+
+    .checkin-card p,
+    .my-registration-card p,
+    .admin-description {
+      font-size: 34px;
+    }
+
+    .checkin-btn,
+    .admin-button {
+      min-height: 82px;
+
+      font-size: 40px;
+    }
+  }
+
+  /* =========================================================
+   超小屏幕
+========================================================= */
+
+  @media (max-width: 380px) {
+    .container {
+      padding: 8px 6px 35px;
+    }
+
+    .header {
+      padding: 24px 18px;
+    }
+
+    .home-header-title {
+      font-size: 46px;
+    }
+
+    .home-header-subtitle {
+      font-size: 27px;
+    }
+
+    .quick-actions {
+      gap: 8px;
+    }
+
+    .quick-button {
+      min-height: 82px;
+
+      font-size: 34px;
+    }
+
+    /* 查找活动 */
+
+    .search-title {
+      font-size: 40px !important;
+    }
+
+    .search-label {
+      font-size: 34px !important;
+    }
+
+    /* 输入 */
+
+    .search-input,
+    .search-select {
+      min-height: 70px;
+
+      font-size: 34px;
+    }
+
+    /* 时间 */
+
+    .filter-btn {
+      min-height: 64px;
+
+      font-size: 30px;
+    }
+
+    /* 活动 */
+
+    .section-title h2 {
+      font-size: 38px;
+    }
+
+    .activity-card {
+      padding: 20px;
+    }
+
+    .activity-card h2 {
+      font-size: 36px;
+    }
+
+    .activity-info {
+      font-size: 30px;
+    }
+
+    .activity-card button {
+      min-height: 72px;
+
+      font-size: 34px;
+    }
+
+    /* 管理员登录 */
+
+    .admin-login-box {
+      padding: 22px;
+    }
+
+    .admin-login-box h3 {
+      font-size: 38px;
+    }
+
+    .admin-login-box p {
+      font-size: 28px;
+    }
+
+    .admin-login-box input {
+      min-height: 70px;
+
+      font-size: 34px;
+    }
+
+    .admin-login-buttons button {
+      min-height: 66px;
+
+      font-size: 30px;
+    }
+  }
+
+  /* =========================================================
+   最终强制覆盖
+   防止其他旧 CSS 再次把这三个文字改小/改大
+========================================================= */
+
+  .search-title {
+    font-size: 48px !important;
+  }
+
+  .search-label {
+    font-size: 40px !important;
+  }
+
+  /* 手机最终值 */
+
+  @media (max-width: 600px) {
+    .search-title {
+      font-size: 48px !important;
+    }
+
+    .search-label {
+      font-size: 40px !important;
+    }
+  }
+
+  /* 超小手机最终值 */
+
+  @media (max-width: 380px) {
+    .search-title {
+      font-size: 40px !important;
+    }
+
+    .search-label {
+      font-size: 34px !important;
+    }
+  }
+</style>

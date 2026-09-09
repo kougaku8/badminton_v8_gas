@@ -1,0 +1,1256 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        background: #f5f5f5;
+        color: #222;
+        font-size: 32px;
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      button,
+      input,
+      select {
+        font-family: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .header {
+        width: 100%;
+        background: #1976d2;
+        color: white;
+        padding: 32px 28px;
+        border-radius: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      }
+
+      .header h1 {
+        margin: 0 0 12px 0;
+        font-size: 46px;
+        line-height: 1.25;
+        font-weight: 800;
+      }
+
+      .header p {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.6;
+        opacity: 0.95;
+      }
+
+      .card {
+        width: 100%;
+        background: white;
+        padding: 28px;
+        border-radius: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+      }
+
+      .section-title {
+        font-size: 36px;
+        line-height: 1.35;
+        font-weight: 800;
+        margin-bottom: 24px;
+      }
+
+      .form-group {
+        margin-bottom: 24px;
+      }
+
+      label {
+        display: block;
+        font-size: 32px;
+        line-height: 1.4;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #333;
+      }
+
+      .required {
+        color: #d32f2f;
+        margin-left: 5px;
+      }
+
+      select,
+      input[type="date"] {
+        width: 100%;
+        min-height: 72px;
+        padding: 14px 18px;
+        border: 2px solid #ccc;
+        border-radius: 12px;
+        font-size: 30px;
+        line-height: 1.4;
+        background: white;
+        color: #222;
+      }
+
+      select:focus,
+      input[type="date"]:focus {
+        outline: none;
+        border-color: #1976d2;
+        box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
+      }
+
+      .hint {
+        color: #666;
+        font-size: 26px;
+        line-height: 1.6;
+        margin-top: 10px;
+      }
+
+      .activity-info {
+        background: #f5f9ff;
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .info-row {
+        display: flex;
+        align-items: flex-start;
+        padding: 16px 0;
+        border-bottom: 2px solid #e5e5e5;
+        font-size: 30px;
+        line-height: 1.5;
+      }
+
+      .info-row:last-child {
+        border-bottom: 0;
+      }
+
+      .info-label {
+        width: 220px;
+        color: #777;
+        flex-shrink: 0;
+        font-weight: 500;
+      }
+
+      .info-value {
+        flex: 1;
+        font-weight: 800;
+        color: #222;
+        word-break: break-word;
+      }
+
+      .date-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .date-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 2px solid #ddd;
+        border-radius: 14px;
+      }
+
+      .date-row input[type="date"] {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+      }
+
+      .remove-date-button {
+        flex: 0 0 68px;
+        width: 68px;
+        height: 68px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: #ffebee;
+        color: #c62828;
+        font-size: 42px;
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .remove-date-button:active {
+        background: #ffcdd2;
+      }
+
+      .date-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .small-button {
+        flex: 1;
+        min-height: 68px;
+        padding: 12px 16px;
+        border: 0;
+        border-radius: 12px;
+        background: #1976d2;
+        color: white;
+        font-size: 28px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .small-button:active {
+        transform: scale(0.98);
+      }
+
+      .secondary-small {
+        background: #eeeeee;
+        color: #333;
+      }
+
+      .selected-date-count {
+        margin-top: 16px;
+        padding: 14px 18px;
+        background: #e3f2fd;
+        border-radius: 12px;
+        color: #1565c0;
+        font-size: 28px;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .batch-preview {
+        margin-top: 24px;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: #f5f9ff;
+        border: 2px solid #bbdefb;
+        border-radius: 14px;
+      }
+
+      .preview-title {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 14px;
+        color: #1565c0;
+      }
+
+      .preview-item {
+        padding: 16px 0;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .preview-item:last-child {
+        border-bottom: 0;
+      }
+
+      .preview-date {
+        font-size: 30px;
+        font-weight: 800;
+        color: #222;
+      }
+
+      .preview-title-text {
+        font-size: 28px;
+        font-weight: 600;
+        color: #555;
+        margin-top: 4px;
+        word-break: break-word;
+      }
+
+      .button {
+        width: 100%;
+        min-height: 78px;
+        padding: 16px 20px;
+        border: 0;
+        border-radius: 14px;
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1.4;
+        cursor: pointer;
+      }
+
+      .submit-button {
+        background: #1976d2;
+        color: white;
+      }
+
+      .submit-button:active {
+        background: #1565c0;
+        transform: scale(0.99);
+      }
+
+      .submit-button:disabled {
+        background: #90caf9;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .secondary-button {
+        background: #eeeeee;
+        color: #333;
+        margin-top: 14px;
+      }
+
+      .success-card {
+        background: #e8f5e9;
+        border: 2px solid #81c784;
+        color: #1b5e20;
+      }
+
+      .success-title {
+        font-size: 38px;
+        font-weight: 800;
+        margin-bottom: 20px;
+      }
+
+      .success-item {
+        background: white;
+        padding: 18px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+      }
+
+      .success-label {
+        color: #666;
+        font-size: 24px;
+        margin-bottom: 4px;
+      }
+
+      .success-value {
+        font-weight: 800;
+        font-size: 30px;
+        line-height: 1.5;
+        color: #222;
+        word-break: break-word;
+      }
+
+      .error-card {
+        background: #ffebee;
+        border: 2px solid #ef9a9a;
+        color: #b71c1c;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .loading {
+        color: #666;
+        text-align: center;
+        padding: 60px 20px;
+        font-size: 32px;
+      }
+
+      @media (max-width: 600px) {
+        html,
+        body {
+          width: 100%;
+          min-width: 100%;
+          overflow-x: hidden;
+        }
+
+        body {
+          font-size: 32px;
+        }
+
+        .container {
+          width: 100%;
+          padding: 12px;
+        }
+
+        .header {
+          padding: 26px 22px;
+          border-radius: 16px;
+        }
+
+        .header h1 {
+          font-size: 42px;
+        }
+
+        .header p {
+          font-size: 26px;
+        }
+
+        .card {
+          padding: 22px;
+          border-radius: 16px;
+        }
+
+        .section-title {
+          font-size: 34px;
+        }
+
+        label {
+          font-size: 30px;
+        }
+
+        select,
+        input[type="date"] {
+          min-height: 76px;
+          font-size: 30px;
+        }
+
+        .info-row {
+          display: block;
+          font-size: 28px;
+        }
+
+        .info-label {
+          width: auto;
+          margin-bottom: 5px;
+          font-size: 25px;
+        }
+
+        .info-value {
+          font-size: 30px;
+        }
+
+        .date-row {
+          gap: 8px;
+          padding: 8px;
+        }
+
+        .remove-date-button {
+          flex-basis: 64px;
+          width: 64px;
+          height: 64px;
+        }
+
+        .date-actions {
+          flex-direction: column;
+        }
+
+        .small-button {
+          width: 100%;
+          min-height: 70px;
+          font-size: 28px;
+        }
+
+        .button {
+          min-height: 82px;
+          font-size: 32px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📋 批量复制活动</h1>
+        <p>
+          选择一个已有活动，然后一次选择多个日期。
+          <br />
+          每个日期都会自动创建一个新的活动。
+        </p>
+      </div>
+
+      <div id="loading" class="card loading">⏳ 正在读取活动……</div>
+
+      <div id="mainArea" style="display: none">
+        <div class="card">
+          <div class="section-title">🏸 ① 选择原活动</div>
+
+          <div class="form-group">
+            <label for="activitySelect">
+              原活动
+              <span class="required">*</span>
+            </label>
+
+            <select id="activitySelect" onchange="selectSourceActivity()">
+              <option value="">请选择要复制的活动</option>
+            </select>
+
+            <div class="hint">
+              选择后会自动读取原活动的场地、时间、
+              球场数量、人数上限、费用及活动说明。
+            </div>
+          </div>
+        </div>
+
+        <div id="sourceCard" class="card" style="display: none">
+          <div class="section-title">📋 原活动资料</div>
+
+          <div class="activity-info">
+            <div class="info-row">
+              <div class="info-label">ActivityID</div>
+              <div id="sourceActivityID" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">活动名称</div>
+              <div id="sourceTitle" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">活动场地</div>
+              <div id="sourceVenue" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">原活动日期</div>
+              <div id="sourceDate" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">活动时间</div>
+              <div id="sourceTime" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">球场数量</div>
+              <div id="sourceCourts" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">报名人数上限</div>
+              <div id="sourceCapacity" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">活动费用</div>
+              <div id="sourceFee" class="info-value"></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">活动说明</div>
+              <div id="sourceDescription" class="info-value"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="newActivityCard" class="card" style="display: none">
+          <div class="section-title">📅 ② 选择多个活动日期</div>
+
+          <div class="hint">
+            可以一次添加多个日期。
+            <br />
+            每个日期都会单独创建一个活动。
+            <br />
+            新活动不会复制原活动的报名人员。
+          </div>
+
+          <div id="dateList" class="date-list"></div>
+
+          <div class="date-actions">
+            <button type="button" class="small-button" onclick="addDate()">
+              ＋ 添加日期
+            </button>
+
+            <button
+              type="button"
+              class="small-button secondary-small"
+              onclick="clearDates()"
+            >
+              🗑 清空日期
+            </button>
+          </div>
+
+          <div id="selectedDateCount" class="selected-date-count">
+            已选择 0 个日期
+          </div>
+
+          <div class="batch-preview" id="batchPreview" style="display: none">
+            <div class="preview-title">👀 创建预览</div>
+
+            <div id="previewList"></div>
+          </div>
+
+          <button
+            type="button"
+            id="submitButton"
+            class="button submit-button"
+            onclick="copyActivities()"
+          >
+            🎉 批量创建活动
+          </button>
+
+          <button
+            type="button"
+            class="button secondary-button"
+            onclick="goBack()"
+          >
+            ← 返回管理 Dashboard
+          </button>
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      let WEB_APP_URL = "";
+
+      let activities = [];
+
+      let sourceActivity = null;
+
+      window.addEventListener("DOMContentLoaded", function () {
+        loadWebAppUrl();
+      });
+
+      function loadWebAppUrl() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            WEB_APP_URL = url || "";
+            loadActivities();
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("获取 Web App URL 失败:", error);
+
+            showError(
+              "无法获取 Web App URL：" +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      function loadActivities() {
+        google.script.run
+
+          .withSuccessHandler(function (list) {
+            console.log("可复制活动:", list);
+
+            activities = Array.isArray(list) ? list : [];
+
+            renderActivityOptions();
+
+            document.getElementById("loading").style.display = "none";
+
+            document.getElementById("mainArea").style.display = "block";
+
+            if (!activities.length) {
+              showError("目前没有可以复制的活动");
+            }
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("读取活动失败:", error);
+
+            showError(
+              "读取活动失败：" +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getActivitiesForCopy();
+      }
+
+      function renderActivityOptions() {
+        const select = document.getElementById("activitySelect");
+
+        select.innerHTML = "";
+
+        const firstOption = document.createElement("option");
+
+        firstOption.value = "";
+
+        firstOption.textContent = "请选择要复制的活动";
+
+        select.appendChild(firstOption);
+
+        activities.forEach(function (a) {
+          const option = document.createElement("option");
+
+          option.value = a.ActivityID;
+
+          option.textContent = formatActivityOption(a);
+
+          select.appendChild(option);
+        });
+      }
+
+      function formatActivityOption(a) {
+        const title = a.Title || "未命名活动";
+
+        const venue = a.VenueName || a.VenueID || "未设置场地";
+
+        const date = a.Date || "";
+
+        const time = (a.StartTime || "") + " - " + (a.EndTime || "");
+
+        return (
+          date +
+          " ｜ " +
+          title +
+          " ｜ " +
+          venue +
+          " ｜ " +
+          time +
+          " ｜ " +
+          a.ActivityID
+        );
+      }
+
+      function selectSourceActivity() {
+        clearResult();
+
+        const activityID = document.getElementById("activitySelect").value;
+
+        if (!activityID) {
+          sourceActivity = null;
+
+          document.getElementById("sourceCard").style.display = "none";
+
+          document.getElementById("newActivityCard").style.display = "none";
+
+          clearDates();
+
+          return;
+        }
+
+        const cached = activities.find(function (a) {
+          return String(a.ActivityID) === String(activityID);
+        });
+
+        if (cached) {
+          sourceActivity = cached;
+
+          renderSourceActivity();
+
+          document.getElementById("sourceCard").style.display = "block";
+
+          document.getElementById("newActivityCard").style.display = "block";
+
+          clearDates();
+
+          addDate();
+        }
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success || !res.activity) {
+              return;
+            }
+
+            sourceActivity = res.activity;
+
+            renderSourceActivity();
+
+            clearDates();
+
+            addDate();
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("读取活动详细资料失败:", error);
+
+            showError(
+              "读取活动详细资料失败：" +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getActivityForCopy(activityID);
+      }
+
+      function renderSourceActivity() {
+        const a = sourceActivity;
+
+        if (!a) {
+          return;
+        }
+
+        document.getElementById("sourceActivityID").textContent =
+          a.ActivityID || "";
+
+        document.getElementById("sourceTitle").textContent = a.Title || "";
+
+        document.getElementById("sourceVenue").textContent =
+          a.VenueName || a.VenueID || "";
+
+        document.getElementById("sourceDate").textContent = a.Date || "";
+
+        document.getElementById("sourceTime").textContent =
+          (a.StartTime || "") + " - " + (a.EndTime || "");
+
+        document.getElementById("sourceCourts").textContent =
+          String(a.CourtCount || 0) + " 片";
+
+        document.getElementById("sourceCapacity").textContent =
+          String(a.Capacity || 0) + " 人";
+
+        document.getElementById("sourceFee").textContent =
+          "¥" + String(a.Fee || 0);
+
+        document.getElementById("sourceDescription").textContent =
+          a.Description || "无";
+      }
+
+      function addDate() {
+        const dateList = document.getElementById("dateList");
+
+        const row = document.createElement("div");
+
+        row.className = "date-row";
+
+        const input = document.createElement("input");
+
+        input.type = "date";
+
+        input.className = "batch-date";
+
+        const today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+
+        input.min = formatDate(today);
+
+        input.addEventListener("change", function () {
+          updateDateSelection();
+        });
+
+        const removeButton = document.createElement("button");
+
+        removeButton.type = "button";
+
+        removeButton.className = "remove-date-button";
+
+        removeButton.textContent = "×";
+
+        removeButton.setAttribute("aria-label", "删除日期");
+
+        removeButton.onclick = function () {
+          row.remove();
+          updateDateSelection();
+        };
+
+        row.appendChild(input);
+
+        row.appendChild(removeButton);
+
+        dateList.appendChild(row);
+
+        updateDateSelection();
+
+        input.focus();
+      }
+
+      function clearDates() {
+        document.getElementById("dateList").innerHTML = "";
+
+        updateDateSelection();
+      }
+
+      function updateDateSelection() {
+        const inputs = document.querySelectorAll(
+          '#dateList input[type="date"]',
+        );
+
+        const dates = [];
+
+        inputs.forEach(function (input) {
+          if (input.value) {
+            dates.push(input.value);
+          }
+        });
+
+        document.getElementById("selectedDateCount").textContent =
+          "已选择 " + dates.length + " 个日期";
+
+        updateBatchPreview(dates);
+      }
+
+      function updateBatchPreview(dates) {
+        const preview = document.getElementById("batchPreview");
+
+        const list = document.getElementById("previewList");
+
+        if (!dates.length || !sourceActivity) {
+          preview.style.display = "none";
+
+          list.innerHTML = "";
+
+          return;
+        }
+
+        const originalTitle = String(sourceActivity.Title || "").trim();
+
+        // 去掉原活动标题前面的：
+        // 8/30 活动名称
+        // 8/30（日）活动名称
+        const cleanTitle = originalTitle
+          .replace(
+            /^\d{1,2}\/\d{1,2}(?:（[日月火水木金土]）|\([日月火水木金土]\))?\s*/,
+            "",
+          )
+          .trim();
+
+        list.innerHTML = "";
+
+        dates
+          .slice()
+          .sort()
+          .forEach(function (date) {
+            const parts = date.split("-");
+
+            const year = Number(parts[0]);
+            const month = Number(parts[1]);
+            const day = Number(parts[2]);
+
+            const dateObj = new Date(year, month - 1, day);
+
+            const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+            const weekday = weekdays[dateObj.getDay()];
+
+            const title =
+              month + "/" + day + "（" + weekday + "）" + cleanTitle;
+
+            const item = document.createElement("div");
+
+            item.className = "preview-item";
+
+            item.innerHTML =
+              '<div class="preview-date">📅 ' +
+              escapeHtml(date) +
+              "</div>" +
+              '<div class="preview-title-text">🏸 ' +
+              escapeHtml(title) +
+              "</div>";
+
+            list.appendChild(item);
+          });
+
+        preview.style.display = "block";
+      }
+
+      function copyActivities() {
+        clearResult();
+
+        if (!sourceActivity) {
+          showError("请先选择原活动");
+
+          return;
+        }
+
+        const dateInputs = document.querySelectorAll(
+          '#dateList input[type="date"]',
+        );
+
+        const dates = [];
+
+        dateInputs.forEach(function (input) {
+          if (input.value) {
+            dates.push(input.value);
+          }
+        });
+
+        if (!dates.length) {
+          showError("请至少选择一个活动日期");
+
+          return;
+        }
+
+        const uniqueDates = [...new Set(dates)];
+
+        if (uniqueDates.length !== dates.length) {
+          showError("不能重复选择相同日期");
+
+          return;
+        }
+
+        if (uniqueDates.includes(String(sourceActivity.Date))) {
+          showError("新日期不能与原活动日期相同");
+
+          return;
+        }
+
+        uniqueDates.sort();
+
+        const button = document.getElementById("submitButton");
+
+        button.disabled = true;
+
+        button.textContent = "⏳ 正在创建 " + uniqueDates.length + " 个活动……";
+
+        createActivitiesSequentially(uniqueDates, 0, []);
+      }
+
+      function createActivitiesSequentially(dates, index, results) {
+        if (index >= dates.length) {
+          showBatchSuccess(results);
+
+          return;
+        }
+
+        const newDate = dates[index];
+
+        const dateParts = newDate.split("-");
+
+        const year = Number(dateParts[0]);
+        const month = Number(dateParts[1]);
+        const day = Number(dateParts[2]);
+
+        const dateObj = new Date(year, month - 1, day);
+
+        const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+        const weekday = weekdays[dateObj.getDay()];
+
+        const originalTitle = String(sourceActivity.Title || "").trim();
+
+        // 支持：
+        // 8/30 活动名称
+        // 8/30（日）活动名称
+        const cleanTitle = originalTitle
+          .replace(
+            /^\d{1,2}\/\d{1,2}(?:（[日月火水木金土]）|\([日月火水木金土]\))?\s*/,
+            "",
+          )
+          .trim();
+
+        const newTitle = month + "/" + day + "（" + weekday + "）" + cleanTitle;
+
+        console.log("创建日期:", newDate);
+
+        console.log("创建标题:", newTitle);
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            console.log("复制活动结果:", res);
+
+            if (res && res.success && res.activity) {
+              results.push({
+                success: true,
+                activity: res.activity,
+              });
+            } else {
+              results.push({
+                success: false,
+                date: newDate,
+                message: res && res.message ? res.message : "创建失败",
+              });
+            }
+
+            createActivitiesSequentially(dates, index + 1, results);
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("copyActivity 错误:", error);
+
+            results.push({
+              success: false,
+              date: newDate,
+              message: error && error.message ? error.message : String(error),
+            });
+
+            createActivitiesSequentially(dates, index + 1, results);
+          })
+
+          .copyActivity(sourceActivity.ActivityID, newDate, newTitle);
+      }
+
+      function showBatchSuccess(results) {
+        const button = document.getElementById("submitButton");
+
+        button.disabled = false;
+
+        button.textContent = "🎉 批量创建活动";
+
+        const successResults = results.filter(function (r) {
+          return r.success;
+        });
+
+        const failedResults = results.filter(function (r) {
+          return !r.success;
+        });
+
+        let html = `
+      <div class="card success-card">
+
+        <div class="success-title">
+          🎉 批量创建完成
+        </div>
+
+        <div class="success-item">
+          <div class="success-label">
+            创建成功
+          </div>
+
+          <div class="success-value">
+            ✅ ${successResults.length} 个活动
+          </div>
+        </div>
+
+        <div class="success-item">
+          <div class="success-label">
+            创建失败
+          </div>
+
+          <div class="success-value">
+            ${
+              failedResults.length
+                ? "❌ " + failedResults.length + " 个"
+                : "✅ 0 个"
+            }
+          </div>
+        </div>
+    `;
+
+        successResults.forEach(function (r) {
+          const a = r.activity;
+
+          html += `
+          <div class="success-item">
+
+            <div class="success-label">
+              活动名称
+            </div>
+
+            <div class="success-value">
+              🏸
+              ${escapeHtml(a.Title)}
+            </div>
+
+            <div class="hint">
+              📅
+              ${escapeHtml(a.Date)}
+            </div>
+
+          </div>
+        `;
+        });
+
+        failedResults.forEach(function (r) {
+          html += `
+          <div class="success-item">
+
+            <div class="success-label">
+              创建失败
+            </div>
+
+            <div class="success-value">
+              ❌
+              ${escapeHtml(r.date)}
+            </div>
+
+            <div class="hint">
+              ${escapeHtml(r.message)}
+            </div>
+
+          </div>
+        `;
+        });
+
+        html += `
+        <button
+          type="button"
+          class="button submit-button"
+          onclick="goBack()"
+        >
+          ← 返回管理 Dashboard
+        </button>
+
+      </div>
+    `;
+
+        document.getElementById("mainArea").style.display = "none";
+
+        document.getElementById("result").innerHTML = html;
+
+        window.scrollTo(0, 0);
+      }
+
+      function openActivity(activityID) {
+        if (!activityID) {
+          showError("没有找到 ActivityID");
+
+          return;
+        }
+
+        if (!WEB_APP_URL) {
+          showError("无法获取 Web App URL");
+
+          return;
+        }
+
+        window.top.location.href =
+          WEB_APP_URL + "?page=activity&id=" + encodeURIComponent(activityID);
+      }
+
+      function goBack() {
+        if (!WEB_APP_URL) {
+          window.history.back();
+          return;
+        }
+
+        window.top.location.href = WEB_APP_URL + "?page=dashboard";
+      }
+
+      function showError(message) {
+        document.getElementById("loading").style.display = "none";
+
+        document.getElementById("result").innerHTML = `
+      <div class="card error-card">
+        ❌
+        ${escapeHtml(String(message))}
+      </div>
+    `;
+      }
+
+      function clearResult() {
+        document.getElementById("result").innerHTML = "";
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function escapeJs(value) {
+        return String(value == null ? "" : value)
+          .replace(/\\/g, "\\\\")
+          .replace(/'/g, "\\'")
+          .replace(/\r/g, "\\r")
+          .replace(/\n/g, "\\n");
+      }
+
+      function formatDate(date) {
+        const year = date.getFullYear();
+
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return year + "-" + month + "-" + day;
+      }
+    </script>
+  </body>
+</html>

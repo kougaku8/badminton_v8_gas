@@ -1,0 +1,1298 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+
+  <!-- =====================================================
+       📱 手机显示设置
+  ===================================================== -->
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+  >
+
+  <style>
+
+    /* =====================================================
+       基础设置
+    ===================================================== */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+
+      margin: 0;
+      padding: 0;
+
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Noto Sans SC",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+
+      font-size: 18px;
+      line-height: 1.6;
+
+      background: #f5f5f5;
+      color: #222;
+    }
+
+
+    /* =====================================================
+       主容器
+    ===================================================== */
+
+    .container {
+      width: 100%;
+      max-width: none;
+
+      min-height: 100vh;
+      min-height: 100dvh;
+
+      margin: 0;
+
+      padding:
+        max(8px, env(safe-area-inset-top))
+        0
+        max(24px, env(safe-area-inset-bottom));
+    }
+
+
+    /* =====================================================
+       顶部标题
+    ===================================================== */
+
+    .header {
+      width: 100%;
+
+      background: #1976d2;
+      color: white;
+
+      padding: 24px 16px;
+
+      border-radius: 0;
+
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      margin: 0 0 10px 0;
+
+      font-size: 48px;
+      line-height: 1.25;
+
+      font-weight: 700;
+    }
+
+    .header p {
+      margin: 0;
+
+      font-size: 32px;
+      line-height: 1.45;
+
+      opacity: 0.95;
+    }
+
+
+    /* =====================================================
+       卡片
+    ===================================================== */
+
+    .card {
+      width: 100%;
+
+      background: white;
+
+      padding: 20px 12px;
+
+      border-radius: 10px;
+
+      margin-bottom: 12px;
+
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+
+    /* =====================================================
+       区域标题
+    ===================================================== */
+
+    .section-title {
+      font-size: 42px;
+
+      font-weight: bold;
+
+      margin: 0 0 18px 0;
+
+      line-height: 1.35;
+    }
+
+
+    /* =====================================================
+       表单
+    ===================================================== */
+
+    .form-group {
+      width: 100%;
+
+      margin-bottom: 20px;
+    }
+
+
+    /* =====================================================
+       Label
+    ===================================================== */
+
+    label {
+      display: block;
+
+      font-size: 32px;
+
+      font-weight: bold;
+
+      margin-bottom: 8px;
+
+      color: #222;
+
+      line-height: 1.4;
+    }
+
+    .required {
+      color: #d32f2f;
+
+      font-size: 34px;
+    }
+
+
+    /* =====================================================
+       输入框 / 下拉框 / 文本框
+    ===================================================== */
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      min-height: 68px;
+
+      padding: 11px 14px;
+
+      border: 3px solid #888;
+
+      border-radius: 10px;
+
+      font-family: inherit;
+
+      font-size: 32px;
+
+      line-height: 1.4;
+
+      background: white;
+
+      color: #222;
+
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+
+    /* =====================================================
+       输入框焦点
+    ===================================================== */
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+
+      border-color: #1976d2;
+
+      border-width: 4px;
+
+      box-shadow:
+        0 0 0 5px rgba(25, 118, 210, 0.18);
+    }
+
+
+    /* =====================================================
+       活动说明
+    ===================================================== */
+
+    textarea {
+      min-height: 200px;
+
+      resize: vertical;
+    }
+
+
+    /* =====================================================
+       两列
+    ===================================================== */
+
+    .row {
+      display: flex;
+
+      gap: 12px;
+
+      width: 100%;
+    }
+
+    .row .form-group {
+      flex: 1;
+
+      min-width: 0;
+    }
+
+
+    /* =====================================================
+       场地说明
+    ===================================================== */
+
+    .venue-info {
+      width: 100%;
+
+      margin-top: 8px;
+
+      padding: 12px;
+
+      background: #f5f9ff;
+
+      border-radius: 9px;
+
+      color: #444;
+
+      font-size: 28px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       提示文字
+    ===================================================== */
+
+    .hint {
+      color: #666;
+
+      font-size: 26px;
+
+      margin-top: 6px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       按钮
+    ===================================================== */
+
+    .button {
+      width: 100%;
+
+      min-height: 76px;
+
+      padding: 13px 16px;
+
+      border: 0;
+
+      border-radius: 12px;
+
+      font-family: inherit;
+
+      font-size: 34px;
+
+      line-height: 1.3;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      -webkit-tap-highlight-color: transparent;
+
+      touch-action: manipulation;
+    }
+
+
+    /* =====================================================
+       创建活动按钮
+    ===================================================== */
+
+    .submit-button {
+      background: #1976d2;
+
+      color: white;
+    }
+
+    .submit-button:hover {
+      background: #1565c0;
+    }
+
+    .submit-button:active {
+      background: #0d47a1;
+
+      transform: scale(0.99);
+    }
+
+    .submit-button:disabled {
+      background: #90caf9;
+
+      cursor: not-allowed;
+
+      transform: none;
+    }
+
+
+    /* =====================================================
+       返回按钮
+    ===================================================== */
+
+    .secondary-button {
+      background: #eeeeee;
+
+      color: #333;
+
+      margin-top: 10px;
+    }
+
+    .secondary-button:active {
+      background: #dddddd;
+
+      transform: scale(0.99);
+    }
+
+
+    /* =====================================================
+       成功页面
+    ===================================================== */
+
+    .success-card {
+      width: 100%;
+
+      background: #e8f5e9;
+
+      border: 3px solid #81c784;
+
+      color: #1b5e20;
+    }
+
+    .success-title {
+      font-size: 42px;
+
+      font-weight: bold;
+
+      margin-bottom: 18px;
+
+      line-height: 1.35;
+    }
+
+    .success-item {
+      width: 100%;
+
+      background: white;
+
+      padding: 14px;
+
+      border-radius: 9px;
+
+      margin-bottom: 10px;
+    }
+
+    .success-label {
+      color: #666;
+
+      font-size: 26px;
+
+      margin-bottom: 4px;
+
+      line-height: 1.4;
+    }
+
+    .success-value {
+      font-weight: bold;
+
+      font-size: 32px;
+
+      color: #222;
+
+      line-height: 1.45;
+
+      word-break: break-word;
+    }
+
+
+    /* =====================================================
+       错误
+    ===================================================== */
+
+    .error-card {
+      width: 100%;
+
+      background: #ffebee;
+
+      border: 3px solid #ef9a9a;
+
+      color: #b71c1c;
+
+      font-size: 32px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       Loading
+    ===================================================== */
+
+    .loading {
+      width: 100%;
+
+      color: #666;
+
+      text-align: center;
+
+      padding: 25px 12px;
+
+      font-size: 32px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       📱 手机专用
+    ===================================================== */
+
+    @media screen and (max-width: 600px) {
+
+      html,
+      body {
+        width: 100%;
+        max-width: 100%;
+
+        margin: 0;
+        padding: 0;
+
+        overflow-x: hidden;
+      }
+
+      .container,
+      .header,
+      .card {
+        width: 100%;
+        max-width: none;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        max-width: 100%;
+      }
+
+    }
+
+  </style>
+</head>
+  <body>
+    <div class="container">
+      <!-- =========================
+       顶部
+  ========================= -->
+
+      <div class="header">
+        <h1>＋ 发起新活动</h1>
+
+        <p>创建一个新的羽球活动</p>
+      </div>
+
+      <!-- =========================
+       创建表单
+  ========================= -->
+
+      <div id="formArea">
+        <div class="card">
+          <div class="section-title">🏸 活动资料</div>
+
+          <!-- 活动名称 -->
+
+          <div class="form-group">
+            <label for="title">
+              活动名称
+              <span class="required">*</span>
+            </label>
+
+            <input
+              type="text"
+              id="title"
+              placeholder="例如：川崎中バドミントン"
+            />
+          </div>
+
+          <!-- 场地 -->
+
+          <div class="form-group">
+            <label for="venueID">
+              📍 活动场地
+              <span class="required">*</span>
+            </label>
+
+            <select id="venueID">
+              <option value="">正在加载场地……</option>
+            </select>
+
+            <div id="venueInfo" class="venue-info" style="display: none"></div>
+          </div>
+
+          <!-- 日期 -->
+
+          <div class="form-group">
+            <label for="activityDate">
+              📅 活动日期
+              <span class="required">*</span>
+            </label>
+
+            <input type="date" id="activityDate" />
+          </div>
+
+          <!-- 时间 -->
+
+          <div class="row">
+            <div class="form-group">
+              <label for="startTime">
+                🕐 开始时间
+                <span class="required">*</span>
+              </label>
+
+              <input type="time" id="startTime" value="18:00" />
+            </div>
+
+            <div class="form-group">
+              <label for="endTime">
+                🕐 结束时间
+                <span class="required">*</span>
+              </label>
+
+              <input type="time" id="endTime" value="21:00" />
+            </div>
+          </div>
+
+          <!-- 球场数量 -->
+
+          <div class="row">
+            <div class="form-group">
+              <label for="courtCount">
+                🏸 球场数量
+                <span class="required">*</span>
+              </label>
+
+              <input type="number" id="courtCount" min="1" step="1" value="3" />
+
+              <div class="hint">例如：3 片球场</div>
+            </div>
+
+            <!-- 人数上限 -->
+
+            <div class="form-group">
+              <label for="capacity">
+                👥 报名人数上限
+                <span class="required">*</span>
+              </label>
+
+              <input type="number" id="capacity" min="1" step="1" value="24" />
+
+              <div class="hint">超过上限自动进入候补</div>
+            </div>
+          </div>
+
+          <!-- 活动费用 -->
+
+          <div class="form-group">
+            <label for="fee">
+              💴 活动费用
+              <span class="required">*</span>
+            </label>
+
+            <input type="number" id="fee" min="0" step="1" value="500" />
+
+            <div class="hint">固定金额，例如 ¥500</div>
+          </div>
+
+          <!-- 报名截止 -->
+
+          <div class="form-group">
+            <label for="registrationDeadline"> ⏰ 报名截止时间 </label>
+
+            <input type="datetime-local" id="registrationDeadline" />
+
+            <div class="hint">可以不填写</div>
+          </div>
+
+          <!-- 活动说明 -->
+
+          <div class="form-group">
+            <label for="description"> 📋 活动说明 </label>
+
+            <textarea
+              id="description"
+              placeholder="例如：欢迎大家参加，请提前10分钟到场。"
+            >
+🎒 参加对象
+新手、初级、中级均可
+🎒 需要携带
+・羽毛球拍 ・运动服 ・室内运动鞋 ・饮用水</textarea
+            >
+          </div>
+
+          <!-- 提交 -->
+
+          <button
+            type="button"
+            id="submitButton"
+            class="button submit-button"
+            onclick="submitActivity()"
+          >
+            🎉 创建活动
+          </button>
+
+          <button
+            type="button"
+            class="button secondary-button"
+            onclick="goBack()"
+          >
+            ← 返回活动列表
+          </button>
+        </div>
+      </div>
+
+      <!-- =========================
+       结果
+  ========================= -->
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      // ========================================
+      // 全局
+      // ========================================
+
+      let venues = [];
+
+      // ========================================
+      // 页面加载
+      // ========================================
+
+      window.onload = function () {
+        loadVenues();
+
+        // 确保默认时间
+        updateEndTime();
+        updateRegistrationDeadline();
+      };
+
+      // ========================================
+      // 默认时间逻辑
+      // ========================================
+
+      // 结束时间 = 开始时间 + 3 小时
+      function updateEndTime() {
+        const startTime = document.getElementById("startTime");
+
+        const endTime = document.getElementById("endTime");
+
+        if (!startTime.value) {
+          return;
+        }
+
+        const parts = startTime.value.split(":");
+
+        let hour = Number(parts[0]);
+
+        const minute = parts[1];
+
+        hour = (hour + 3) % 24;
+
+        endTime.value = String(hour).padStart(2, "0") + ":" + minute;
+      }
+
+      // 报名截止时间 = 活动日期 + 开始时间
+      function updateRegistrationDeadline() {
+        const activityDate = document.getElementById("activityDate");
+
+        const startTime = document.getElementById("startTime");
+
+        const registrationDeadline = document.getElementById(
+          "registrationDeadline",
+        );
+
+        if (activityDate.value && startTime.value) {
+          registrationDeadline.value =
+            activityDate.value + "T" + startTime.value;
+        }
+      }
+
+      // ========================================
+      // 开始时间变化
+      // ========================================
+
+      document.addEventListener("change", function (event) {
+        if (event.target.id === "startTime") {
+          updateEndTime();
+
+          updateRegistrationDeadline();
+        }
+
+        if (event.target.id === "activityDate") {
+          updateRegistrationDeadline();
+        }
+      });
+
+      // ========================================
+      // 读取 Venues
+      // ========================================
+
+      function loadVenues() {
+        const select = document.getElementById("venueID");
+
+        select.innerHTML = `
+    <option value="">
+      ⏳ 正在加载场地……
+    </option>
+  `;
+
+        google.script.run
+
+          .withSuccessHandler(function (list) {
+            console.log("Venues:", list);
+
+            venues = list || [];
+
+            select.innerHTML = `
+        <option value="">
+          请选择活动场地
+        </option>
+      `;
+
+            if (!venues.length) {
+              select.innerHTML = `
+          <option value="">
+            暂无可用场地
+          </option>
+        `;
+
+              return;
+            }
+
+            venues.forEach(function (v) {
+              const option = document.createElement("option");
+
+              option.value = v.VenueID;
+
+              option.textContent = v.VenueName;
+
+              select.appendChild(option);
+            });
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("读取场地失败:", error);
+
+            select.innerHTML = `
+        <option value="">
+          ❌ 场地读取失败
+        </option>
+      `;
+
+            showError("读取场地失败：" + (error.message || error));
+          })
+
+          .getActiveVenues();
+      }
+
+      // ========================================
+      // 选择场地
+      // ========================================
+
+      document.addEventListener("change", function (event) {
+        if (event.target.id !== "venueID") {
+          return;
+        }
+
+        const venueID = event.target.value;
+
+        const info = document.getElementById("venueInfo");
+
+        if (!venueID) {
+          info.style.display = "none";
+
+          info.innerHTML = "";
+
+          return;
+        }
+
+        const venue = venues.find(function (v) {
+          return String(v.VenueID) === String(venueID);
+        });
+
+        if (!venue) {
+          info.style.display = "none";
+
+          return;
+        }
+
+        let html = "";
+
+        if (venue.Address) {
+          html += "📍 " + venue.Address + "<br>";
+        }
+
+        if (venue.Description) {
+          html += "ℹ️ " + venue.Description + "<br>";
+        }
+
+        if (venue.Access) {
+          html += "🚇 " + venue.Access + "<br>";
+        }
+
+        if (venue.Parking) {
+          html += "🚗 " + venue.Parking;
+        }
+
+        if (html) {
+          info.innerHTML = html;
+
+          info.style.display = "block";
+        } else {
+          info.style.display = "none";
+        }
+      });
+
+      // ========================================
+      // 创建活动
+      // ========================================
+
+      function submitActivity() {
+        clearResult();
+
+        const button = document.getElementById("submitButton");
+
+        // =========================
+        // 读取表单
+        // =========================
+
+        const rawTitle = document.getElementById("title").value.trim();
+
+        const activityDate = document.getElementById("activityDate").value;
+
+        let title = rawTitle;
+
+        if (activityDate && rawTitle) {
+          const dateParts = activityDate.split("-");
+          const year = Number(dateParts[0]);
+          const month = Number(dateParts[1]);
+          const day = Number(dateParts[2]);
+          const date = new Date(year, month - 1, day);
+          const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+          const weekday = weekdays[date.getDay()];
+          title = month + "/" + day + "（" + weekday + "）" + rawTitle;
+        }
+
+        const venueID = document.getElementById("venueID").value;
+
+        const startTime = document.getElementById("startTime").value;
+
+        const endTime = document.getElementById("endTime").value;
+
+        const courtCount = Number(document.getElementById("courtCount").value);
+
+        const capacity = Number(document.getElementById("capacity").value);
+
+        const fee = Number(document.getElementById("fee").value);
+
+        const registrationDeadline = document.getElementById(
+          "registrationDeadline",
+        ).value;
+
+        const description = document.getElementById("description").value.trim();
+
+        // =========================
+        // 前端检查
+        // =========================
+
+        if (!title) {
+          showError("请输入活动名称");
+
+          return;
+        }
+
+        if (!venueID) {
+          showError("请选择活动场地");
+
+          return;
+        }
+
+        if (!activityDate) {
+          showError("请选择活动日期");
+
+          return;
+        }
+
+        if (!startTime) {
+          showError("请选择开始时间");
+
+          return;
+        }
+
+        if (!endTime) {
+          showError("请选择结束时间");
+
+          return;
+        }
+
+        if (startTime >= endTime) {
+          showError("结束时间必须晚于开始时间");
+
+          return;
+        }
+
+        if (!Number.isInteger(courtCount) || courtCount <= 0) {
+          showError("球场数量必须大于 0");
+
+          return;
+        }
+
+        if (!Number.isInteger(capacity) || capacity <= 0) {
+          showError("报名人数上限必须大于 0");
+
+          return;
+        }
+
+        if (isNaN(fee) || fee < 0) {
+          showError("活动费用不能小于 0");
+
+          return;
+        }
+
+        // =========================
+        // 组合资料
+        // =========================
+
+        const data = {
+          title: title,
+
+          venueID: venueID,
+
+          activityDate: activityDate,
+
+          startTime: startTime,
+
+          endTime: endTime,
+
+          courtCount: courtCount,
+
+          capacity: capacity,
+
+          fee: fee,
+
+          registrationDeadline: registrationDeadline,
+
+          description: description,
+        };
+
+        console.log("准备创建活动:", data);
+
+        // =========================
+        // 防止重复提交
+        // =========================
+
+        button.disabled = true;
+
+        button.textContent = "⏳ 正在创建活动……";
+
+        // =========================
+        // 调用服务器
+        // =========================
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            console.log("创建活动返回:", res);
+
+            button.disabled = false;
+
+            button.textContent = "🎉 创建活动";
+
+            if (!res || !res.success) {
+              showError(res && res.message ? res.message : "活动创建失败");
+
+              return;
+            }
+
+            showSuccess(res, data);
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("createActivity 错误:", error);
+
+            button.disabled = false;
+
+            button.textContent = "🎉 创建活动";
+
+            showError(error.message || error);
+          })
+
+          .createActivity(data);
+      }
+
+      // ========================================
+      // 创建成功
+      // ========================================
+
+      function showSuccess(res, data) {
+        const venue = venues.find(function (v) {
+          return String(v.VenueID) === String(data.venueID);
+        });
+
+        const venueName = venue ? venue.VenueName : data.venueID;
+
+        document.getElementById("formArea").style.display = "none";
+
+        document.getElementById("result").innerHTML = `
+
+    <div class="card success-card">
+
+      <div class="success-title">
+        🎉 活动创建成功
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动名称
+        </div>
+
+        <div class="success-value">
+          🏸 ${escapeHtml(data.title)}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动日期
+        </div>
+
+        <div class="success-value">
+          📅 ${escapeHtml(data.activityDate)}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动时间
+        </div>
+
+        <div class="success-value">
+          🕐
+          ${escapeHtml(data.startTime)}
+          -
+          ${escapeHtml(data.endTime)}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动场地
+        </div>
+
+        <div class="success-value">
+          📍 ${escapeHtml(venueName)}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          报名人数
+        </div>
+
+        <div class="success-value">
+          👥 ${data.capacity} 人
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动费用
+        </div>
+
+        <div class="success-value">
+          💴 ¥${data.fee}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          ActivityID
+        </div>
+
+        <div class="success-value">
+          🆔 ${escapeHtml(res.activityID || "")}
+        </div>
+
+      </div>
+
+
+      <div class="success-item">
+
+        <div class="success-label">
+          活动状态
+        </div>
+
+        <div class="success-value">
+          ✅ ${escapeHtml(res.status || "OPEN")}
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="button submit-button"
+        onclick="openActivity('${escapeHtml(res.activityID || "")}')">
+
+        🏸 查看活动
+
+      </button>
+
+
+      <button
+        type="button"
+        class="button secondary-button"
+        onclick="goBack()">
+
+        ← 返回活动列表
+
+      </button>
+
+    </div>
+
+  `;
+      }
+
+      // ========================================
+      // 错误显示
+      // ========================================
+
+      function showError(message) {
+        document.getElementById("result").innerHTML = `
+
+    <div class="card error-card">
+
+      ❌ ${escapeHtml(String(message))}
+
+    </div>
+
+  `;
+      }
+
+      // ========================================
+      // 清除结果
+      // ========================================
+
+      function clearResult() {
+        document.getElementById("result").innerHTML = "";
+      }
+
+      // ========================================
+      // V5 Web App 主地址
+      // ========================================
+
+      const WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbytMNkX7m-3KE79Izj1i4o2TucGVoJB6vAqjsl3RjTxe-bPfkKWBwHh_gg3Ag4guLgGtg/exec";
+
+      // ========================================
+      // 打开活动详情
+      // ========================================
+
+      function openActivity(activityID) {
+        if (!activityID) {
+          showError("没有找到 ActivityID");
+
+          return;
+        }
+
+        const url =
+          WEB_APP_URL + "?page=activity&id=" + encodeURIComponent(activityID);
+
+        console.log("打开活动详情:", url);
+
+        // 使用 top，离开当前 Apps Script iframe
+
+        window.top.location.href = url;
+      }
+
+      // ========================================
+      // 返回活动列表
+      // ========================================
+
+      function goBack() {
+        const url = WEB_APP_URL + "?page=index";
+
+        console.log("返回活动列表:", url);
+
+        window.top.location.href = url;
+      }
+
+      // ========================================
+      // HTML 安全处理
+      // ========================================
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+    </script>
+  </body>
+</html>

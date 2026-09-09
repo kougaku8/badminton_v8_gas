@@ -1,0 +1,1368 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+
+    <!-- 手机全屏 / 自适应 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- ================================
+       网站图标 / Android
+    ================================= -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://raw.githubusercontent.com/kougaku8/badminton-icon/main/heian-bado-yoyaku-icon_512.png"
+    />
+
+    <!-- ================================
+       iPhone / iPad 主屏幕图标
+    ================================= -->
+
+    <link
+      rel="apple-touch-icon"
+      href="https://raw.githubusercontent.com/kougaku8/badminton-icon/main/heian-bado-yoyaku-icon_512.png"
+    />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <meta name="apple-mobile-web-app-title" content="羽球活动" />
+
+    <!-- ================================
+       Firebase
+    ================================= -->
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+
+    <!-- ================================
+       CSS
+    ================================= -->
+
+    <?!= include("style"); ?>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- =====================================================
+           顶部
+      ====================================================== -->
+
+      <div class="header">
+        <!-- 语言切换 -->
+
+        <div class="language-switcher">
+          <button
+            type="button"
+            id="langZh"
+            class="language-button active"
+            onclick="setLanguage('zh')"
+          >
+            中文
+          </button>
+
+          <span class="language-divider"> | </span>
+
+          <button
+            type="button"
+            id="langJa"
+            class="language-button"
+            onclick="setLanguage('ja')"
+          >
+            日本語
+          </button>
+        </div>
+
+        <h1 class="home-header-title" data-i18n="homeTitle">🏸 羽球活动</h1>
+
+        <p class="home-header-subtitle" data-i18n="homeSubtitle">
+          找到适合你的羽球活动
+        </p>
+      </div>
+
+      <!-- =====================================================
+           参加者快捷入口
+      ====================================================== -->
+
+      <div class="quick-actions">
+        <!-- 签到 -->
+        <button
+          type="button"
+          class="quick-button checkin"
+          onclick="openCheckin()"
+          data-i18n="checkin"
+        >
+          📱 签到
+        </button>
+
+        <!-- 我的报名 -->
+        <button
+          type="button"
+          class="quick-button"
+          onclick="openMyRegistration()"
+          data-i18n="myRegistration"
+        >
+          📋 我的报名
+        </button>
+
+        <!-- 通知设置 -->
+        <button
+          type="button"
+          class="quick-button"
+          onclick="openNotificationV2()"
+          data-i18n="notificationSettings"
+        >
+          🔔 通知设置
+        </button>
+      </div>
+
+      <!-- =====================================================
+           查找活动
+      ====================================================== -->
+
+      <div class="filter-card">
+        <div class="search-title" data-i18n="searchActivity">🔎 查找活动</div>
+
+        <!-- 日期 -->
+
+        <label class="search-label" for="searchDate" data-i18n="date">
+          📅 日期
+        </label>
+
+        <input
+          type="date"
+          id="searchDate"
+          class="search-input"
+          onchange="selectDate()"
+        />
+
+        <!-- 场地 -->
+
+        <label class="search-label" for="searchVenue" data-i18n="venue">
+          📍 场地
+        </label>
+
+        <select id="searchVenue" class="search-select" onchange="selectVenue()">
+          <option value="" data-i18n="allVenues">全部场地</option>
+        </select>
+
+        <!-- 时间范围 -->
+
+        <div class="period-buttons">
+          <button
+            type="button"
+            class="filter-btn active"
+            onclick="setPeriod('all', this)"
+            data-i18n="all"
+          >
+            全部
+          </button>
+
+          <button
+            type="button"
+            class="filter-btn"
+            onclick="setPeriod('week', this)"
+            data-i18n="week"
+          >
+            本周
+          </button>
+
+          <button
+            type="button"
+            class="filter-btn"
+            onclick="setPeriod('month', this)"
+            data-i18n="month"
+          >
+            本月
+          </button>
+        </div>
+      </div>
+
+      <!-- =====================================================
+           活动列表
+      ====================================================== -->
+
+      <div class="section-title">
+        <h2 data-i18n="activityList">🔎 活动列表</h2>
+      </div>
+
+      <div id="activityList">
+        <div class="empty-card" data-i18n="loadingActivities">
+          正在加载活动……
+        </div>
+      </div>
+
+      <!-- =====================================================
+           管理员入口
+      ====================================================== -->
+
+      <div class="admin-card">
+        <h3 class="admin-title" data-i18n="admin">🔐 管理员</h3>
+
+        <p class="admin-description" data-i18n="adminDescription">
+          管理活动及发起新的羽球活动
+        </p>
+
+        <!-- ===============================
+             未登录
+        ================================= -->
+
+        <div id="adminLoginArea">
+          <button
+            type="button"
+            class="admin-button"
+            onclick="showAdminLogin()"
+            data-i18n="adminLogin"
+          >
+            🔐 管理员登录
+          </button>
+        </div>
+
+        <!-- ===============================
+             登录成功
+        ================================= -->
+
+        <div id="adminPanel" style="display: none">
+          <!-- 发起活动 -->
+
+          <button
+            type="button"
+            class="admin-button"
+            onclick="openCreateActivity()"
+            data-i18n="createActivity"
+          >
+            ＋ 发起活动
+          </button>
+
+          <!-- 复制活动 -->
+
+          <button
+            type="button"
+            class="admin-button"
+            onclick="openCopyActivity()"
+            data-i18n="copyActivity"
+          >
+            📋 复制活动
+          </button>
+
+          <!-- 修改活动 -->
+
+          <button
+            type="button"
+            class="admin-button"
+            onclick="openEditActivity()"
+            data-i18n="editActivity"
+          >
+            ✏️ 修改活动
+          </button>
+
+          <!-- 报名管理 -->
+
+          <button
+            type="button"
+            class="admin-button"
+            onclick="openAdminDashboard()"
+            data-i18n="dashboard"
+          >
+            📋 报名管理
+          </button>
+
+          <!-- 通知 -->
+
+          <button
+            type="button"
+            class="admin-button"
+            onclick="enableNotification()"
+            data-i18n="enableNotification"
+          >
+            🔔 通知を有効にする
+          </button>
+
+          <!-- 退出管理员 -->
+
+          <button
+            type="button"
+            class="admin-button admin-logout-button"
+            onclick="logoutAdmin()"
+            data-i18n="logoutAdmin"
+          >
+            🚪 退出管理员
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         管理员密码弹窗
+    ====================================================== -->
+
+    <div id="adminLoginOverlay" class="admin-login-overlay">
+      <div class="admin-login-box">
+        <h3 data-i18n="adminLogin">🔐 管理员登录</h3>
+
+        <p data-i18n="enterPassword">请输入管理员密码</p>
+
+        <input
+          type="password"
+          id="adminPassword"
+          placeholder="请输入密码"
+          autocomplete="off"
+          data-i18n-placeholder="passwordPlaceholder"
+        />
+
+        <div id="adminLoginError" class="admin-login-error">
+          密码错误，请重新输入
+        </div>
+
+        <div class="admin-login-buttons">
+          <button
+            type="button"
+            class="admin-login-confirm"
+            onclick="loginAdmin()"
+            data-i18n="confirm"
+          >
+            确认
+          </button>
+
+          <button
+            type="button"
+            class="admin-login-cancel"
+            onclick="closeAdminLogin()"
+            data-i18n="cancel"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         原来的 script.html
+    ====================================================== -->
+
+    <?!= include("script"); ?>
+
+    <script>
+      /* =====================================================
+         多语言
+      ===================================================== */
+
+      const I18N = {
+        /* =================================================
+           中文
+        ================================================= */
+
+        zh: {
+          homeTitle: "🏸 羽球活动",
+
+          homeSubtitle: "找到适合你的羽球活动",
+
+          checkin: "📱 签到",
+
+          notificationSettings: "🔔 通知设置",
+
+          myRegistration: "📋 我的报名",
+
+          searchActivity: "🔎 查找活动",
+
+          date: "📅 日期",
+
+          venue: "📍 场地",
+
+          allVenues: "全部场地",
+
+          all: "全部",
+
+          week: "本周",
+
+          month: "本月",
+
+          activityList: "🔎 活动列表",
+
+          loadingActivities: "正在加载活动……",
+
+          noActivities: "没有找到活动",
+
+          enterActivity: "进入活动",
+
+          admin: "🔐 管理员",
+
+          adminDescription: "管理活动及发起新的羽球活动",
+
+          adminLogin: "🔐 管理员登录",
+
+          createActivity: "＋ 发起活动",
+
+          copyActivity: "📋 复制活动",
+
+          editActivity: "✏️ 修改活动",
+
+          dashboard: "📋 报名管理",
+
+          enableNotification: "🔔 开启通知",
+
+          logoutAdmin: "🚪 退出管理员",
+
+          enterPassword: "请输入管理员密码",
+
+          passwordPlaceholder: "请输入密码",
+
+          confirm: "确认",
+
+          cancel: "取消",
+
+          passwordRequired: "请输入管理员密码",
+
+          passwordWrong: "密码错误，请重新输入",
+
+          loginFailed: "登录失败：",
+
+          noActivityID: "没有找到 ActivityID",
+
+          openActivityFailed: "无法打开活动页面：",
+
+          openCreateFailed: "无法打开创建活动页面：",
+
+          openDashboardFailed: "无法打开 Dashboard：",
+
+          openCheckinFailed: "无法打开签到页面：",
+        },
+
+        /* =================================================
+           日本語
+        ================================================= */
+
+        ja: {
+          homeTitle: "🏸 バドミントンイベント",
+
+          homeSubtitle: "あなたに合ったバドミントンイベントを見つけよう",
+
+          checkin: "📱 チェックイン",
+
+          myRegistration: "📋 申込み履歴",
+
+          notificationSettings: "🔔 通知設定",
+
+          searchActivity: "🔎 イベントを検索",
+
+          date: "📅 日付",
+
+          venue: "📍 会場",
+
+          allVenues: "すべての会場",
+
+          all: "すべて",
+
+          week: "今週",
+
+          month: "今月",
+
+          activityList: "🔎 イベント一覧",
+
+          loadingActivities: "イベントを読み込んでいます……",
+
+          noActivities: "該当するイベントがありません",
+
+          enterActivity: "イベント詳細",
+
+          admin: "🔐 管理者",
+
+          adminDescription: "イベントの管理・新しいバドミントンイベントの作成",
+
+          adminLogin: "🔐 管理者ログイン",
+
+          createActivity: "＋ イベントを作成",
+
+          copyActivity: "📋 イベントをコピー",
+
+          editActivity: "✏️ イベントを編集",
+
+          dashboard: "📋 申込み管理",
+
+          enableNotification: "🔔 通知を有効にする",
+
+          logoutAdmin: "🚪 管理者ログアウト",
+
+          enterPassword: "管理者パスワードを入力してください",
+
+          passwordPlaceholder: "パスワードを入力",
+
+          confirm: "確認",
+
+          cancel: "キャンセル",
+
+          passwordRequired: "管理者パスワードを入力してください",
+
+          passwordWrong: "パスワードが正しくありません",
+
+          loginFailed: "ログインに失敗しました：",
+
+          noActivityID: "イベントID が見つかりません",
+
+          openActivityFailed: "イベントページを開けません：",
+
+          openCreateFailed: "イベント作成ページを開けません：",
+
+          openDashboardFailed: "Dashboardを開けません：",
+
+          openCheckinFailed: "チェックインページを開けません：",
+        },
+      };
+
+      /* =====================================================
+         当前语言
+      ===================================================== */
+
+      let currentLanguage = localStorage.getItem("language") || "zh";
+
+      /* =====================================================
+         获取当前语言文字
+      ===================================================== */
+
+      function t(key) {
+        const language = I18N[currentLanguage] || I18N.zh;
+
+        return language[key] !== undefined
+          ? language[key]
+          : I18N.zh[key] || key;
+      }
+
+      /* =====================================================
+         切换语言
+      ===================================================== */
+
+      function setLanguage(lang) {
+        if (!I18N[lang]) {
+          lang = "zh";
+        }
+
+        currentLanguage = lang;
+
+        localStorage.setItem("language", lang);
+
+        applyLanguage();
+
+        /*
+         * 重新显示活动列表
+         *
+         * 这样「进入活动」
+         * 会立即变成日语 / 中文
+         */
+
+        if (typeof allActivities !== "undefined") {
+          renderActivities(allActivities);
+        }
+      }
+
+      /* =====================================================
+         应用语言
+      ===================================================== */
+
+      function applyLanguage() {
+        const dictionary = I18N[currentLanguage] || I18N.zh;
+
+        /* =========================
+           普通文字
+        ========================= */
+
+        document.querySelectorAll("[data-i18n]").forEach(function (el) {
+          const key = el.getAttribute("data-i18n");
+
+          if (dictionary[key] !== undefined) {
+            el.textContent = dictionary[key];
+          }
+        });
+
+        /* =========================
+           placeholder
+        ========================= */
+
+        document
+          .querySelectorAll("[data-i18n-placeholder]")
+          .forEach(function (el) {
+            const key = el.getAttribute("data-i18n-placeholder");
+
+            if (dictionary[key] !== undefined) {
+              el.placeholder = dictionary[key];
+            }
+          });
+
+        /* =========================
+           更新语言按钮
+        ========================= */
+
+        const zhButton = document.getElementById("langZh");
+
+        const jaButton = document.getElementById("langJa");
+
+        if (zhButton) {
+          zhButton.classList.toggle("active", currentLanguage === "zh");
+        }
+
+        if (jaButton) {
+          jaButton.classList.toggle("active", currentLanguage === "ja");
+        }
+
+        /* =========================
+           动态文字
+        ========================= */
+
+        updateDynamicLanguage();
+      }
+
+      /* =====================================================
+         动态文字
+      ===================================================== */
+
+      function updateDynamicLanguage() {
+        const loading = document.querySelector("#activityList .empty-card");
+
+        if (
+          loading &&
+          (loading.textContent.includes("加载") ||
+            loading.textContent.includes("読み込"))
+        ) {
+          loading.textContent = t("loadingActivities");
+        }
+      }
+
+      /* =====================================================
+         管理员登录状态
+      =====================================================
+
+         登录成功后保存 8 小时。
+
+         注意：
+
+         这里只保存：
+         loggedIn
+         expiresAt
+
+         不保存管理员密码。
+      ===================================================== */
+
+      const ADMIN_LOGIN_KEY = "badminton_admin_login";
+
+      const ADMIN_LOGIN_EXPIRE = 8 * 60 * 60 * 1000;
+
+      /*
+       * 防止连续点击确认
+       */
+
+      let adminLoginProcessing = false;
+
+      /* =====================================================
+         保存管理员登录状态
+      ===================================================== */
+
+      function saveAdminLoginState() {
+        const data = {
+          loggedIn: true,
+
+          expiresAt: Date.now() + ADMIN_LOGIN_EXPIRE,
+        };
+
+        localStorage.setItem(
+          ADMIN_LOGIN_KEY,
+
+          JSON.stringify(data),
+        );
+      }
+
+      /* =====================================================
+         检查管理员登录状态
+      ===================================================== */
+
+      function isAdminLoggedIn() {
+        try {
+          const raw = localStorage.getItem(ADMIN_LOGIN_KEY);
+
+          if (!raw) {
+            return false;
+          }
+
+          const data = JSON.parse(raw);
+
+          if (!data.loggedIn) {
+            return false;
+          }
+
+          /*
+           * 检查是否过期
+           */
+
+          if (!data.expiresAt || Date.now() >= data.expiresAt) {
+            localStorage.removeItem(ADMIN_LOGIN_KEY);
+
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error("读取管理员登录状态失败:", error);
+
+          localStorage.removeItem(ADMIN_LOGIN_KEY);
+
+          return false;
+        }
+      }
+
+      /* =====================================================
+         显示管理员 Panel
+      ===================================================== */
+
+      function showAdminPanel() {
+        const loginArea = document.getElementById("adminLoginArea");
+
+        const adminPanel = document.getElementById("adminPanel");
+
+        if (loginArea) {
+          loginArea.style.display = "none";
+        }
+
+        if (adminPanel) {
+          adminPanel.style.display = "block";
+        }
+      }
+
+      /* =====================================================
+         显示管理员登录
+      ===================================================== */
+
+      function showAdminLogin() {
+        /*
+         * 如果已经登录
+         *
+         * 直接显示管理员功能，
+         * 不再要求密码。
+         */
+
+        if (isAdminLoggedIn()) {
+          showAdminPanel();
+
+          return;
+        }
+
+        const overlay = document.getElementById("adminLoginOverlay");
+
+        const password = document.getElementById("adminPassword");
+
+        const error = document.getElementById("adminLoginError");
+
+        password.value = "";
+
+        error.textContent = t("passwordWrong");
+
+        error.style.display = "none";
+
+        overlay.style.display = "flex";
+
+        adminLoginProcessing = false;
+
+        setTimeout(function () {
+          password.focus();
+        }, 100);
+      }
+
+      /* =====================================================
+         关闭管理员登录
+      ===================================================== */
+
+      function closeAdminLogin() {
+        const overlay = document.getElementById("adminLoginOverlay");
+
+        if (overlay) {
+          overlay.style.display = "none";
+        }
+
+        adminLoginProcessing = false;
+      }
+
+      /* =====================================================
+         管理员密码验证
+      ===================================================== */
+
+      function loginAdmin() {
+        /*
+         * 防止连续点击
+         */
+
+        if (adminLoginProcessing) {
+          return;
+        }
+
+        const password = document.getElementById("adminPassword");
+
+        const error = document.getElementById("adminLoginError");
+
+        const confirmButton = document.querySelector(".admin-login-confirm");
+
+        const pwd = password.value.trim();
+
+        /* =========================
+           密码为空
+        ========================= */
+
+        if (!pwd) {
+          error.textContent = t("passwordRequired");
+
+          error.style.display = "block";
+
+          password.focus();
+
+          return;
+        }
+
+        /* =========================
+           开始验证
+        ========================= */
+
+        adminLoginProcessing = true;
+
+        error.style.display = "none";
+
+        /*
+         * 禁用确认按钮
+         */
+
+        if (confirmButton) {
+          confirmButton.disabled = true;
+
+          confirmButton.style.opacity = "0.6";
+
+          confirmButton.textContent =
+            currentLanguage === "ja" ? "確認中..." : "验证中...";
+        }
+
+        /* =========================
+           调用 GAS
+        ========================= */
+
+        google.script.run
+
+          .withSuccessHandler(function (success) {
+            adminLoginProcessing = false;
+
+            /*
+             * 恢复按钮
+             */
+
+            if (confirmButton) {
+              confirmButton.disabled = false;
+
+              confirmButton.style.opacity = "1";
+
+              confirmButton.textContent = t("confirm");
+            }
+
+            /* =====================
+                 登录成功
+              ===================== */
+
+            if (success) {
+              /*
+               * 保存 8 小时状态
+               */
+
+              saveAdminLoginState();
+
+              /*
+               * 清除密码
+               */
+
+              password.value = "";
+
+              /*
+               * 关闭登录窗口
+               */
+
+              closeAdminLogin();
+
+              /*
+               * 显示管理员功能
+               */
+
+              showAdminPanel();
+
+              return;
+            }
+
+            /* =====================
+                 密码错误
+              ===================== */
+
+            error.textContent = t("passwordWrong");
+
+            error.style.display = "block";
+
+            /*
+             * 密码错误后清空
+             */
+
+            password.value = "";
+
+            password.focus();
+          })
+
+          .withFailureHandler(function (err) {
+            adminLoginProcessing = false;
+
+            /*
+             * 恢复按钮
+             */
+
+            if (confirmButton) {
+              confirmButton.disabled = false;
+
+              confirmButton.style.opacity = "1";
+
+              confirmButton.textContent = t("confirm");
+            }
+
+            error.textContent =
+              t("loginFailed") +
+              (err && err.message ? err.message : String(err));
+
+            error.style.display = "block";
+          })
+
+          .checkAdminPassword(pwd);
+      }
+
+      /* =====================================================
+         退出管理员
+      ===================================================== */
+
+      function logoutAdmin() {
+        /*
+         * 删除登录状态
+         */
+
+        localStorage.removeItem(ADMIN_LOGIN_KEY);
+
+        const loginArea = document.getElementById("adminLoginArea");
+
+        const adminPanel = document.getElementById("adminPanel");
+
+        if (loginArea) {
+          loginArea.style.display = "block";
+        }
+
+        if (adminPanel) {
+          adminPanel.style.display = "none";
+        }
+
+        const password = document.getElementById("adminPassword");
+
+        if (password) {
+          password.value = "";
+        }
+      }
+
+      /* =====================================================
+         页面加载时恢复管理员登录状态
+      ===================================================== */
+
+      function restoreAdminLogin() {
+        if (isAdminLoggedIn()) {
+          console.log("管理员登录状态有效，无需重新输入密码");
+
+          showAdminPanel();
+        } else {
+          console.log("管理员登录状态不存在或已过期");
+        }
+      }
+
+      /* =====================================================
+         页面初始化
+      ===================================================== */
+
+      window.addEventListener("DOMContentLoaded", function () {
+        applyLanguage();
+
+        /*
+         * 恢复管理员登录状态
+         */
+
+        restoreAdminLogin();
+      });
+
+      /* =====================================================
+         回车提交管理员密码
+      ===================================================== */
+
+      document.addEventListener("keydown", function (event) {
+        const overlay = document.getElementById("adminLoginOverlay");
+
+        if (
+          event.key === "Enter" &&
+          overlay &&
+          overlay.style.display === "flex"
+        ) {
+          event.preventDefault();
+
+          loginAdmin();
+        }
+      });
+
+      /* =====================================================
+         签到页面
+         手机 / 电脑统一使用 Web App URL
+      ===================================================== */
+
+      function openCheckin() {
+        console.log("正在打开签到页面...");
+
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            console.log("获取 Web App URL:", url);
+
+            if (!url) {
+              alert(t("openCheckinFailed"));
+
+              return;
+            }
+
+            const targetUrl = url + "?page=checkin";
+
+            console.log("签到页面:", targetUrl);
+
+            window.top.location.href = targetUrl;
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("打开签到页面失败:", error);
+
+            alert(
+              t("openCheckinFailed") +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         我的报名
+      ===================================================== */
+
+      function openMyRegistration() {
+        console.log("正在打开我的报名...");
+
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            console.log("获取 Web App URL:", url);
+
+            if (!url) {
+              alert(
+                currentLanguage === "ja"
+                  ? "WebアプリのURLを取得できませんでした"
+                  : "无法获取 Web App URL",
+              );
+
+              return;
+            }
+
+            const targetUrl = url + "?page=myRegistration";
+
+            console.log("我的报名页面:", targetUrl);
+
+            window.top.location.href = targetUrl;
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("打开我的报名失败:", error);
+
+            alert(
+              currentLanguage === "ja"
+                ? "申込み履歴ページを開けませんでした：" +
+                    (error && error.message ? error.message : String(error))
+                : "无法打开我的报名：" +
+                    (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         创建活动
+      ===================================================== */
+
+      function openCreateActivity() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            if (!url) {
+              alert(t("openCreateFailed"));
+
+              return;
+            }
+
+            window.top.location.href = url + "?page=createActivity";
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("获取 Web App URL 失败:", error);
+
+            alert(
+              t("openCreateFailed") +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         报名管理 Dashboard
+      ===================================================== */
+
+      function openAdminDashboard() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            if (!url) {
+              alert(t("openDashboardFailed"));
+
+              return;
+            }
+
+            window.top.location.href = url + "?page=dashboard";
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("获取 Web App URL 失败:", error);
+
+            alert(
+              t("openDashboardFailed") +
+                (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         复制活动
+      ===================================================== */
+
+      function openCopyActivity() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            if (!url) {
+              alert(
+                currentLanguage === "ja"
+                  ? "WebアプリのURLを取得できませんでした"
+                  : "无法获取 Web App URL",
+              );
+
+              return;
+            }
+
+            window.top.location.href = url + "?page=copyActivity";
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("打开复制活动页面失败:", error);
+
+            alert(
+              currentLanguage === "ja"
+                ? "イベントコピー画面を開けませんでした：" +
+                    (error && error.message ? error.message : String(error))
+                : "无法打开复制活动页面：" +
+                    (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         修改活动
+      ===================================================== */
+
+      function openEditActivity() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            if (!url) {
+              alert(
+                currentLanguage === "ja"
+                  ? "WebアプリのURLを取得できませんでした"
+                  : "无法获取 Web App URL",
+              );
+
+              return;
+            }
+
+            window.top.location.href = url + "?page=editActivity";
+          })
+
+          .withFailureHandler(function (error) {
+            console.error("打开修改活动页面失败:", error);
+
+            alert(
+              currentLanguage === "ja"
+                ? "イベント編集画面を開けませんでした：" +
+                    (error && error.message ? error.message : String(error))
+                : "无法打开修改活动页面：" +
+                    (error && error.message ? error.message : String(error)),
+            );
+          })
+
+          .getWebAppUrl();
+      }
+
+      function openNotificationV2() {
+        const url =
+          "https://script.google.com/macros/s/AKfycbytMNkX7m-3KE79Izj1i4o2TucGVoJB6vAqjsl3RjTxe-bPfkKWBwHh_gg3Ag4guLgGtg/exec";
+        window.top.location.href = url;
+      }
+
+      /* =====================================================
+         FCM 通知入口
+      ===================================================== */
+
+      function enableNotification() {
+        const url = "https://kougaku8.github.io/badminton-icon/?fcm=1";
+
+        window.top.location.href = url;
+      }
+
+      /* =====================================================
+         Firebase FCM
+      ===================================================== */
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6DUuQto_5BYZJDgkaI8CBGaOQkXMgrCk",
+
+        authDomain: "badminton-notification.firebaseapp.com",
+
+        projectId: "badminton-notification",
+
+        storageBucket: "badminton-notification.firebasestorage.app",
+
+        messagingSenderId: "419794096766",
+
+        appId: "1:419794096766:web:9dd990fe827719d149fe2f",
+      };
+
+      /* =====================================================
+         初始化 Firebase
+      ===================================================== */
+
+      firebase.initializeApp(firebaseConfig);
+
+      const messaging = firebase.messaging();
+
+      /* =====================================================
+         注册 FCM
+      ===================================================== */
+
+      async function initFCM() {
+        try {
+          console.log("开始初始化 FCM...");
+
+          /* =========================
+             1. 请求通知权限
+          ========================= */
+
+          const permission = await Notification.requestPermission();
+
+          console.log("通知权限:", permission);
+
+          if (permission !== "granted") {
+            console.log("用户没有允许通知");
+
+            return;
+          }
+
+          /* =========================
+             2. 获取 FCM Token
+          ========================= */
+
+          const token = await messaging.getToken({
+            vapidKey:
+              "BEzm7tEPH4F7nr5saymZsJqdnF_h_DlTZWgXsN6cDOjb4VVJIGseCnJLPwW37ko_uulqKjhPtjlg-9kYHjTzSJI",
+          });
+
+          if (!token) {
+            console.error("没有取得 FCM Token");
+
+            return;
+          }
+
+          console.log("FCM Token:", token);
+
+          /* =========================
+             3. 发送 Token 到 GAS
+          ========================= */
+
+          google.script.run
+
+            .withSuccessHandler(function (result) {
+              console.log("FCM Token 保存成功:", result);
+            })
+
+            .withFailureHandler(function (error) {
+              console.error("FCM Token 保存失败:", error);
+            })
+
+            .saveAdminFCMToken(token);
+        } catch (error) {
+          console.error("FCM 初始化失败:", error);
+        }
+      }
+
+      /* =====================================================
+         页面加载后启动 FCM
+      ===================================================== */
+
+      window.addEventListener("load", function () {
+        initFCM();
+      });
+
+      /* =====================================================
+         前台收到通知
+      ===================================================== */
+
+      messaging.onMessage(function (payload) {
+        console.log("收到前台 FCM:", payload);
+
+        const title =
+          payload.notification && payload.notification.title
+            ? payload.notification.title
+            : "🏸 羽球活动";
+
+        const body =
+          payload.notification && payload.notification.body
+            ? payload.notification.body
+            : "新しい通知があります";
+
+        /*
+         * 前台时浏览器通常不会自动显示通知，
+         * 所以这里手动显示。
+         */
+
+        if (Notification.permission === "granted") {
+          new Notification(title, {
+            body: body,
+
+            icon: "https://kougaku8.github.io/badminton-icon/heian-bado-yoyaku-icon_512.png",
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

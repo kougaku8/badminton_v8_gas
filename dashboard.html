@@ -1,0 +1,1989 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      /* ========================================
+       全局
+    ======================================== */
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, "Noto Sans JP", "Noto Sans SC", sans-serif;
+
+        padding: 24px;
+
+        background: #f3f6fa;
+
+        margin: 0;
+
+        color: #222;
+
+        font-size: 30px;
+
+        line-height: 1.6;
+      }
+
+      /* ========================================
+       顶部导航
+    ======================================== */
+
+      .top-nav {
+        margin-bottom: 20px;
+      }
+
+      .home-button {
+        width: 100%;
+
+        background: #455a64;
+
+        color: white;
+
+        font-size: 30px;
+
+        font-weight: bold;
+
+        padding: 18px;
+
+        border: 0;
+
+        border-radius: 14px;
+
+        cursor: pointer;
+
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .home-button:hover {
+        background: #37474f;
+      }
+
+      /* ========================================
+       卡片
+    ======================================== */
+
+      .card {
+        background: white;
+
+        padding: 28px;
+
+        border-radius: 18px;
+
+        margin-bottom: 20px;
+
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      /* ========================================
+       标题
+    ======================================== */
+
+      h2 {
+        margin-top: 0;
+
+        margin-bottom: 16px;
+
+        font-size: 42px;
+
+        line-height: 1.3;
+      }
+
+      h3 {
+        margin-top: 0;
+
+        margin-bottom: 18px;
+
+        font-size: 34px;
+
+        line-height: 1.3;
+      }
+
+      h4 {
+        font-size: 30px;
+
+        margin-top: 20px;
+
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 30px;
+
+        margin: 12px 0;
+      }
+
+      label {
+        display: block;
+
+        font-size: 30px;
+
+        font-weight: bold;
+
+        margin-bottom: 8px;
+      }
+
+      /* ========================================
+       数字
+    ======================================== */
+
+      .number {
+        font-size: 64px;
+
+        font-weight: bold;
+
+        color: #1976d2;
+      }
+
+      /* ========================================
+       Select
+    ======================================== */
+
+      select {
+        width: 100%;
+
+        padding: 18px;
+
+        margin-top: 8px;
+
+        border-radius: 12px;
+
+        border: 2px solid #ccc;
+
+        background: white;
+
+        font-size: 30px;
+
+        min-height: 68px;
+      }
+
+      select:focus {
+        outline: none;
+
+        border-color: #1976d2;
+      }
+
+      /* ========================================
+       按钮
+    ======================================== */
+
+      button {
+        width: 100%;
+
+        padding: 18px;
+
+        background: #1976d2;
+
+        color: white;
+
+        border: 0;
+
+        border-radius: 12px;
+
+        cursor: pointer;
+
+        margin-top: 14px;
+
+        font-size: 30px;
+
+        font-weight: bold;
+
+        min-height: 68px;
+
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      button:hover {
+        background: #1565c0;
+      }
+
+      button:active {
+        transform: scale(0.99);
+      }
+
+      /* ========================================
+       报名人员
+    ======================================== */
+
+      .member {
+        padding: 22px 0;
+
+        border-bottom: 2px solid #eeeeee;
+
+        font-size: 28px;
+      }
+
+      .member:last-child {
+        border-bottom: none;
+      }
+
+      .member strong {
+        font-size: 32px;
+      }
+
+      /* ========================================
+       详情按钮
+    ======================================== */
+
+      .detail-button {
+        background: #1976d2;
+      }
+
+      /* ========================================
+       删除按钮
+    ======================================== */
+
+      .cancel-button {
+        background: #d32f2f;
+      }
+
+      .cancel-button:hover {
+        background: #b71c1c;
+      }
+
+      /* ========================================
+       返回按钮
+    ======================================== */
+
+      .back-button {
+        background: #eeeeee;
+
+        color: #333;
+      }
+
+      .back-button:hover {
+        background: #dddddd;
+      }
+
+      /* ========================================
+       Detail
+    ======================================== */
+
+      .detail-item {
+        background: #f8f9fa;
+
+        padding: 18px;
+
+        border-radius: 12px;
+
+        margin-bottom: 12px;
+      }
+
+      .detail-label {
+        color: #777;
+
+        font-size: 24px;
+
+        margin-bottom: 6px;
+      }
+
+      .detail-value {
+        font-size: 30px;
+
+        font-weight: bold;
+
+        color: #222;
+
+        word-break: break-word;
+      }
+
+      /* ========================================
+       消息
+    ======================================== */
+
+      .success-message {
+        background: #e8f5e9;
+
+        border: 2px solid #81c784;
+
+        color: #1b5e20;
+
+        padding: 20px;
+
+        border-radius: 12px;
+
+        margin-bottom: 20px;
+
+        font-size: 28px;
+      }
+
+      .error-message {
+        background: #ffebee;
+
+        border: 2px solid #ef9a9a;
+
+        color: #b71c1c;
+
+        padding: 20px;
+
+        border-radius: 12px;
+
+        margin-bottom: 20px;
+
+        font-size: 28px;
+      }
+
+      /* ========================================
+       Loading
+    ======================================== */
+
+      .loading {
+        text-align: center;
+
+        color: #666;
+
+        padding: 30px;
+
+        font-size: 30px;
+      }
+
+      /* ========================================
+       分隔线
+    ======================================== */
+
+      hr {
+        border: 0;
+
+        border-top: 2px solid #eeeeee;
+
+        margin: 24px 0;
+      }
+
+      /* ========================================
+       统计数字
+    ======================================== */
+
+      .stat-row {
+        display: flex;
+
+        justify-content: space-between;
+
+        align-items: center;
+
+        background: #f8f9fa;
+
+        padding: 18px;
+
+        margin-bottom: 12px;
+
+        border-radius: 12px;
+      }
+
+      .stat-label {
+        font-size: 28px;
+      }
+
+      .stat-value {
+        font-size: 34px;
+
+        font-weight: bold;
+
+        color: #1976d2;
+      }
+
+      /* ========================================
+       过期活动区域
+    ======================================== */
+
+      .expired-card {
+        border-left: 8px solid #d32f2f;
+      }
+
+      .warning-text {
+        color: #b71c1c;
+
+        font-weight: bold;
+      }
+
+      /* ========================================
+       状态
+    ======================================== */
+
+      .status-confirmed {
+        color: #2e7d32;
+
+        font-weight: bold;
+      }
+
+      .status-waitlist {
+        color: #ef6c00;
+
+        font-weight: bold;
+      }
+
+      .status-cancelled {
+        color: #c62828;
+
+        font-weight: bold;
+      }
+
+      /* ========================================
+       手机适配
+    ======================================== */
+
+      @media (max-width: 600px) {
+        body {
+          padding: 14px;
+
+          font-size: 28px;
+        }
+
+        .card {
+          padding: 22px;
+
+          border-radius: 16px;
+        }
+
+        h2 {
+          font-size: 38px;
+        }
+
+        h3 {
+          font-size: 32px;
+        }
+
+        p {
+          font-size: 28px;
+        }
+
+        button,
+        select,
+        .home-button {
+          font-size: 28px;
+
+          padding: 18px;
+        }
+
+        .member {
+          font-size: 27px;
+        }
+
+        .member strong {
+          font-size: 30px;
+        }
+
+        .detail-value {
+          font-size: 28px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ========================================
+       返回首页
+  ======================================== -->
+
+    <div class="top-nav">
+      <button type="button" class="home-button" onclick="goHome()">
+        🏠 返回首页
+      </button>
+    </div>
+
+    <!-- ========================================
+       活动选择
+  ======================================== -->
+
+    <div class="card">
+      <h3>🏸 管理 Dashboard</h3>
+
+      <label for="activityID"> 活动 </label>
+
+      <select id="activityID">
+        <option value="">正在加载活动……</option>
+      </select>
+
+      <button type="button" onclick="loadDashboard()">🔄 刷新 Dashboard</button>
+    </div>
+
+    <!-- ========================================
+       消息
+  ======================================== -->
+
+    <div id="message"></div>
+
+    <!-- ========================================
+       活动资料
+  ======================================== -->
+
+    <div id="result">
+      <div class="card">
+        <div class="loading">正在加载……</div>
+      </div>
+    </div>
+
+    <!-- ========================================
+       报名名单
+  ======================================== -->
+
+    <div id="members"></div>
+
+    <!-- ========================================
+       报名详情
+  ======================================== -->
+
+    <div id="registrationDetail"></div>
+
+    <!-- ========================================
+       删除过期活动
+  ======================================== -->
+
+    <div id="expiredActivities"></div>
+
+    <script>
+      // ========================================
+      // 页面加载
+      // ========================================
+
+      window.onload = function () {
+        loadActivities();
+
+        loadExpiredActivities();
+      };
+
+      // ========================================
+      // 返回首页
+      // ========================================
+
+      function goHome() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            if (url) {
+              window.top.location.href = url;
+            } else {
+              alert("❌ 无法取得首页地址");
+            }
+          })
+
+          .withFailureHandler(function (error) {
+            alert("❌ 返回首页失败\n\n" + (error.message || error));
+          })
+
+          .getHomeUrl();
+      }
+
+      // ========================================
+      // 加载活动列表
+      // ========================================
+
+      function loadActivities() {
+        const select = document.getElementById("activityID");
+
+        select.innerHTML = `
+
+      <option value="">
+        ⏳ 正在加载活动……
+      </option>
+
+    `;
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            select.innerHTML = "";
+
+            if (!res || res.length === 0) {
+              select.innerHTML = `
+
+            <option value="">
+              暂无可管理活动
+            </option>
+
+          `;
+
+              document.getElementById("result").innerHTML = `
+
+            <div class="card">
+
+              <h3>
+                🏸 管理 Dashboard
+              </h3>
+
+              <p>
+                目前没有开放或暂停中的活动。
+              </p>
+
+            </div>
+
+          `;
+
+              return;
+            }
+
+            res.forEach(function (a) {
+              const option = document.createElement("option");
+
+              option.value = a.ActivityID;
+
+              option.text = a.Title + " · " + a.Date;
+
+              select.appendChild(option);
+            });
+
+            loadDashboard();
+          })
+
+          .withFailureHandler(function (error) {
+            document.getElementById("result").innerHTML = `
+
+          <div class="card error-message">
+
+            ❌ 加载活动失败
+
+            <br><br>
+
+            ${escapeHtml(error.message || error)}
+
+          </div>
+
+        `;
+          })
+
+          .getDashboardActivities();
+      }
+
+      // ========================================
+      // 加载 Dashboard
+      // ========================================
+
+      function loadDashboard() {
+        const id = document.getElementById("activityID").value;
+
+        if (!id) {
+          return;
+        }
+
+        clearMessage();
+
+        closeRegistrationDetail();
+
+        document.getElementById("result").innerHTML = `
+
+      <div class="card loading">
+
+        ⏳ 正在加载 Dashboard……
+
+      </div>
+
+    `;
+
+        document.getElementById("members").innerHTML = "";
+
+        google.script.run
+
+          .withSuccessHandler(showDashboard)
+
+          .withFailureHandler(function (error) {
+            document.getElementById("result").innerHTML = `
+
+          <div class="card error-message">
+
+            ❌ Dashboard 加载失败
+
+            <br><br>
+
+            ${escapeHtml(error.message || error)}
+
+          </div>
+
+        `;
+          })
+
+          .getDashboard(id);
+
+        loadMembers(id);
+      }
+
+      // ========================================
+      // 显示 Dashboard
+      // ========================================
+
+      function showDashboard(res) {
+        console.log("Dashboard:", res);
+
+        if (!res || !res.success) {
+          document.getElementById("result").innerHTML = `
+
+        <div class="card error-message">
+
+          ❌ 无法读取活动资料
+
+        </div>
+
+      `;
+
+          return;
+        }
+
+        const a = res.activity || {};
+
+        const s = res.summary || {};
+
+        const payment = s.payment || {};
+
+        document.getElementById("result").innerHTML = `
+
+      <!-- 活动资料 -->
+
+      <div class="card">
+
+        <h2>
+          🏸
+          ${escapeHtml(a.Title || "-")}
+        </h2>
+
+
+        <p>
+          📅
+          <strong>
+            ${escapeHtml(a.Date || "-")}
+          </strong>
+        </p>
+
+
+        <p>
+          🕐
+          <strong>
+
+            ${escapeHtml(a.StartTime || "-")}
+
+            -
+
+            ${escapeHtml(a.EndTime || "-")}
+
+          </strong>
+        </p>
+
+
+        <p>
+          📍
+          <strong>
+            ${escapeHtml(a.VenueName || "-")}
+          </strong>
+        </p>
+
+
+        <p>
+          🏸
+          <strong>
+            ${Number(a.CourtCount || 0)}
+          </strong>
+          片球场
+        </p>
+
+
+        <p>
+          👥 报名人数：
+
+          <strong
+            style="
+              color:#1976d2;
+              font-size:36px;
+            ">
+
+            ${Number(s.total || 0)}
+
+          </strong>
+
+          /
+
+          ${Number(a.Capacity || 0)}
+
+        </p>
+
+
+        <p>
+          💴 活动费用：
+
+          <strong>
+            ¥${Number(a.Fee || 0)}
+          </strong>
+
+        </p>
+
+
+        <p>
+          📊 活动状态：
+
+          <strong>
+            ${escapeHtml(a.Status || "-")}
+          </strong>
+
+        </p>
+
+      </div>
+
+
+      <!-- 签到统计 -->
+
+      <div class="card">
+
+        <h3>
+          📋 签到情况
+        </h3>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            ✅ 已签到
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(s.checkedIn || 0)}
+
+          </span>
+
+        </div>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            ❌ 未签到
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(s.notCheckedIn || 0)}
+
+          </span>
+
+        </div>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            📊 签到率
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(s.checkinRate || 0)}%
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- 付款统计 -->
+
+      <div class="card">
+
+        <h3>
+          💰 付款统计
+        </h3>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            💵 CASH
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(payment.CASH || 0)}
+
+          </span>
+
+        </div>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            💳 PAYPAY
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(payment.PAYPAY || 0)}
+
+          </span>
+
+        </div>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            🆓 FREE
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(payment.FREE || 0)}
+
+          </span>
+
+        </div>
+
+
+        <div class="stat-row">
+
+          <span class="stat-label">
+            ❌ 未付款
+          </span>
+
+          <span class="stat-value">
+
+            ${Number(payment.UNPAID || 0)}
+
+          </span>
+
+        </div>
+
+      </div>
+
+    `;
+      }
+
+      // ========================================
+      // 加载报名名单
+      // ========================================
+
+      function loadMembers(activityID) {
+        google.script.run
+
+          .withSuccessHandler(showMembers)
+
+          .withFailureHandler(function (error) {
+            document.getElementById("members").innerHTML = `
+
+          <div class="card error-message">
+
+            ❌ 报名名单加载失败
+
+            <br><br>
+
+            ${escapeHtml(error.message || error)}
+
+          </div>
+
+        `;
+          })
+
+          .getDashboardMembers(activityID);
+      }
+
+      // ========================================
+      // 显示报名名单
+      // ========================================
+
+      function showMembers(list) {
+        let html = `
+
+      <div class="card">
+
+        <h3>
+          👥 报名名单
+        </h3>
+
+    `;
+
+        if (!list || list.length === 0) {
+          html += `
+
+        <p>
+          暂无报名人员
+        </p>
+
+      `;
+        } else {
+          list.forEach(function (m, index) {
+            const checkedIn = m.CheckedIn === true;
+
+            const status = checkedIn ? "✅ 已签到" : "❌ 未签到";
+
+            const statusClass = checkedIn ? "status-confirmed" : "";
+
+            html += `
+
+          <div class="member">
+
+            <strong>
+
+              ${index + 1}.
+              ${escapeHtml(m.Name || "-")}
+
+            </strong>
+
+            <br>
+
+            <span>
+              🏸 等级：
+              ${escapeHtml(m.Level || "-")}
+            </span>
+
+            <br>
+
+            <span
+              class="${statusClass}">
+
+              ${status}
+
+            </span>
+
+            <br>
+
+            <span>
+              💰 付款：
+              ${escapeHtml(m.Payment || "UNPAID")}
+            </span>
+
+            <br>
+
+            <button
+              type="button"
+              class="detail-button"
+              onclick="openRegistrationDetail('${escapeJs(m.RegistrationID)}')">
+
+              🔎 查看详情
+
+            </button>
+
+          </div>
+
+        `;
+          });
+        }
+
+        html += `
+
+      </div>
+
+    `;
+
+        document.getElementById("members").innerHTML = html;
+      }
+
+      // ========================================
+      // 查看报名详情
+      // ========================================
+
+      function openRegistrationDetail(registrationID) {
+        if (!registrationID) {
+          showMessage("❌ 没有找到报名编号", "error");
+
+          return;
+        }
+
+        const box = document.getElementById("registrationDetail");
+
+        box.innerHTML = `
+
+      <div class="card">
+
+        <div class="loading">
+
+          ⏳ 正在读取报名详情……
+
+        </div>
+
+      </div>
+
+    `;
+
+        box.scrollIntoView({
+          behavior: "smooth",
+        });
+
+        google.script.run
+
+          .withSuccessHandler(showRegistrationDetail)
+
+          .withFailureHandler(function (error) {
+            box.innerHTML = `
+
+          <div class="card error-message">
+
+            ❌ 报名详情读取失败
+
+            <br><br>
+
+            ${escapeHtml(error.message || error)}
+
+          </div>
+
+        `;
+          })
+
+          .getRegistrationDetail(registrationID);
+      }
+
+      // ========================================
+      // 显示报名详情
+      // ========================================
+
+      function showRegistrationDetail(res) {
+        const box = document.getElementById("registrationDetail");
+
+        if (!res || !res.success) {
+          box.innerHTML = `
+
+        <div class="card error-message">
+
+          ❌
+
+          ${escapeHtml(res && res.message ? res.message : "无法读取报名详情")}
+
+        </div>
+
+      `;
+
+          return;
+        }
+
+        const r = res.Registration || {};
+
+        const a = res.Activity || {};
+
+        const v = res.Venue || {};
+
+        const canCancel = r.Status === "CONFIRMED" || r.Status === "WAITLIST";
+
+        box.innerHTML = `
+
+      <div class="card">
+
+        <h3>
+          📋 报名详情
+        </h3>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            报名编号
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.RegistrationID || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            姓名
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.Name || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            活动
+          </div>
+
+          <div class="detail-value">
+
+            🏸
+            ${escapeHtml(a.Title || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            日期
+          </div>
+
+          <div class="detail-value">
+
+            📅
+            ${escapeHtml(a.Date || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            时间
+          </div>
+
+          <div class="detail-value">
+
+            🕐
+
+            ${escapeHtml(a.StartTime || "-")}
+
+            -
+
+            ${escapeHtml(a.EndTime || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            场地
+          </div>
+
+          <div class="detail-value">
+
+            📍
+            ${escapeHtml(v.Name || v.VenueName || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            等级
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.Level || "-")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            联系方式
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.ContactType || "-")}
+
+            ${r.ContactValue ? " · " + escapeHtml(r.ContactValue) : ""}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            停车
+          </div>
+
+          <div class="detail-value">
+
+            ${r.Parking ? "🚗 需要停车" : "不需要停车"}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            报名状态
+          </div>
+
+          <div class="detail-value">
+
+            ${statusText(r.Status)}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            活动费用
+          </div>
+
+          <div class="detail-value">
+
+            💴 ¥${Number(r.Fee || 0)}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            付款状态
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.PaymentStatus || "UNPAID")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            签到状态
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.CheckinStatus || "未签到")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            留言
+          </div>
+
+          <div class="detail-value">
+
+            ${escapeHtml(r.Message || "无")}
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-item">
+
+          <div class="detail-label">
+            报名时间
+          </div>
+
+          <div class="detail-value">
+
+            ${formatDateTime(r.CreatedAt)}
+
+          </div>
+
+        </div>
+
+
+        ${
+          canCancel
+            ? `
+
+              <button
+                type="button"
+                class="cancel-button"
+                onclick="confirmCancel(
+                  '${escapeJs(r.RegistrationID)}',
+                  '${escapeJs(r.Name)}'
+                )">
+
+                ❌ 取消报名
+
+              </button>
+
+            `
+            : `
+
+              <div class="detail-item">
+
+                <div class="detail-label">
+                  当前状态
+                </div>
+
+                <div class="detail-value">
+
+                  此报名无法取消
+
+                </div>
+
+              </div>
+
+            `
+        }
+
+
+        <button
+          type="button"
+          class="back-button"
+          onclick="closeRegistrationDetail()">
+
+          ← 返回报名名单
+
+        </button>
+
+
+      </div>
+
+    `;
+
+        box.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+
+      // ========================================
+      // 取消报名
+      // ========================================
+
+      function confirmCancel(registrationID, name) {
+        const confirmed = window.confirm(
+          "确定要取消「" +
+            name +
+            "」的报名吗？\n\n" +
+            "取消后，如果有候补人员，" +
+            "系统会自动补位。",
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        const box = document.getElementById("registrationDetail");
+
+        box.innerHTML = `
+
+      <div class="card">
+
+        <div class="loading">
+
+          ⏳ 正在取消报名……
+
+        </div>
+
+      </div>
+
+    `;
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              box.innerHTML = `
+
+              <div class="card error-message">
+
+                ❌
+
+                ${escapeHtml(res && res.message ? res.message : "取消报名失败")}
+
+              </div>
+
+            `;
+
+              return;
+            }
+
+            let message = "✅ 报名取消成功";
+
+            if (res.promoted && res.promoted.registrationID) {
+              message += "<br><br>" + "🎉 候补人员已自动补位" + "为正式报名";
+            }
+
+            showMessage(message, "success");
+
+            closeRegistrationDetail();
+
+            loadDashboard();
+          })
+
+          .withFailureHandler(function (error) {
+            box.innerHTML = `
+
+            <div class="card error-message">
+
+              ❌ 取消报名失败
+
+              <br><br>
+
+              ${escapeHtml(error.message || error)}
+
+            </div>
+
+          `;
+          })
+
+          .cancelRegistration(registrationID);
+      }
+
+      // ========================================
+      // 关闭报名详情
+      // ========================================
+
+      function closeRegistrationDetail() {
+        document.getElementById("registrationDetail").innerHTML = "";
+      }
+
+      // ========================================
+      // 获取过期活动
+      // ========================================
+
+      function loadExpiredActivities() {
+        const box = document.getElementById("expiredActivities");
+
+        box.innerHTML = `
+
+      <div class="card loading">
+
+        ⏳ 正在检查过期活动……
+
+      </div>
+
+    `;
+
+        google.script.run
+
+          .withSuccessHandler(showExpiredActivities)
+
+          .withFailureHandler(function (error) {
+            box.innerHTML = `
+
+            <div class="card error-message">
+
+              ❌ 读取过期活动失败
+
+              <br><br>
+
+              ${escapeHtml(error.message || error)}
+
+            </div>
+
+          `;
+          })
+
+          .getExpiredActivities();
+      }
+
+      // ========================================
+      // 显示过期活动
+      // ========================================
+
+      function showExpiredActivities(list) {
+        const box = document.getElementById("expiredActivities");
+
+        if (!list || list.length === 0) {
+          box.innerHTML = `
+
+        <div class="card">
+
+          <h3>
+            🗑️ 过期活动
+          </h3>
+
+          <p>
+            ✅ 目前没有可以删除的过期活动。
+          </p>
+
+        </div>
+
+      `;
+
+          return;
+        }
+
+        let html = `
+
+      <div class="card expired-card">
+
+        <h3>
+          🗑️ 删除过期活动
+        </h3>
+
+        <p>
+          以下活动已经结束，可以手动删除。
+        </p>
+
+
+        <div class="error-message">
+
+          <strong>
+            ⚠️ 重要提醒
+          </strong>
+
+          <br><br>
+
+          删除活动后，该活动的：
+
+          <br>
+          • 活动记录
+
+          <br>
+          • 所有报名记录
+
+          <br>
+          • 所有签到记录
+
+          <br>
+          • 所有付款记录
+
+          <br><br>
+
+          都会被永久删除。
+
+          <br><br>
+
+          <strong>
+            此操作无法恢复。
+          </strong>
+
+        </div>
+
+    `;
+
+        list.forEach(function (activity) {
+          html += `
+
+        <div class="member">
+
+          <strong>
+
+            🏸
+            ${escapeHtml(activity.Title || "-")}
+
+          </strong>
+
+          <br><br>
+
+          <span>
+
+            📅
+            ${escapeHtml(activity.Date || "-")}
+
+          </span>
+
+          <br>
+
+          <span>
+
+            🕐
+
+            ${escapeHtml(activity.StartTime || "-")}
+
+            -
+
+            ${escapeHtml(activity.EndTime || "-")}
+
+          </span>
+
+
+          <button
+            type="button"
+            class="cancel-button"
+            onclick="previewDeleteExpiredActivity('${escapeJs(
+              activity.ActivityID,
+            )}')">
+
+            🗑️ 删除这个活动
+
+          </button>
+
+        </div>
+
+      `;
+        });
+
+        html += `
+
+      </div>
+
+    `;
+
+        box.innerHTML = html;
+      }
+
+      // ========================================
+      // 删除前预览
+      // ========================================
+
+      function previewDeleteExpiredActivity(activityID) {
+        if (!activityID) {
+          alert("❌ 没有找到 ActivityID");
+
+          return;
+        }
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              alert(
+                "❌ " + (res && res.message ? res.message : "无法读取活动资料"),
+              );
+
+              return;
+            }
+
+            const a = res.activity || {};
+
+            const message =
+              "确定要删除这个活动吗？\n\n" +
+              "🏸 " +
+              (a.Title || "-") +
+              "\n" +
+              "📅 " +
+              (a.Date || "-") +
+              "\n" +
+              "🕐 " +
+              (a.StartTime || "-") +
+              " - " +
+              (a.EndTime || "-") +
+              "\n\n" +
+              "📋 报名记录：" +
+              Number(res.registrationCount || 0) +
+              " 条\n" +
+              "✅ 签到记录：" +
+              Number(res.checkinCount || 0) +
+              " 条\n\n" +
+              "⚠️ 删除后无法恢复。\n" +
+              "活动、报名、签到和付款记录" +
+              "都会被删除。\n\n" +
+              "确定继续吗？";
+
+            const confirmed = window.confirm(message);
+
+            if (!confirmed) {
+              return;
+            }
+
+            deleteExpiredActivityFromDashboard(activityID);
+          })
+
+          .withFailureHandler(function (error) {
+            alert("❌ 获取删除信息失败\n\n" + (error.message || error));
+          })
+
+          .getExpiredActivityPreview(activityID);
+      }
+
+      // ========================================
+      // 执行删除过期活动
+      // ========================================
+
+      function deleteExpiredActivityFromDashboard(activityID) {
+        const box = document.getElementById("expiredActivities");
+
+        box.innerHTML = `
+
+      <div class="card">
+
+        <div class="loading">
+
+          ⏳ 正在删除活动……
+
+        </div>
+
+      </div>
+
+    `;
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              alert(
+                "❌ " + (res && res.message ? res.message : "删除活动失败"),
+              );
+
+              loadExpiredActivities();
+
+              return;
+            }
+
+            showMessage(
+              "✅ 活动删除成功：" +
+                escapeHtml(res.Title || res.ActivityID) +
+                "<br><br>" +
+                "删除报名记录：" +
+                Number(res.deletedRegistrations || 0) +
+                "<br>" +
+                "删除签到记录：" +
+                Number(res.deletedCheckins || 0),
+
+              "success",
+            );
+
+            /*
+             * 重新加载活动列表
+             */
+
+            loadActivities();
+
+            /*
+             * 重新检查过期活动
+             */
+
+            loadExpiredActivities();
+
+            /*
+             * 清空当前 Dashboard
+             */
+
+            document.getElementById("result").innerHTML = "";
+
+            document.getElementById("members").innerHTML = "";
+
+            closeRegistrationDetail();
+          })
+
+          .withFailureHandler(function (error) {
+            alert("❌ 删除活动失败\n\n" + (error.message || error));
+
+            loadExpiredActivities();
+          })
+
+          .deleteExpiredActivity(activityID);
+      }
+
+      // ========================================
+      // 显示消息
+      // ========================================
+
+      function showMessage(message, type) {
+        const box = document.getElementById("message");
+
+        box.innerHTML = `
+
+      <div class="${type === "success" ? "success-message" : "error-message"}">
+
+        ${message}
+
+      </div>
+
+    `;
+
+        box.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      // ========================================
+      // 清除消息
+      // ========================================
+
+      function clearMessage() {
+        document.getElementById("message").innerHTML = "";
+      }
+
+      // ========================================
+      // 状态显示
+      // ========================================
+
+      function statusText(status) {
+        switch (String(status || "").toUpperCase()) {
+          case "CONFIRMED":
+            return `
+          <span class="status-confirmed">
+            ✅ 已确认
+          </span>
+        `;
+
+          case "WAITLIST":
+            return `
+          <span class="status-waitlist">
+            ⏳ 候补
+          </span>
+        `;
+
+          case "CANCELLED":
+            return `
+          <span class="status-cancelled">
+            ❌ 已取消
+          </span>
+        `;
+
+          default:
+            return escapeHtml(status || "-");
+        }
+      }
+
+      // ========================================
+      // 日期时间
+      // ========================================
+
+      function formatDateTime(value) {
+        if (!value) {
+          return "-";
+        }
+
+        try {
+          const d = new Date(value);
+
+          if (isNaN(d.getTime())) {
+            return escapeHtml(String(value));
+          }
+
+          return d.toLocaleString("zh-CN");
+        } catch (e) {
+          return escapeHtml(String(value));
+        }
+      }
+
+      // ========================================
+      // HTML 安全处理
+      // ========================================
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+
+      // ========================================
+      // JavaScript 字符串安全处理
+      // ========================================
+
+      function escapeJs(value) {
+        return String(value == null ? "" : value)
+          .replace(/\\/g, "\\\\")
+
+          .replace(/'/g, "\\'")
+
+          .replace(/"/g, '\\"')
+
+          .replace(/\r/g, "\\r")
+
+          .replace(/\n/g, "\\n");
+      }
+    </script>
+  </body>
+</html>

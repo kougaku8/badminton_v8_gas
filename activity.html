@@ -1,0 +1,2548 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
+    <title>活动详情</title>
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        width: 100%;
+        min-width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #f3f7fb;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        width: 100%;
+        min-width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+
+        margin: 0;
+        padding: 0;
+
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Noto Sans SC",
+          "Microsoft YaHei", "Noto Sans JP", sans-serif;
+
+        color: #263238;
+
+        background: linear-gradient(
+          180deg,
+          #eef6ff 0,
+          #f5f8fb 300px,
+          #f5f8fb 100%
+        );
+
+        overflow-x: hidden;
+
+        padding-bottom: calc(110px + env(safe-area-inset-bottom));
+      }
+
+      .page {
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* =====================================================
+       Hero
+    ===================================================== */
+
+      .hero {
+        position: relative;
+        width: 100%;
+
+        padding: calc(16px + env(safe-area-inset-top)) 20px 38px;
+
+        color: white;
+
+        background: linear-gradient(
+          135deg,
+          #0757a8 0%,
+          #1976d2 45%,
+          #42a5f5 100%
+        );
+
+        border-radius: 0 0 30px 30px;
+
+        box-shadow: 0 9px 26px rgba(25, 118, 210, 0.22);
+
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+
+        position: absolute;
+        right: -65px;
+        top: -80px;
+
+        width: 200px;
+        height: 200px;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.09);
+
+        pointer-events: none;
+      }
+
+      .hero::before {
+        content: "";
+
+        position: absolute;
+        left: -75px;
+        bottom: -105px;
+
+        width: 190px;
+        height: 190px;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.06);
+
+        pointer-events: none;
+      }
+
+      .top-back {
+        position: relative;
+        z-index: 5;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-height: 58px;
+
+        padding: 9px 23px;
+
+        margin: 0 0 25px;
+
+        border: 1px solid rgba(255, 255, 255, 0.25);
+
+        border-radius: 32px;
+
+        background: rgba(255, 255, 255, 0.16);
+
+        color: white;
+
+        font-size: 28px;
+        line-height: 1.2;
+        font-weight: 800;
+
+        text-decoration: none;
+
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        cursor: pointer;
+
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .top-back:active {
+        transform: scale(0.97);
+        background: rgba(255, 255, 255, 0.28);
+      }
+
+      .hero-label {
+        position: relative;
+        z-index: 2;
+
+        margin-bottom: 6px;
+
+        font-size: 32px;
+        line-height: 1.4;
+      }
+
+      .hero-title {
+        position: relative;
+        z-index: 2;
+
+        margin: 0;
+
+        color: white;
+
+        font-size: clamp(42px, 11vw, 62px);
+
+        line-height: 1.3;
+
+        font-weight: 800;
+
+        letter-spacing: 0.3px;
+
+        word-break: break-word;
+      }
+
+      .hero-subtitle {
+        position: relative;
+        z-index: 2;
+
+        margin: 12px 0 0;
+
+        color: rgba(255, 255, 255, 0.88);
+
+        font-size: 25px;
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+       内容
+    ===================================================== */
+
+      .content {
+        width: 100%;
+
+        padding: 16px 9px 30px;
+      }
+
+      .card {
+        width: 100%;
+
+        margin: 0 0 17px;
+
+        padding: 25px;
+
+        background: white;
+
+        border: 1px solid rgba(0, 0, 0, 0.035);
+
+        border-radius: 23px;
+
+        box-shadow: 0 4px 17px rgba(38, 50, 56, 0.07);
+      }
+
+      /* =====================================================
+       活动资料
+    ===================================================== */
+
+      .info-grid {
+        display: grid;
+
+        grid-template-columns:
+          1fr
+          1fr;
+
+        gap: 13px;
+      }
+
+      .info-item {
+        min-width: 0;
+
+        padding: 20px 16px;
+
+        background: linear-gradient(145deg, #f5f9ff, #fbfdff);
+
+        border: 1px solid #e8f0f8;
+
+        border-radius: 19px;
+      }
+
+      .info-icon {
+        margin-bottom: 7px;
+        font-size: 38px;
+        line-height: 1.2;
+      }
+
+      .info-label {
+        color: #8996a3;
+        font-size: 21px;
+        line-height: 1.4;
+      }
+
+      .info-value {
+        margin-top: 6px;
+
+        color: #263238;
+
+        font-size: 31px;
+        line-height: 1.45;
+
+        font-weight: 800;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+       人数
+    ===================================================== */
+
+      .count-card {
+        background: linear-gradient(135deg, #edf7ff, #ffffff);
+
+        border: 1px solid #dceeff;
+      }
+
+      .count-header {
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 12px;
+
+        margin-bottom: 17px;
+      }
+
+      .count-title {
+        color: #54616b;
+        font-size: 28px;
+        font-weight: 800;
+      }
+
+      .count-number {
+        color: #1976d2;
+        font-size: 52px;
+        font-weight: 800;
+      }
+
+      .count-total {
+        color: #54616b;
+        font-size: 29px;
+        font-weight: 700;
+      }
+
+      .count-bar {
+        width: 100%;
+        height: 17px;
+
+        overflow: hidden;
+
+        background: #e4edf5;
+
+        border-radius: 20px;
+      }
+
+      .count-progress {
+        height: 100%;
+        min-width: 0;
+
+        border-radius: 20px;
+
+        background: linear-gradient(90deg, #1976d2, #42a5f5);
+
+        transition: width 0.35s ease;
+      }
+
+      .count-remaining {
+        margin-top: 13px;
+
+        color: #78848e;
+
+        font-size: 25px;
+        line-height: 1.5;
+      }
+
+      .count-remaining strong {
+        color: #1976d2;
+        font-size: 30px;
+      }
+
+      /* =====================================================
+       Section
+    ===================================================== */
+
+      .section-heading {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin: 0 0 10px;
+
+        padding: 0;
+
+        color: #263238;
+
+        font-size: 32px;
+        line-height: 1.4;
+
+        font-weight: 800;
+
+        text-align: left;
+      }
+
+      /* =====================================================
+       活动说明
+       
+       重点修改：
+       1. 不再给标题和内容制造额外空间
+       2. 内容从左边开始
+       3. 不允许 Description 自带的前导空格制造巨大空白
+    ===================================================== */
+
+      .description {
+        margin: 0;
+
+        padding: 0;
+
+        border-top: 0;
+
+        color: #59666f;
+
+        font-size: 27px;
+
+        line-height: 1.7;
+
+        text-align: left;
+
+        white-space: pre-line;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+       报名人员
+    ===================================================== */
+
+      .participants-card {
+        padding-bottom: 8px;
+        overflow: hidden;
+      }
+
+      .participant-count {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-width: 44px;
+        height: 44px;
+
+        margin-left: 4px;
+
+        padding: 0 11px;
+
+        color: #1976d2;
+
+        background: #eaf4ff;
+
+        border-radius: 22px;
+
+        font-size: 23px;
+        font-weight: 800;
+      }
+
+      .participants-table-wrap {
+        width: 100%;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .participant-row {
+        display: grid;
+
+        grid-template-columns:
+          55px
+          minmax(150px, 1.2fr)
+          minmax(90px, 0.7fr)
+          minmax(145px, 0.9fr)
+          minmax(180px, 2fr);
+
+        align-items: center;
+
+        gap: 14px;
+
+        width: 100%;
+
+        min-height: 76px;
+
+        padding: 14px 5px;
+
+        border-bottom: 1px solid #e5ebef;
+
+        white-space: nowrap;
+      }
+
+      .participant-row:last-child {
+        border-bottom: 0;
+      }
+
+      .participant-number {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 48px;
+        height: 48px;
+
+        color: #1976d2;
+
+        background: linear-gradient(135deg, #e8f4ff, #f4faff);
+
+        border: 1px solid #d7ebfb;
+
+        border-radius: 50%;
+
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .participant-name {
+        min-width: 0;
+
+        overflow: hidden;
+
+        color: #263238;
+
+        font-size: 30px;
+
+        line-height: 1.35;
+
+        font-weight: 800;
+
+        text-overflow: ellipsis;
+      }
+
+      .participant-level {
+        min-width: 0;
+
+        color: #53616b;
+
+        font-size: 27px;
+
+        line-height: 1.4;
+
+        font-weight: 700;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+      }
+
+      .participant-level::before {
+        content: "Level ";
+
+        color: #607d8b;
+
+        font-size: 21px;
+
+        font-weight: 700;
+      }
+
+      .participant-status {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: max-content;
+
+        max-width: 100%;
+
+        padding: 8px 14px;
+
+        border-radius: 22px;
+
+        font-size: 21px;
+
+        line-height: 1.3;
+
+        font-weight: 800;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+      }
+
+      .status-confirmed {
+        color: #16803c;
+
+        background: #e9f8ef;
+
+        border: 1px solid #ccefd9;
+      }
+
+      .status-waiting {
+        color: #b26a00;
+
+        background: #fff5df;
+
+        border: 1px solid #f6dfad;
+      }
+
+      .status-cancelled {
+        color: #c62828;
+
+        background: #ffebeb;
+
+        border: 1px solid #ffd1d1;
+      }
+
+      .status-default {
+        color: #54616b;
+
+        background: #f1f4f6;
+
+        border: 1px solid #e2e7ea;
+      }
+
+      .participant-message {
+        min-width: 0;
+
+        overflow: hidden;
+
+        color: #5d6870;
+
+        font-size: 25px;
+
+        line-height: 1.4;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        text-overflow: ellipsis;
+      }
+
+      .participant-message::before {
+        content: "💬 ";
+
+        font-size: 22px;
+      }
+
+      .participant-header {
+        display: grid;
+
+        grid-template-columns:
+          55px
+          minmax(150px, 1.2fr)
+          minmax(90px, 0.7fr)
+          minmax(145px, 0.9fr)
+          minmax(180px, 2fr);
+
+        align-items: center;
+
+        gap: 14px;
+
+        width: 100%;
+
+        min-height: 62px;
+
+        padding: 10px 5px;
+
+        color: #71808a;
+
+        background: #f6f9fc;
+
+        border-radius: 13px;
+
+        font-size: 22px;
+
+        font-weight: 800;
+
+        white-space: nowrap;
+      }
+
+      .participant-header .header-name {
+        font-size: 23px;
+      }
+
+      .participant-header .header-level {
+        font-size: 22px;
+      }
+
+      .participant-header .header-status {
+        font-size: 22px;
+      }
+
+      .participant-header .header-message {
+        font-size: 22px;
+      }
+
+      .empty-participant {
+        padding: 40px 10px;
+
+        color: #9aa4ab;
+
+        text-align: center;
+
+        font-size: 25px;
+      }
+
+      .empty-icon {
+        margin-bottom: 10px;
+        font-size: 42px;
+      }
+
+      /* =====================================================
+       场地
+    ===================================================== */
+
+      .venue-name {
+        color: #1976d2;
+
+        font-size: 31px;
+        line-height: 1.5;
+
+        font-weight: 800;
+      }
+
+      .venue-detail {
+        margin-top: 13px;
+
+        color: #687680;
+
+        font-size: 25px;
+        line-height: 1.7;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+       Loading
+    ===================================================== */
+
+      .loading {
+        padding: 75px 20px;
+
+        color: #7c878f;
+
+        text-align: center;
+
+        font-size: 27px;
+
+        line-height: 1.7;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+
+        width: 44px;
+        height: 44px;
+
+        margin-bottom: 17px;
+
+        border: 5px solid #dce9f5;
+
+        border-top-color: #1976d2;
+
+        border-radius: 50%;
+
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* =====================================================
+       Error
+    ===================================================== */
+
+      .error {
+        color: #d32f2f;
+
+        font-size: 25px;
+
+        line-height: 1.7;
+
+        word-break: break-word;
+      }
+
+      .error-title {
+        margin-bottom: 14px;
+
+        color: #c62828;
+
+        font-size: 34px;
+
+        font-weight: 800;
+      }
+
+      .activity-id {
+        margin-top: 14px;
+
+        color: #8b959c;
+
+        font-size: 20px;
+
+        word-break: break-all;
+      }
+
+      /* =====================================================
+       底部报名
+    ===================================================== */
+
+      #registerArea {
+        position: fixed;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        z-index: 9999;
+
+        width: 100%;
+
+        padding: 11px 10px calc(11px + env(safe-area-inset-bottom));
+
+        background: rgba(255, 255, 255, 0.96);
+
+        border-top: 1px solid rgba(0, 0, 0, 0.07);
+
+        box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+
+      .register-btn {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 100%;
+
+        min-height: 76px;
+
+        padding: 14px 18px;
+
+        border: 0;
+
+        border-radius: 19px;
+
+        background: linear-gradient(135deg, #1266c5, #42a5f5);
+
+        color: white;
+
+        font-size: 31px;
+
+        font-weight: 800;
+
+        letter-spacing: 0.5px;
+
+        text-decoration: none;
+
+        box-shadow: 0 6px 16px rgba(25, 118, 210, 0.27);
+
+        cursor: pointer;
+
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .register-btn:active {
+        transform: scale(0.985);
+        opacity: 0.9;
+      }
+
+      /* =====================================================
+       手机
+    ===================================================== */
+
+      @media (max-width: 600px) {
+        .hero {
+          padding: calc(13px + env(safe-area-inset-top)) 15px 32px;
+
+          border-radius: 0 0 25px 25px;
+        }
+
+        .top-back {
+          min-height: 53px;
+
+          margin-bottom: 22px;
+
+          padding: 8px 19px;
+
+          font-size: 25px;
+        }
+
+        .hero-label {
+          font-size: 29px;
+        }
+
+        .hero-title {
+          font-size: clamp(39px, 11vw, 55px);
+        }
+
+        .hero-subtitle {
+          font-size: 22px;
+        }
+
+        .content {
+          padding: 11px 7px 25px;
+        }
+
+        .card {
+          padding: 20px;
+          border-radius: 20px;
+        }
+
+        .info-item {
+          padding: 17px 13px;
+
+          border-radius: 17px;
+        }
+
+        .info-icon {
+          font-size: 34px;
+        }
+
+        .info-label {
+          font-size: 19px;
+        }
+
+        .info-value {
+          font-size: 27px;
+        }
+
+        .count-title {
+          font-size: 24px;
+        }
+
+        .count-number {
+          font-size: 46px;
+        }
+
+        .count-total {
+          font-size: 25px;
+        }
+
+        .count-remaining {
+          font-size: 22px;
+        }
+
+        .count-remaining strong {
+          font-size: 27px;
+        }
+
+        .section-heading {
+          font-size: 27px;
+          margin-bottom: 0px;
+        }
+
+        .description {
+          font-size: 32px;
+          line-height: 1.7;
+        }
+
+        .venue-name {
+          font-size: 32px;
+        }
+
+        .venue-detail {
+          font-size: 38px;
+        }
+
+        /* 手机报名表 */
+
+        .participants-table-wrap {
+          margin-left: -5px;
+          margin-right: -5px;
+
+          width: calc(100% + 10px);
+        }
+
+        .participant-header,
+        .participant-row {
+          grid-template-columns:
+            48px
+            145px
+            105px
+            145px
+            210px;
+
+          width: 810px;
+
+          gap: 12px;
+        }
+
+        .participant-header {
+          min-height: 58px;
+
+          font-size: 19px;
+        }
+
+        .participant-header .header-name {
+          font-size: 20px;
+        }
+
+        .participant-header .header-level {
+          font-size: 20px;
+        }
+
+        .participant-header .header-status {
+          font-size: 20px;
+        }
+
+        .participant-header .header-message {
+          font-size: 20px;
+        }
+
+        .participant-row {
+          min-height: 72px;
+
+          padding: 13px 5px;
+        }
+
+        .participant-number {
+          width: 42px;
+          height: 42px;
+
+          font-size: 19px;
+        }
+
+        .participant-name {
+          font-size: 27px;
+        }
+
+        .participant-level {
+          font-size: 25px;
+        }
+
+        .participant-level::before {
+          font-size: 18px;
+        }
+
+        .participant-status {
+          font-size: 19px;
+
+          padding: 7px 12px;
+        }
+
+        .participant-message {
+          font-size: 23px;
+        }
+
+        .participant-message::before {
+          font-size: 20px;
+        }
+
+        .empty-participant {
+          font-size: 22px;
+        }
+
+        .register-btn {
+          min-height: 72px;
+          font-size: 28px;
+        }
+      }
+
+      /* =====================================================
+       超小屏幕
+    ===================================================== */
+
+      @media (max-width: 380px) {
+        .hero-title {
+          font-size: 37px;
+        }
+
+        .info-grid {
+          gap: 8px;
+        }
+
+        .info-item {
+          padding: 14px 10px;
+        }
+
+        .info-value {
+          font-size: 23px;
+        }
+
+        .info-label {
+          font-size: 17px;
+        }
+
+        .count-number {
+          font-size: 42px;
+        }
+
+        .participant-header,
+        .participant-row {
+          grid-template-columns:
+            44px
+            135px
+            100px
+            140px
+            200px;
+
+          width: 760px;
+
+          gap: 10px;
+        }
+
+        .participant-name {
+          font-size: 25px;
+        }
+
+        .participant-level {
+          font-size: 23px;
+        }
+
+        .participant-status {
+          font-size: 18px;
+        }
+
+        .participant-message {
+          font-size: 21px;
+        }
+
+        .register-btn {
+          font-size: 26px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =====================================================
+       Hero
+  ====================================================== -->
+
+      <div class="hero">
+        <a
+          class="top-back"
+          id="backButton"
+          href="<?= ScriptApp.getService().getUrl() ?>?page=index"
+          target="_top"
+        >
+          ← 返回
+        </a>
+
+        <div class="hero-label">🏸</div>
+
+        <h1 id="heroTitle" class="hero-title">活动详情</h1>
+
+        <p id="heroSubtitle" class="hero-subtitle">羽球活动</p>
+      </div>
+
+      <!-- =====================================================
+       内容
+  ====================================================== -->
+
+      <div class="content">
+        <div id="result">
+          <div class="card loading">
+            <div class="loading-spinner"></div>
+
+            <div id="loadingText">正在加载活动……</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+       固定报名
+  ====================================================== -->
+
+      <div id="registerArea"></div>
+    </div>
+
+    <script>
+
+            /* =====================================================
+               ActivityID
+            ===================================================== */
+
+            const activityID =
+              <?!= JSON.stringify(activityID || "") ?>;
+
+
+            /* =====================================================
+               多语言
+            ===================================================== */
+
+            const I18N = {
+
+              zh: {
+
+                title: "活动详情",
+                subtitle: "羽球活动",
+                back: "← 返回",
+
+                loading: "正在加载活动……",
+                reading: "正在读取活动资料……",
+
+                date: "日期",
+                time: "时间",
+                venue: "场地",
+                fee: "费用",
+
+                joined: "已报名",
+                remaining: "剩余名额",
+
+                venueInfo: "📍 场地信息",
+                description: "📋 活动说明",
+                participants: "👥 已报名人员",
+
+                noParticipants: "暂时没有报名人员",
+
+                register: "📝 我要报名",
+
+                activityError: "活动加载失败",
+
+                noActivityID:
+                  "没有找到 ActivityID",
+
+                returnHome:
+                  "请从活动列表重新进入。",
+
+                serverError:
+                  "服务器没有返回活动资料",
+
+                noActivity:
+                  "返回资料中没有 Activity",
+
+                readFailed:
+                  "读取活动失败：",
+
+                activityID:
+                  "ActivityID："
+
+              },
+
+
+              ja: {
+
+                title: "イベント詳細",
+
+                subtitle:
+                  "バドミントンイベント",
+
+                back:
+                  "← 戻る",
+
+                loading:
+                  "イベントを読み込んでいます……",
+
+                reading:
+                  "イベント情報を読み込んでいます……",
+
+                date:
+                  "日付",
+
+                time:
+                  "時間",
+
+                venue:
+                  "会場",
+
+                fee:
+                  "参加費",
+
+                joined:
+                  "申込み済み",
+
+                remaining:
+                  "残り枠",
+
+                venueInfo:
+                  "📍 会場情報",
+
+                description:
+                  "📋 イベント説明",
+
+                participants:
+                  "👥 申込み済み",
+
+                noParticipants:
+                  "まだ申込みはありません",
+
+                register:
+                  "📝 申し込む",
+
+                activityError:
+                  "イベントの読み込みに失敗しました",
+
+                noActivityID:
+                  "ActivityID が見つかりません",
+
+                returnHome:
+                  "イベント一覧からもう一度開いてください。",
+
+                serverError:
+                  "サーバーからイベント情報が返されませんでした",
+
+                noActivity:
+                  "イベント情報が見つかりません",
+
+                readFailed:
+                  "イベントの読み込みに失敗しました：",
+
+                activityID:
+                  "ActivityID："
+
+              }
+
+            };
+
+
+            /* =====================================================
+               当前语言
+            ===================================================== */
+
+            let currentLanguage =
+              localStorage.getItem("language") ||
+              "zh";
+
+            if (!I18N[currentLanguage]) {
+              currentLanguage = "zh";
+            }
+
+
+            /* =====================================================
+               翻译
+            ===================================================== */
+
+            function t(key) {
+
+              return (
+                I18N[currentLanguage][key] ||
+                I18N.zh[key] ||
+                key
+              );
+
+            }
+
+
+            /* =====================================================
+               应用语言
+            ===================================================== */
+
+            function applyLanguage() {
+
+              document.title =
+                t("title");
+
+              const heroTitle =
+                document.getElementById(
+                  "heroTitle"
+                );
+
+              const heroSubtitle =
+                document.getElementById(
+                  "heroSubtitle"
+                );
+
+              const backButton =
+                document.getElementById(
+                  "backButton"
+                );
+
+              const loadingText =
+                document.getElementById(
+                  "loadingText"
+                );
+
+
+              if (heroTitle) {
+
+                heroTitle.textContent =
+                  t("title");
+
+              }
+
+
+              if (heroSubtitle) {
+
+                heroSubtitle.textContent =
+                  t("subtitle");
+
+              }
+
+
+              if (backButton) {
+
+                backButton.textContent =
+                  t("back");
+
+              }
+
+
+              if (loadingText) {
+
+                loadingText.textContent =
+                  t("loading");
+
+              }
+
+            }
+
+
+            /* =====================================================
+               ★★★ 说明文字清理 ★★★
+
+               这是这次解决巨大空白的核心。
+
+               会自动：
+               1. 统一换行
+               2. 删除最前面的空白行
+               3. 删除最后面的空白行
+               4. 删除每一行前后的多余空格
+
+               例如：
+
+
+
+                      🎒 参加对象
+                      新手、初级、中级均可
+
+
+
+               会变成：
+
+               🎒 参加对象
+               新手、初级、中级均可
+
+            ===================================================== */
+
+            function cleanDescription(value) {
+
+              if (
+                value === null ||
+                value === undefined
+              ) {
+
+                return "";
+
+              }
+
+
+              let text =
+                String(value)
+                  .replace(/\r\n/g, "\n")
+                  .replace(/\r/g, "\n");
+                text = text.replace(/^[\s\u3000]+/, "");
+
+              let lines =
+                text.split("\n");
+
+
+              /* 删除最前面的空行 */
+
+              while (
+                lines.length > 0 &&
+                lines[0].trim() === ""
+              ) {
+
+                lines.shift();
+
+              }
+
+
+              /* 删除最后面的空行 */
+
+              while (
+                lines.length > 0 &&
+                lines[lines.length - 1].trim() === ""
+              ) {
+
+                lines.pop();
+
+              }
+
+
+              /*
+               * 删除每一行左右的空格。
+               *
+               * 注意：
+               * 不删除行中间的正常空格。
+               */
+
+              lines =
+                lines.map(
+                  function(line) {
+
+                    return line.trim();
+
+                  }
+                );
+
+
+              return lines.join("\n");
+
+            }
+
+
+            /* =====================================================
+               页面加载
+            ===================================================== */
+
+            window.addEventListener(
+              "load",
+              function() {
+
+                applyLanguage();
+
+                loadActivity();
+
+              }
+            );
+
+
+            /* =====================================================
+               读取活动
+            ===================================================== */
+
+            function loadActivity() {
+
+              const result =
+                document.getElementById(
+                  "result"
+                );
+
+              const registerArea =
+                document.getElementById(
+                  "registerArea"
+                );
+
+
+              if (!activityID) {
+
+                result.innerHTML = `
+
+                  <div class="card error">
+
+                    <div class="error-title">
+
+                      ❌
+                      ${escapeHtml(
+                        t("noActivityID")
+                      )}
+
+                    </div>
+
+                    <div>
+
+                      ${escapeHtml(
+                        t("returnHome")
+                      )}
+
+                    </div>
+
+                  </div>
+
+                `;
+
+                registerArea.innerHTML = "";
+
+                return;
+
+              }
+
+
+              result.innerHTML = `
+
+                <div class="card loading">
+
+                  <div class="loading-spinner"></div>
+
+                  <div>
+
+                    ${escapeHtml(
+                      t("reading")
+                    )}
+
+                  </div>
+
+                </div>
+
+              `;
+
+              registerArea.innerHTML = "";
+
+
+              google.script.run
+
+                .withSuccessHandler(
+                  function(res) {
+
+                    console.log(
+                      "getActivityDetail:",
+                      res
+                    );
+
+
+                    if (!res) {
+
+                      showError(
+                        t("serverError")
+                      );
+
+                      return;
+
+                    }
+
+
+                    if (!res.Activity) {
+
+                      showError(
+                        t("noActivity")
+                      );
+
+                      return;
+
+                    }
+
+
+                    const a =
+                      res.Activity || {};
+
+                    const v =
+                      res.Venue || {};
+
+                    const c =
+                      res.Count || {};
+
+                    const participants =
+                      Array.isArray(
+                        res.Participants
+                      )
+                        ? res.Participants
+                        : [];
+
+
+                    /* =================================================
+                       人数
+                    ================================================= */
+
+                    const joined =
+                      Number(
+                        c.Joined || 0
+                      );
+
+                    const capacity =
+                      Number(
+                        a.Capacity || 0
+                      );
+
+                    const remaining =
+                      Number(
+                        c.Remaining != null
+                          ? c.Remaining
+                          : capacity - joined
+                      );
+
+
+                    let progress = 0;
+
+
+                    if (capacity > 0) {
+
+                      progress =
+                        Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            (
+                              joined /
+                              capacity
+                            ) * 100
+                          )
+                        );
+
+                    }
+
+
+                    /* =================================================
+                       Hero
+                    ================================================= */
+
+                    const heroTitle =
+                      document.getElementById(
+                        "heroTitle"
+                      );
+
+
+                    if (heroTitle) {
+
+                      heroTitle.textContent =
+                        a.Title ||
+                        t("title");
+
+                    }
+
+
+                    /* =================================================
+                       基本资料
+                    ================================================= */
+
+                    let html = `
+
+                      <div class="card">
+
+                        <div class="info-grid">
+
+
+                          <div class="info-item">
+
+                            <div class="info-icon">
+                              📅
+                            </div>
+
+                            <div class="info-label">
+
+                              ${escapeHtml(
+                                t("date")
+                              )}
+
+                            </div>
+
+                            <div class="info-value">
+
+                              ${escapeHtml(
+                                formatDate(
+                                  a.Date
+                                )
+                              )}
+
+                            </div>
+
+                          </div>
+
+
+                          <div class="info-item">
+
+                            <div class="info-icon">
+                              🕐
+                            </div>
+
+                            <div class="info-label">
+
+                              ${escapeHtml(
+                                t("time")
+                              )}
+
+                            </div>
+
+                            <div class="info-value">
+
+                              ${escapeHtml(
+                                formatTime(
+                                  a.StartTime
+                                )
+                              )}
+
+                              ～
+
+                              ${escapeHtml(
+                                formatTime(
+                                  a.EndTime
+                                )
+                              )}
+
+                            </div>
+
+                          </div>
+
+
+                          <div class="info-item">
+
+                            <div class="info-icon">
+                              📍
+                            </div>
+
+                            <div class="info-label">
+
+                              ${escapeHtml(
+                                t("venue")
+                              )}
+
+                            </div>
+
+                            <div class="info-value">
+
+                              ${escapeHtml(
+                                v.Name || ""
+                              )}
+
+                            </div>
+
+                          </div>
+
+
+                          <div class="info-item">
+
+                            <div class="info-icon">
+                              💴
+                            </div>
+
+                            <div class="info-label">
+
+                              ${escapeHtml(
+                                t("fee")
+                              )}
+
+                            </div>
+
+                            <div class="info-value">
+
+                              ¥${Number(
+                                a.Fee || 0
+                              )}
+
+                            </div>
+
+                          </div>
+
+
+                        </div>
+
+                      </div>
+
+
+                      <div class="card count-card">
+
+                        <div class="count-header">
+
+                          <div class="count-title">
+
+                            👥
+                            ${escapeHtml(
+                              t("joined")
+                            )}
+
+                          </div>
+
+                          <div>
+
+                            <span class="count-number">
+                              ${joined}
+                            </span>
+
+                            <span class="count-total">
+                              / ${capacity}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+
+                        <div class="count-bar">
+
+                          <div
+                            class="count-progress"
+                            style="width:${progress}%"
+                          ></div>
+
+                        </div>
+
+
+                        <div class="count-remaining">
+
+                          ${escapeHtml(
+                            t("remaining")
+                          )}：
+
+                          <strong>
+                            ${remaining}
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    `;
+
+
+                    /* =================================================
+                       ★★★ 活动说明 ★★★
+                    ================================================= */
+
+                    const description =
+                      cleanDescription(
+                        a.Description
+                      );
+
+
+                    if (description) {
+
+      html += `
+        <div class="card">
+          <h2 class="section-heading">${escapeHtml(t("description"))}</h2>
+          <div class="description">${escapeHtml(description)}</div>
+        </div>
+      `;
+
+
+                    }
+
+
+                    /* =================================================
+                       场地
+                    ================================================= */
+
+                    if (
+                      v.Name ||
+                      v.Address ||
+                      v.Description ||
+                      v.Access ||
+                      v.Parking
+                    ) {
+
+                      html += `
+
+                        <div class="card">
+
+                          <h2 class="section-heading">
+
+                            ${escapeHtml(
+                              t("venueInfo")
+                            )}
+
+                          </h2>
+
+                      `;
+
+
+                      if (v.Name) {
+
+                        html += `
+
+                          <div class="venue-name">
+
+                            🏸
+                            ${escapeHtml(
+                              v.Name
+                            )}
+
+                          </div>
+
+                        `;
+
+                      }
+
+
+                      if (v.Address) {
+
+                        html += `
+
+                          <div class="venue-detail">
+
+                            🏠
+                            ${escapeHtml(
+                              v.Address
+                            )}
+
+                          </div>
+
+                        `;
+
+                      }
+
+
+                      if (v.Description) {
+
+                        html += `
+
+                          <div class="venue-detail">
+
+                            🏸 ${escapeHtml(
+                              v.Description
+                            )}
+
+                          </div>
+
+                        `;
+
+                      }
+
+
+                      if (v.Access) {
+
+                        html += `
+
+                          <div class="venue-detail">
+
+                            🚶
+                            ${escapeHtml(
+                              v.Access
+                            )}
+
+                          </div>
+
+                        `;
+
+                      }
+
+
+                      if (v.Parking) {
+
+                        html += `
+
+                          <div class="venue-detail">
+
+                            🚗
+                            ${escapeHtml(
+                              v.Parking
+                            )}
+
+                          </div>
+
+                        `;
+
+                      }
+
+
+                      html += `
+
+                        </div>
+
+                      `;
+
+                    }
+
+
+                    /* =================================================
+                       报名人员
+                    ================================================= */
+
+                    html += `
+
+                      <div class="card participants-card">
+
+                        <div class="section-heading">
+
+                          <span>👥</span>
+
+                          <span>
+
+                            ${escapeHtml(
+                              t("participants")
+                            )}
+
+                          </span>
+
+                          <span class="participant-count">
+
+                            ${participants.length}
+
+                          </span>
+
+                        </div>
+
+
+                        <div class="participants-table-wrap">
+
+
+                          <div class="participant-header">
+
+                            <div></div>
+
+                            <div class="header-name">
+                              姓名
+                            </div>
+
+                            <div class="header-level">
+                              Level
+                            </div>
+
+                            <div class="header-status">
+                              报名状态
+                            </div>
+
+                            <div class="header-message">
+                              Message
+                            </div>
+
+                          </div>
+
+                    `;
+
+
+                    if (
+                      participants.length > 0
+                    ) {
+
+                      participants.forEach(
+                        function(p, index) {
+
+                          const status =
+                            String(
+                              p.Status || ""
+                            ).toUpperCase();
+
+
+                          let statusClass =
+                            "status-default";
+
+
+                          if (
+                            status ===
+                            "CONFIRMED"
+                          ) {
+
+                            statusClass =
+                              "status-confirmed";
+
+                          } else if (
+                            status ===
+                              "WAITLIST" ||
+                            status ===
+                              "WAITING"
+                          ) {
+
+                            statusClass =
+                              "status-waiting";
+
+                          } else if (
+                            status ===
+                            "CANCELLED"
+                          ) {
+
+                            statusClass =
+                              "status-cancelled";
+
+                          }
+
+
+                          html += `
+
+                            <div class="participant-row">
+
+
+                              <div class="participant-number">
+
+                                ${index + 1}
+
+                              </div>
+
+
+                              <div class="participant-name">
+
+                                ${escapeHtml(
+                                  p.Name || "-"
+                                )}
+
+                              </div>
+
+
+                              <div class="participant-level">
+
+                                ${escapeHtml(
+                                  p.Level || "-"
+                                )}
+
+                              </div>
+
+
+                              <div
+                                class="
+                                  participant-status
+                                  ${statusClass}
+                                "
+                              >
+
+                                ${escapeHtml(
+                                  p.Status || "-"
+                                )}
+
+                              </div>
+
+
+                              <div class="participant-message">
+
+                                ${escapeHtml(
+                                  p.Message || "-"
+                                )}
+
+                              </div>
+
+
+                            </div>
+
+                          `;
+
+                        }
+                      );
+
+                    } else {
+
+                      html += `
+
+                        <div class="empty-participant">
+
+                          <div class="empty-icon">
+                            👥
+                          </div>
+
+                          <div>
+
+                            ${escapeHtml(
+                              t("noParticipants")
+                            )}
+
+                          </div>
+
+                        </div>
+
+                      `;
+
+                    }
+
+
+                    html += `
+
+                        </div>
+
+                      </div>
+
+                    `;
+
+
+                    /* =================================================
+                       输出
+                    ================================================= */
+
+                    result.innerHTML =
+                      html;
+
+
+                    /* =================================================
+                       报名按钮
+                    ================================================= */
+
+                    google.script.run
+
+                      .withSuccessHandler(
+                        function(baseUrl) {
+
+                          if (!baseUrl) {
+
+                            registerArea.innerHTML =
+                              "";
+
+                            return;
+
+                          }
+
+
+                          const registerUrl =
+                            baseUrl
+                            +
+                            "?page=register"
+                            +
+                            "&activityID="
+                            +
+                            encodeURIComponent(
+                              activityID
+                            );
+
+
+                          registerArea.innerHTML = `
+
+                            <a
+                              class="register-btn"
+                              href="${escapeHtml(
+                                registerUrl
+                              )}"
+                              target="_top"
+                            >
+
+                              ${escapeHtml(
+                                t("register")
+                              )}
+
+                            </a>
+
+                          `;
+
+                        }
+                      )
+
+                      .withFailureHandler(
+                        function(error) {
+
+                          console.error(
+                            "getWebAppUrl error:",
+                            error
+                          );
+
+
+                          registerArea.innerHTML = `
+
+                            <a
+                              class="register-btn"
+                              href="#"
+                              onclick="return false;"
+                            >
+
+                              ${escapeHtml(
+                                t("register")
+                              )}
+
+                            </a>
+
+                          `;
+
+                        }
+                      )
+
+                      .getWebAppUrl();
+
+                  }
+                )
+
+                .withFailureHandler(
+                  function(error) {
+
+                    console.error(
+                      "getActivityDetail error:",
+                      error
+                    );
+
+
+                    const message =
+                      error &&
+                      error.message
+                        ? error.message
+                        : String(error);
+
+
+                    showError(
+                      t("readFailed") +
+                      message
+                    );
+
+                  }
+                )
+
+                .getActivityDetail(
+                  activityID
+                );
+
+            }
+
+
+            /* =====================================================
+               Error
+            ===================================================== */
+
+            function showError(message) {
+
+              const result =
+                document.getElementById(
+                  "result"
+                );
+
+              const registerArea =
+                document.getElementById(
+                  "registerArea"
+                );
+
+
+              result.innerHTML = `
+
+                <div class="card error">
+
+                  <div class="error-title">
+
+                    ❌
+                    ${escapeHtml(
+                      t("activityError")
+                    )}
+
+                  </div>
+
+                  <div>
+
+                    ${escapeHtml(
+                      message
+                    )}
+
+                  </div>
+
+                  <div class="activity-id">
+
+                    ${escapeHtml(
+                      t("activityID")
+                    )}
+
+                    ${escapeHtml(
+                      activityID
+                    )}
+
+                  </div>
+
+                </div>
+
+              `;
+
+
+              registerArea.innerHTML = "";
+
+            }
+
+
+            /* =====================================================
+               日期
+            ===================================================== */
+
+            function formatDate(value) {
+
+              if (!value) {
+                return "";
+              }
+
+
+              const date =
+                new Date(value);
+
+
+              if (
+                !isNaN(
+                  date.getTime()
+                )
+              ) {
+
+                const year =
+                  date.getFullYear();
+
+                const month =
+                  String(
+                    date.getMonth() + 1
+                  ).padStart(
+                    2,
+                    "0"
+                  );
+
+                const day =
+                  String(
+                    date.getDate()
+                  ).padStart(
+                    2,
+                    "0"
+                  );
+
+
+                return (
+                  year +
+                  "-" +
+                  month +
+                  "-" +
+                  day
+                );
+
+              }
+
+
+              return String(value)
+                .substring(0, 10);
+
+            }
+
+
+            /* =====================================================
+               时间
+            ===================================================== */
+
+            function formatTime(value) {
+
+              if (!value) {
+                return "";
+              }
+
+
+              const str =
+                String(value);
+
+
+              const match =
+                str.match(
+                  /(?:T|\s)(\d{1,2}):(\d{2})/
+                );
+
+
+              if (match) {
+
+                return (
+                  String(
+                    match[1]
+                  ).padStart(
+                    2,
+                    "0"
+                  )
+                  +
+                  ":"
+                  +
+                  match[2]
+                );
+
+              }
+
+
+              return str.substring(
+                0,
+                5
+              );
+
+            }
+
+
+            /* =====================================================
+               HTML 安全
+            ===================================================== */
+
+            function escapeHtml(value) {
+
+              if (
+                value === null ||
+                value === undefined
+              ) {
+
+                return "";
+
+              }
+
+
+              return String(value)
+
+                .replace(
+                  /&/g,
+                  "&amp;"
+                )
+
+                .replace(
+                  /</g,
+                  "&lt;"
+                )
+
+                .replace(
+                  />/g,
+                  "&gt;"
+                )
+
+                .replace(
+                  /"/g,
+                  "&quot;"
+                )
+
+                .replace(
+                  /'/g,
+                  "&#039;"
+                );
+
+            }
+    </script>
+  </body>
+</html>

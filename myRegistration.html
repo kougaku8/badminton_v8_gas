@@ -1,0 +1,1985 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <style>
+      /* ==================================================
+         基础
+      ================================================== */
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #eef5ff;
+      }
+
+      body {
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Noto Sans SC",
+          "Noto Sans JP", sans-serif;
+
+        font-size: 22px;
+        color: #14213d;
+
+        background:
+          radial-gradient(
+            circle at 20% 0%,
+            rgba(66, 165, 245, 0.22),
+            transparent 34%
+          ),
+          radial-gradient(
+            circle at 100% 20%,
+            rgba(30, 136, 229, 0.12),
+            transparent 30%
+          ),
+          linear-gradient(180deg, #eaf4ff 0%, #f5f9ff 38%, #ffffff 100%);
+
+        overflow-x: hidden;
+      }
+
+      button,
+      input {
+        font-family: inherit;
+      }
+
+      button {
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      /* ==================================================
+         主容器
+      ================================================== */
+
+      .container {
+        width: 100%;
+        max-width: 900px;
+        min-height: 100vh;
+
+        margin: 0 auto;
+        padding: 0 0 40px;
+      }
+
+      /* ==================================================
+         Header
+      ================================================== */
+
+      .header {
+        position: relative;
+
+        width: 100%;
+
+        margin-bottom: 16px;
+        padding: 28px 25px 34px;
+
+        border-radius: 30px;
+
+        color: #ffffff;
+
+        background: linear-gradient(
+          135deg,
+          #0756a8 0%,
+          #147ddd 42%,
+          #42a5f5 72%,
+          #64b5f6 100%
+        );
+
+        box-shadow: 0 15px 40px rgba(21, 101, 192, 0.25);
+
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: "";
+
+        position: absolute;
+
+        top: -75px;
+        right: -55px;
+
+        width: 190px;
+        height: 190px;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.1);
+
+        box-shadow: -45px 55px 0 rgba(255, 255, 255, 0.06);
+
+        pointer-events: none;
+      }
+
+      .header::after {
+        content: "🏸";
+
+        position: absolute;
+
+        right: 4px;
+        bottom: -34px;
+
+        font-size: 145px;
+
+        opacity: 0.14;
+
+        transform: rotate(-18deg);
+
+        pointer-events: none;
+      }
+
+      /* ==================================================
+         语言切换
+      ================================================== */
+
+      .language-switcher {
+        position: relative;
+        z-index: 5;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: flex-end;
+
+        gap: 9px;
+
+        margin-bottom: 24px;
+      }
+
+      .language-button {
+        min-width: 82px;
+        height: 48px;
+
+        padding: 0 17px;
+
+        border: 2px solid rgba(255, 255, 255, 0.38);
+        border-radius: 999px;
+
+        background: rgba(255, 255, 255, 0.13);
+
+        color: #ffffff;
+
+        font-size: 20px;
+        font-weight: 900;
+
+        cursor: pointer;
+
+        backdrop-filter: blur(8px);
+
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .language-button.active {
+        background: #ffffff;
+        color: #0756a8;
+        border-color: #ffffff;
+
+        box-shadow: 0 5px 16px rgba(0, 0, 0, 0.14);
+      }
+
+      .language-button:active {
+        transform: scale(0.96);
+      }
+
+      .language-divider {
+        font-size: 20px;
+        font-weight: 700;
+        opacity: 0.45;
+      }
+
+      /* ==================================================
+         Header 标题
+      ================================================== */
+
+      h1 {
+        position: relative;
+        z-index: 2;
+
+        margin: 0;
+
+        font-size: 44px;
+        line-height: 1.2;
+
+        font-weight: 950;
+        letter-spacing: -1px;
+
+        text-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .subtitle {
+        position: relative;
+        z-index: 2;
+
+        max-width: 700px;
+
+        margin-top: 17px;
+
+        font-size: 24px;
+        line-height: 1.55;
+
+        font-weight: 600;
+
+        opacity: 0.97;
+      }
+
+      /* ==================================================
+         搜索卡片
+      ================================================== */
+
+      .search-card {
+        width: 100%;
+
+        margin-bottom: 16px;
+        padding: 28px 25px;
+
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 27px;
+
+        background: rgba(255, 255, 255, 0.96);
+
+        box-shadow: 0 10px 32px rgba(15, 23, 42, 0.09);
+      }
+
+      .section-title {
+        margin-bottom: 23px;
+
+        font-size: 31px;
+        line-height: 1.35;
+
+        font-weight: 950;
+
+        color: #0f172a;
+      }
+
+      .label {
+        display: block;
+
+        margin-bottom: 11px;
+
+        font-size: 24px;
+        line-height: 1.4;
+
+        font-weight: 900;
+
+        color: #1e293b;
+      }
+
+      /* ==================================================
+         输入框
+      ================================================== */
+
+      input {
+        display: block;
+
+        width: 100%;
+        height: 78px;
+
+        padding: 0 23px;
+
+        border: 3px solid #d8e3f0;
+        border-radius: 19px;
+
+        outline: none;
+
+        background: #f7faff;
+        color: #111827;
+
+        font-size: 25px;
+        font-weight: 600;
+
+        -webkit-appearance: none;
+
+        transition:
+          border-color 0.18s,
+          background 0.18s,
+          box-shadow 0.18s;
+      }
+
+      input::placeholder {
+        color: #91a0b5;
+        opacity: 1;
+
+        font-size: 21px;
+        font-weight: 500;
+      }
+
+      input:focus {
+        border-color: #2196f3;
+        background: #ffffff;
+
+        box-shadow: 0 0 0 6px rgba(33, 150, 243, 0.13);
+      }
+
+      /* ==================================================
+         搜索按钮
+      ================================================== */
+
+      .search-button {
+        display: block;
+
+        width: 100%;
+        height: 78px;
+
+        margin-top: 16px;
+
+        border: 0;
+        border-radius: 19px;
+
+        background: linear-gradient(
+          135deg,
+          #0756a8 0%,
+          #1976d2 45%,
+          #42a5f5 100%
+        );
+
+        color: #ffffff;
+
+        font-size: 25px;
+        font-weight: 950;
+
+        cursor: pointer;
+
+        box-shadow: 0 9px 23px rgba(21, 101, 192, 0.28);
+
+        transition:
+          transform 0.12s,
+          opacity 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .search-button:active {
+        transform: scale(0.985);
+
+        box-shadow: 0 5px 13px rgba(21, 101, 192, 0.2);
+      }
+
+      .search-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      /* ==================================================
+         结果区域
+      ================================================== */
+
+      #result {
+        width: 100%;
+      }
+
+      /* ==================================================
+         消息卡片
+      ================================================== */
+
+      .message-card {
+        width: 100%;
+
+        margin-bottom: 16px;
+        padding: 38px 24px;
+
+        text-align: center;
+
+        background: #ffffff;
+
+        border-radius: 27px;
+
+        box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+      }
+
+      .message-icon {
+        margin-bottom: 17px;
+
+        font-size: 70px;
+        line-height: 1;
+      }
+
+      .message-title {
+        margin-bottom: 11px;
+
+        font-size: 29px;
+        line-height: 1.4;
+
+        font-weight: 950;
+
+        color: #111827;
+      }
+
+      .message-text {
+        color: #64748b;
+
+        font-size: 22px;
+        line-height: 1.65;
+
+        font-weight: 500;
+
+        word-break: break-word;
+      }
+
+      /* ==================================================
+         报名卡
+      ================================================== */
+
+      .registration-card {
+        position: relative;
+
+        width: 100%;
+
+        margin-bottom: 16px;
+        padding: 25px;
+
+        border: 2px solid #e4edf7;
+        border-radius: 28px;
+
+        background: rgba(255, 255, 255, 0.98);
+
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.09);
+
+        overflow: hidden;
+      }
+
+      .registration-card::before {
+        content: "";
+
+        position: absolute;
+
+        top: 0;
+        bottom: 0;
+        left: 0;
+
+        width: 7px;
+
+        border-radius: 28px 0 0 28px;
+
+        background: linear-gradient(180deg, #1565c0, #42a5f5);
+      }
+
+      /* ==================================================
+         活动名称
+      ================================================== */
+
+      .activity-title {
+        margin: 0 0 23px 3px;
+        padding-left: 3px;
+
+        font-size: 31px;
+        line-height: 1.45;
+
+        font-weight: 950;
+
+        color: #0f172a;
+
+        word-break: break-word;
+      }
+
+      /* ==================================================
+         信息 Grid
+      ================================================== */
+
+      .info-grid {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 13px;
+
+        margin-bottom: 5px;
+      }
+
+      .info-box {
+        min-width: 0;
+
+        padding: 18px;
+
+        border: 1px solid #e3ebf5;
+        border-radius: 18px;
+
+        background: linear-gradient(135deg, #f7faff, #f1f6fc);
+      }
+
+      .info-label {
+        margin-bottom: 9px;
+
+        color: #64748b;
+
+        font-size: 19px;
+        line-height: 1.35;
+
+        font-weight: 700;
+      }
+
+      .info-value {
+        color: #1e293b;
+
+        font-size: 23px;
+        line-height: 1.45;
+
+        font-weight: 900;
+
+        word-break: break-word;
+      }
+
+      /* ==================================================
+         状态
+      ================================================== */
+
+      .status-row {
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        margin-top: 1px;
+      }
+
+      .status {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-height: 46px;
+
+        padding: 7px 16px;
+
+        border-radius: 999px;
+
+        font-size: 20px;
+        line-height: 1.3;
+
+        font-weight: 950;
+
+        text-align: center;
+        white-space: normal;
+      }
+
+      .confirmed {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      .waitlist {
+        background: #fff7ed;
+        color: #c2410c;
+      }
+
+      .cancelled {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .unknown {
+        background: #e2e8f0;
+        color: #475569;
+      }
+
+      .paid {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      .unpaid {
+        background: #fef3c7;
+        color: #a16207;
+      }
+
+      .none-status {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+
+      .checked {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .not-checked {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+
+      /* ==================================================
+         报名编号
+      ================================================== */
+
+      .registration-id-box {
+        margin-top: 19px;
+        padding: 19px 20px;
+
+        border: 2px solid #bfdbfe;
+        border-radius: 18px;
+
+        background: linear-gradient(135deg, #eff6ff, #f8fbff);
+      }
+
+      .registration-id-label {
+        margin-bottom: 8px;
+
+        color: #64748b;
+
+        font-size: 19px;
+        line-height: 1.35;
+
+        font-weight: 700;
+      }
+
+      .registration-id {
+        color: #1565c0;
+
+        font-size: 25px;
+        line-height: 1.45;
+
+        font-weight: 950;
+        letter-spacing: 0.4px;
+
+        word-break: break-all;
+      }
+
+      /* ==================================================
+         取消报名
+      ================================================== */
+
+      .cancel-button {
+        display: block;
+
+        width: 100%;
+        min-height: 72px;
+
+        margin-top: 18px;
+        padding: 10px 18px;
+
+        border: 0;
+        border-radius: 18px;
+
+        background: linear-gradient(135deg, #dc2626, #ef4444, #f87171);
+
+        color: #ffffff;
+
+        font-size: 23px;
+        line-height: 1.3;
+
+        font-weight: 950;
+
+        cursor: pointer;
+
+        box-shadow: 0 9px 23px rgba(239, 68, 68, 0.23);
+
+        transition:
+          transform 0.12s,
+          opacity 0.15s;
+      }
+
+      .cancel-button:active {
+        transform: scale(0.985);
+      }
+
+      .cancel-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      /* ==================================================
+         返回首页
+      ================================================== */
+
+      .back-button {
+        display: block;
+
+        width: 100%;
+        min-height: 72px;
+
+        margin-top: 8px;
+        padding: 10px 18px;
+
+        border: 0;
+        border-radius: 18px;
+
+        background: linear-gradient(135deg, #334155, #64748b);
+
+        color: #ffffff;
+
+        font-size: 23px;
+        line-height: 1.3;
+
+        font-weight: 950;
+
+        cursor: pointer;
+
+        box-shadow: 0 8px 20px rgba(71, 85, 105, 0.18);
+
+        transition: transform 0.12s;
+      }
+
+      .back-button:active {
+        transform: scale(0.985);
+      }
+
+      /* ==================================================
+         手机
+         全屏 + 超大字体
+      ================================================== */
+
+      @media (max-width: 600px) {
+        html,
+        body {
+          width: 100%;
+          min-width: 100%;
+
+          margin: 0;
+          padding: 0;
+        }
+
+        body {
+          font-size: 28px;
+        }
+
+        .container {
+          width: 100%;
+          max-width: none;
+
+          min-height: 100vh;
+
+          padding: 0 0 30px;
+        }
+
+        /* Header */
+
+        .header {
+          margin-bottom: 10px;
+          padding: 25px 20px 34px;
+
+          border-radius: 25px;
+        }
+
+        .language-switcher {
+          margin-bottom: 21px;
+        }
+
+        .language-button {
+          min-width: 88px;
+          height: 52px;
+
+          font-size: 23px;
+        }
+
+        .language-divider {
+          font-size: 23px;
+        }
+
+        h1 {
+          font-size: 48px;
+          line-height: 1.25;
+          letter-spacing: -1px;
+        }
+
+        .subtitle {
+          margin-top: 15px;
+
+          font-size: 28px;
+          line-height: 1.7;
+        }
+
+        /* 搜索 */
+
+        .search-card {
+          margin-bottom: 10px;
+          padding: 24px 18px;
+
+          border-radius: 23px;
+        }
+
+        .section-title {
+          margin-bottom: 21px;
+
+          font-size: 36px;
+          line-height: 1.4;
+        }
+
+        .label {
+          font-size: 28px;
+          line-height: 1.5;
+        }
+
+        input {
+          height: 88px;
+
+          padding: 0 22px;
+
+          border-radius: 18px;
+
+          font-size: 30px;
+          font-weight: 700;
+        }
+
+        input::placeholder {
+          font-size: 24px;
+        }
+
+        .search-button {
+          height: 88px;
+
+          border-radius: 18px;
+
+          font-size: 29px;
+        }
+
+        /* 消息 */
+
+        .message-card {
+          padding: 36px 18px;
+
+          border-radius: 23px;
+        }
+
+        .message-icon {
+          font-size: 76px;
+        }
+
+        .message-title {
+          font-size: 35px;
+          line-height: 1.45;
+        }
+
+        .message-text {
+          font-size: 27px;
+          line-height: 1.75;
+        }
+
+        /* 报名 */
+
+        .registration-card {
+          margin-bottom: 11px;
+          padding: 22px 17px;
+
+          border-radius: 24px;
+        }
+
+        .registration-card::before {
+          width: 6px;
+        }
+
+        .activity-title {
+          margin-bottom: 20px;
+
+          font-size: 35px;
+          line-height: 1.55;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .info-box {
+          padding: 17px 16px;
+
+          border-radius: 17px;
+        }
+
+        .info-label {
+          font-size: 24px;
+          line-height: 1.45;
+        }
+
+        .info-value {
+          font-size: 28px;
+          line-height: 1.55;
+        }
+
+        /* 状态 */
+
+        .status {
+          min-height: 56px;
+
+          padding: 9px 19px;
+
+          font-size: 25px;
+          line-height: 1.4;
+        }
+
+        /* 报名编号 */
+
+        .registration-id-box {
+          margin-top: 16px;
+          padding: 17px;
+
+          border-radius: 17px;
+        }
+
+        .registration-id-label {
+          font-size: 24px;
+        }
+
+        .registration-id {
+          font-size: 30px;
+          line-height: 1.55;
+        }
+
+        /* 按钮 */
+
+        .cancel-button,
+        .back-button {
+          min-height: 84px;
+
+          border-radius: 17px;
+
+          font-size: 28px;
+          line-height: 1.4;
+        }
+      }
+
+      /* ==================================================
+         超小屏手机
+      ================================================== */
+
+      @media (max-width: 380px) {
+        body {
+          font-size: 26px;
+        }
+
+        .container {
+          padding-bottom: 24px;
+        }
+
+        .header {
+          padding: 22px 17px 29px;
+          border-radius: 22px;
+        }
+
+        .language-button {
+          min-width: 78px;
+          height: 48px;
+
+          font-size: 21px;
+        }
+
+        .language-divider {
+          font-size: 21px;
+        }
+
+        h1 {
+          font-size: 43px;
+        }
+
+        .subtitle {
+          font-size: 25px;
+        }
+
+        .search-card {
+          padding: 22px 15px;
+        }
+
+        .section-title {
+          font-size: 32px;
+        }
+
+        .label {
+          font-size: 26px;
+        }
+
+        input {
+          height: 84px;
+
+          padding: 0 19px;
+
+          font-size: 28px;
+        }
+
+        input::placeholder {
+          font-size: 22px;
+        }
+
+        .search-button {
+          height: 84px;
+          font-size: 27px;
+        }
+
+        .activity-title {
+          font-size: 32px;
+        }
+
+        .info-label {
+          font-size: 22px;
+        }
+
+        .info-value {
+          font-size: 26px;
+        }
+
+        .status {
+          font-size: 23px;
+        }
+
+        .registration-id {
+          font-size: 28px;
+        }
+
+        .cancel-button,
+        .back-button {
+          min-height: 80px;
+          font-size: 26px;
+        }
+      }
+
+      /* ==================================================
+         深色模式
+      ================================================== */
+
+      @media (prefers-color-scheme: dark) {
+        html {
+          background: #0b1728;
+        }
+
+        body {
+          background: linear-gradient(
+            180deg,
+            #0b1728 0%,
+            #111c2d 45%,
+            #182334 100%
+          );
+
+          color: #f8fafc;
+        }
+
+        .search-card,
+        .message-card,
+        .registration-card {
+          background: #172235;
+          border-color: #26364c;
+        }
+
+        .section-title,
+        .activity-title,
+        .message-title {
+          color: #f8fafc;
+        }
+
+        .label {
+          color: #e2e8f0;
+        }
+
+        input {
+          background: #0f1b2d;
+          color: #f8fafc;
+          border-color: #33465e;
+        }
+
+        input::placeholder {
+          color: #71839b;
+        }
+
+        input:focus {
+          background: #122036;
+        }
+
+        .info-box {
+          background: #111c2d;
+          border-color: #27384e;
+        }
+
+        .info-value {
+          color: #f1f5f9;
+        }
+
+        .info-label,
+        .registration-id-label,
+        .message-text {
+          color: #9fb0c5;
+        }
+
+        .registration-id-box {
+          background: linear-gradient(135deg, #10294a, #14253b);
+
+          border-color: #24538b;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- ==================================================
+           Header
+      ================================================== -->
+
+      <div class="header">
+        <div class="language-switcher">
+          <button
+            type="button"
+            id="langZh"
+            class="language-button active"
+            onclick="setLanguage('zh')"
+          >
+            中文
+          </button>
+
+          <span class="language-divider">|</span>
+
+          <button
+            type="button"
+            id="langJa"
+            class="language-button"
+            onclick="setLanguage('ja')"
+          >
+            日本語
+          </button>
+        </div>
+
+        <h1 data-i18n="title">📋 我的报名</h1>
+
+        <div class="subtitle" data-i18n="subtitle">
+          查询您的羽球活动报名记录
+        </div>
+      </div>
+
+      <!-- ==================================================
+           搜索
+      ================================================== -->
+
+      <div class="search-card">
+        <div class="section-title" data-i18n="searchTitle">🔎 查询报名记录</div>
+
+        <label class="label" for="contactValue" data-i18n="contactLabel">
+          🔎 搜索键
+        </label>
+
+        <input
+          id="contactValue"
+          type="text"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-i18n-placeholder="contactPlaceholder"
+          placeholder="请输入报名时填写的搜索键"
+        />
+
+        <button
+          id="searchButton"
+          class="search-button"
+          type="button"
+          onclick="searchRegistrations()"
+          data-i18n="searchButton"
+        >
+          🔎 查询我的报名
+        </button>
+      </div>
+
+      <!-- ==================================================
+           结果
+      ================================================== -->
+
+      <div id="result"></div>
+
+      <!-- ==================================================
+           返回
+      ================================================== -->
+
+      <button
+        type="button"
+        class="back-button"
+        onclick="goHome()"
+        data-i18n="backHome"
+      >
+        ← 返回活动列表
+      </button>
+    </div>
+
+    <script>
+      /* =====================================================
+         多语言
+      ===================================================== */
+
+      const I18N = {
+        zh: {
+          title: "📋 我的报名",
+          subtitle: "查询您的羽球活动报名记录",
+
+          searchTitle: "🔎 查询报名记录",
+          contactLabel: "🔎 搜索键",
+          contactPlaceholder: "请输入报名时填写的搜索键",
+          searchButton: "🔎 查询我的报名",
+
+          backHome: "← 返回活动列表",
+
+          searching: "⏳ 正在查询……",
+
+          empty: "请输入搜索键",
+
+          noRecords: "没有找到报名记录",
+          noRecordsDescription: "请确认您输入的是报名时填写的搜索键。",
+
+          recordsFound: "找到的报名记录",
+
+          activity: "活动",
+          date: "日期",
+          time: "时间",
+          venue: "场地",
+          status: "报名状态",
+          payment: "付款状态",
+          checkin: "签到状态",
+
+          registrationID: "报名编号",
+
+          cancelRegistration: "🗑️ 取消报名",
+          cancelConfirm: "确定要取消这条报名吗？",
+
+          cancelSuccess: "报名已取消",
+          cancelFailed: "取消报名失败：",
+          cancelling: "⏳ 正在取消……",
+
+          confirmed: "✅ 已确认",
+          waitlist: "⏳ 候补",
+          cancelled: "❌ 已取消",
+
+          paid: "✅ 已付款",
+          unpaid: "💰 未付款",
+          none: "未处理",
+
+          checked: "✅ 已签到",
+          notChecked: "⭕ 未签到",
+
+          unknown: "未知",
+
+          loading: "正在查询……",
+          error: "查询失败：",
+        },
+
+        ja: {
+          title: "📋 申込み履歴",
+          subtitle: "バドミントンイベントの申込み履歴を確認できます",
+
+          searchTitle: "🔎 申込み履歴を検索",
+          contactLabel: "🔎 検索キー",
+          contactPlaceholder: "申込み時に入力した検索キーを入力",
+          searchButton: "🔎 申込み履歴を検索",
+
+          backHome: "← イベント一覧へ戻る",
+
+          searching: "⏳ 検索しています……",
+
+          empty: "検索キーを入力してください",
+
+          noRecords: "申込み履歴が見つかりません",
+          noRecordsDescription: "申込み時に入力した検索キーをご確認ください。",
+
+          recordsFound: "申込み履歴",
+
+          activity: "イベント",
+          date: "日付",
+          time: "時間",
+          venue: "会場",
+          status: "申込み状況",
+          payment: "支払い状況",
+          checkin: "チェックイン",
+
+          registrationID: "申込み番号",
+
+          cancelRegistration: "🗑️ 申込みをキャンセル",
+          cancelConfirm: "この申込みをキャンセルしますか？",
+
+          cancelSuccess: "申込みをキャンセルしました",
+          cancelFailed: "キャンセルに失敗しました：",
+          cancelling: "⏳ キャンセルしています……",
+
+          confirmed: "✅ 参加確定",
+          waitlist: "⏳ キャンセル待ち",
+          cancelled: "❌ キャンセル済み",
+
+          paid: "✅ 支払い済み",
+          unpaid: "💰 未払い",
+          none: "未処理",
+
+          checked: "✅ チェックイン済み",
+          notChecked: "⭕ 未チェックイン",
+
+          unknown: "不明",
+
+          loading: "検索しています……",
+          error: "検索に失敗しました：",
+        },
+      };
+
+      /* =====================================================
+         当前语言
+      ===================================================== */
+
+      let currentLanguage = localStorage.getItem("language") || "zh";
+
+      /* =====================================================
+         翻译
+      ===================================================== */
+
+      function t(key) {
+        const lang = I18N[currentLanguage] || I18N.zh;
+
+        if (lang[key] !== undefined) {
+          return lang[key];
+        }
+
+        return I18N.zh[key] || key;
+      }
+
+      /* =====================================================
+         设置语言
+      ===================================================== */
+
+      function setLanguage(lang) {
+        if (!I18N[lang]) {
+          lang = "zh";
+        }
+
+        currentLanguage = lang;
+
+        localStorage.setItem("language", lang);
+
+        applyLanguage();
+      }
+
+      /* =====================================================
+         应用语言
+      ===================================================== */
+
+      function applyLanguage() {
+        document.querySelectorAll("[data-i18n]").forEach(function (el) {
+          const key = el.getAttribute("data-i18n");
+
+          el.textContent = t(key);
+        });
+
+        document
+          .querySelectorAll("[data-i18n-placeholder]")
+          .forEach(function (el) {
+            const key = el.getAttribute("data-i18n-placeholder");
+
+            el.placeholder = t(key);
+          });
+
+        const zh = document.getElementById("langZh");
+
+        const ja = document.getElementById("langJa");
+
+        if (zh) {
+          zh.classList.toggle("active", currentLanguage === "zh");
+        }
+
+        if (ja) {
+          ja.classList.toggle("active", currentLanguage === "ja");
+        }
+      }
+
+      /* =====================================================
+         页面加载
+      ===================================================== */
+
+      window.addEventListener("DOMContentLoaded", function () {
+        applyLanguage();
+
+        google.script.url.getLocation(function (location) {
+          if (
+            location &&
+            location.parameter &&
+            location.parameter.contactValue
+          ) {
+            const value = String(location.parameter.contactValue);
+
+            const input = document.getElementById("contactValue");
+
+            input.value = value;
+
+            searchRegistrations();
+          }
+        });
+      });
+
+      /* =====================================================
+         查询报名
+      ===================================================== */
+
+      function searchRegistrations() {
+        const input = document.getElementById("contactValue");
+
+        const button = document.getElementById("searchButton");
+
+        const contactValue = input.value.trim();
+
+        if (!contactValue) {
+          showMessage("⚠️", t("empty"), "");
+
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = t("searching");
+
+        document.getElementById("result").innerHTML = "";
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            button.disabled = false;
+
+            button.textContent = t("searchButton");
+
+            if (!res || !res.success || !res.data || !res.data.length) {
+              showMessage("🔍", t("noRecords"), t("noRecordsDescription"));
+
+              return;
+            }
+
+            renderRegistrations(res.data);
+          })
+
+          .withFailureHandler(function (error) {
+            button.disabled = false;
+
+            button.textContent = t("searchButton");
+
+            showMessage(
+              "⚠️",
+              t("error"),
+              error && error.message ? error.message : String(error),
+            );
+          })
+
+          .getMyRegistrations(contactValue);
+      }
+
+      /* =====================================================
+         显示报名列表
+      ===================================================== */
+
+      function renderRegistrations(data) {
+        const result = document.getElementById("result");
+
+        let html = `
+          <div class="message-card">
+
+            <div class="message-icon">
+              📋
+            </div>
+
+            <div class="message-title">
+              ${escapeHtml(t("recordsFound"))}
+            </div>
+
+            <div class="message-text">
+              ${escapeHtml(String(data.length))}
+            </div>
+
+          </div>
+        `;
+
+        data.forEach(function (r) {
+          html += renderRegistration(r);
+        });
+
+        result.innerHTML = html;
+      }
+
+      /* =====================================================
+         单个报名
+      ===================================================== */
+
+      function renderRegistration(r) {
+        const status = getStatus(r.Status);
+
+        const payment = getPaymentStatus(r.PaymentStatus);
+
+        const checkin = getCheckinStatus(r.CheckinStatus);
+
+        const time = formatTime(r.StartTime, r.EndTime);
+
+        const registrationID = String(r.RegistrationID || "");
+
+        const rawStatus = String(r.Status || "")
+          .trim()
+          .toUpperCase();
+
+        const canCancel = rawStatus === "CONFIRMED" || rawStatus === "WAITLIST";
+
+        const title =
+          r.Title ||
+          (currentLanguage === "ja" ? "バドミントンイベント" : "羽球活动");
+
+        return `
+          <div class="registration-card">
+
+            <div class="activity-title">
+              🏸
+              ${escapeHtml(title)}
+            </div>
+
+            <div class="info-grid">
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  📅
+                  ${escapeHtml(t("date"))}
+                </div>
+
+                <div class="info-value">
+                  ${escapeHtml(formatDate(r.Date))}
+                </div>
+
+              </div>
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  🕐
+                  ${escapeHtml(t("time"))}
+                </div>
+
+                <div class="info-value">
+                  ${escapeHtml(time)}
+                </div>
+
+              </div>
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  📍
+                  ${escapeHtml(t("venue"))}
+                </div>
+
+                <div class="info-value">
+                  ${escapeHtml(r.VenueName || "-")}
+                </div>
+
+              </div>
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  🎫
+                  ${escapeHtml(t("status"))}
+                </div>
+
+                <div class="status-row">
+
+                  <span
+                    class="status ${status.className}"
+                  >
+                    ${escapeHtml(status.text)}
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  💰
+                  ${escapeHtml(t("payment"))}
+                </div>
+
+                <div class="status-row">
+
+                  <span
+                    class="status ${payment.className}"
+                  >
+                    ${escapeHtml(payment.text)}
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="info-box">
+
+                <div class="info-label">
+                  📱
+                  ${escapeHtml(t("checkin"))}
+                </div>
+
+                <div class="status-row">
+
+                  <span
+                    class="status ${checkin.className}"
+                  >
+                    ${escapeHtml(checkin.text)}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="registration-id-box">
+
+              <div class="registration-id-label">
+                ${escapeHtml(t("registrationID"))}
+              </div>
+
+              <div class="registration-id">
+                ${escapeHtml(registrationID)}
+              </div>
+
+            </div>
+
+            ${
+              canCancel
+                ? `
+                  <button
+                    type="button"
+                    class="cancel-button"
+                    data-registration-id="${escapeHtml(registrationID)}"
+                    onclick="cancelRegistration('${escapeJs(registrationID)}')"
+                  >
+                    ${escapeHtml(t("cancelRegistration"))}
+                  </button>
+                `
+                : ""
+            }
+
+          </div>
+        `;
+      }
+
+      /* =====================================================
+         报名状态
+      ===================================================== */
+
+      function getStatus(status) {
+        const value = String(status || "")
+          .trim()
+          .toUpperCase();
+
+        if (value === "CONFIRMED") {
+          return {
+            text: t("confirmed"),
+            className: "confirmed",
+          };
+        }
+
+        if (value === "WAITLIST") {
+          return {
+            text: t("waitlist"),
+            className: "waitlist",
+          };
+        }
+
+        if (value === "CANCELLED") {
+          return {
+            text: t("cancelled"),
+            className: "cancelled",
+          };
+        }
+
+        return {
+          text: t("unknown"),
+          className: "unknown",
+        };
+      }
+
+      /* =====================================================
+         付款状态
+      ===================================================== */
+
+      function getPaymentStatus(status) {
+        const value = String(status || "")
+          .trim()
+          .toUpperCase();
+
+        if (value === "PAID") {
+          return {
+            text: t("paid"),
+            className: "paid",
+          };
+        }
+
+        if (value === "UNPAID") {
+          return {
+            text: t("unpaid"),
+            className: "unpaid",
+          };
+        }
+
+        if (value === "NONE" || value === "") {
+          return {
+            text: t("none"),
+            className: "none-status",
+          };
+        }
+
+        return {
+          text: status || t("unknown"),
+          className: "unknown",
+        };
+      }
+
+      /* =====================================================
+         签到状态
+      ===================================================== */
+
+      function getCheckinStatus(status) {
+        const value = String(status || "")
+          .trim()
+          .toUpperCase();
+
+        if (
+          value === "CHECKED_IN" ||
+          value === "CHECKEDIN" ||
+          value === "CHECKED"
+        ) {
+          return {
+            text: t("checked"),
+            className: "checked",
+          };
+        }
+
+        return {
+          text: t("notChecked"),
+          className: "not-checked",
+        };
+      }
+
+      /* =====================================================
+         日期
+      ===================================================== */
+
+      function formatDate(value) {
+        if (!value) {
+          return "-";
+        }
+
+        const date = new Date(value);
+
+        if (isNaN(date.getTime())) {
+          return String(value).substring(0, 10);
+        }
+
+        return (
+          date.getFullYear() +
+          "-" +
+          String(date.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(date.getDate()).padStart(2, "0")
+        );
+      }
+
+      /* =====================================================
+         时间
+      ===================================================== */
+
+      function formatTime(start, end) {
+        if (!start && !end) {
+          return "-";
+        }
+
+        function one(value) {
+          if (!value) {
+            return "";
+          }
+
+          const date = new Date(value);
+
+          if (!isNaN(date.getTime())) {
+            return (
+              String(date.getHours()).padStart(2, "0") +
+              ":" +
+              String(date.getMinutes()).padStart(2, "0")
+            );
+          }
+
+          return String(value);
+        }
+
+        const s = one(start);
+        const e = one(end);
+
+        if (s && e) {
+          return s + " - " + e;
+        }
+
+        return s || e || "-";
+      }
+
+      /* =====================================================
+         取消报名
+      ===================================================== */
+
+      function cancelRegistration(registrationID) {
+        if (!registrationID) {
+          return;
+        }
+
+        if (!window.confirm(t("cancelConfirm"))) {
+          return;
+        }
+
+        const buttons = document.querySelectorAll(".cancel-button");
+
+        buttons.forEach(function (button) {
+          button.disabled = true;
+          button.textContent = t("cancelling");
+        });
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              buttons.forEach(function (button) {
+                button.disabled = false;
+
+                button.textContent = t("cancelRegistration");
+              });
+
+              showMessage(
+                "⚠️",
+                t("cancelFailed"),
+                res && res.message ? res.message : t("unknown"),
+              );
+
+              return;
+            }
+
+            showMessage("✅", t("cancelSuccess"), "");
+
+            setTimeout(function () {
+              searchRegistrations();
+            }, 600);
+          })
+
+          .withFailureHandler(function (error) {
+            buttons.forEach(function (button) {
+              button.disabled = false;
+
+              button.textContent = t("cancelRegistration");
+            });
+
+            showMessage(
+              "⚠️",
+              t("cancelFailed"),
+              error && error.message ? error.message : String(error),
+            );
+          })
+
+          .cancelRegistration(registrationID);
+      }
+
+      /* =====================================================
+         返回首页
+      ===================================================== */
+
+      function goHome() {
+        google.script.run
+
+          .withSuccessHandler(function (url) {
+            window.top.location.href = url;
+          })
+
+          .withFailureHandler(function (error) {
+            console.error(error);
+
+            if (window.history.length > 1) {
+              window.history.back();
+            }
+          })
+
+          .getWebAppUrl();
+      }
+
+      /* =====================================================
+         消息
+      ===================================================== */
+
+      function showMessage(icon, title, text) {
+        document.getElementById("result").innerHTML = `
+          <div class="message-card">
+
+            <div class="message-icon">
+              ${escapeHtml(icon)}
+            </div>
+
+            <div class="message-title">
+              ${escapeHtml(title)}
+            </div>
+
+            ${
+              text
+                ? `
+                  <div class="message-text">
+                    ${escapeHtml(text)}
+                  </div>
+                `
+                : ""
+            }
+
+          </div>
+        `;
+      }
+
+      /* =====================================================
+         HTML 安全转义
+      ===================================================== */
+
+      function escapeHtml(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /* =====================================================
+         JS 字符串安全转义
+      ===================================================== */
+
+      function escapeJs(value) {
+        return String(value || "")
+          .replace(/\\/g, "\\\\")
+          .replace(/'/g, "\\'")
+          .replace(/\r/g, "\\r")
+          .replace(/\n/g, "\\n");
+      }
+
+      /* =====================================================
+         Enter 回车查询
+      ===================================================== */
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key !== "Enter") {
+          return;
+        }
+
+        const input = document.getElementById("contactValue");
+
+        if (document.activeElement === input) {
+          event.preventDefault();
+
+          searchRegistrations();
+        }
+      });
+    </script>
+  </body>
+</html>

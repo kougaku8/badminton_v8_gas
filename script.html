@@ -1,0 +1,482 @@
+<script>
+  /* =========================
+   当前筛选周期
+========================= */
+
+  let currentPeriod = "all";
+
+  let allActivities = [];
+
+  /* =========================
+   页面加载
+========================= */
+
+  window.onload = function () {
+    loadActivities();
+  };
+
+  function loadActivities() {
+    console.log("开始读取活动...");
+
+    google.script.run
+
+      .withSuccessHandler(function (list) {
+        console.log("活动列表返回:", list);
+
+        if (!list || !list.length) {
+          renderActivities([]);
+
+          return;
+        }
+
+        allActivities = list;
+
+        loadVenueOptions();
+
+        renderActivities(list);
+      })
+
+      .withFailureHandler(function (error) {
+        console.error("读取活动失败:", error);
+
+        document.getElementById("activityList").innerHTML = `
+
+        <div class="empty-card">
+
+          读取活动失败<br>
+          <small>
+            ${error.message || error}
+          </small>
+
+        </div>
+
+      `;
+      })
+
+      .getActivities();
+  }
+
+  /* =========================
+   生成场地下拉菜单
+========================= */
+
+  function loadVenueOptions() {
+    const select = document.getElementById("searchVenue");
+
+    if (!select) {
+      return;
+    }
+
+    // 清空原来的选项
+
+    select.innerHTML = `
+    <option value="">
+      全部场地
+    </option>
+  `;
+
+    const venues = [];
+
+    // 从活动列表取得场地名称
+
+    allActivities.forEach(function (a) {
+      const name = a.VenueName || "";
+
+      if (name && !venues.includes(name)) {
+        venues.push(name);
+      }
+    });
+
+    // 排序
+
+    venues.sort();
+
+    // 加入下拉菜单
+
+    venues.forEach(function (name) {
+      const option = document.createElement("option");
+
+      option.value = name;
+
+      option.textContent = name;
+
+      select.appendChild(option);
+    });
+  }
+
+  /* =========================
+   活动显示
+========================= */
+
+  /* =========================
+   活动显示
+========================= */
+
+  function renderActivities(list) {
+    const box = document.getElementById("activityList");
+
+    if (!list || !list.length) {
+      box.innerHTML = `
+      <div class="empty-card">
+        ${t("noActivities")}
+      </div>
+    `;
+
+      return;
+    }
+
+    box.innerHTML = "";
+
+    list.forEach(function (a) {
+      const card = document.createElement("div");
+
+      card.className = "activity-card";
+
+      card.innerHTML = `
+
+      <h2>
+        🏸 ${a.Title || ""}
+      </h2>
+
+      <div class="activity-info">
+        📅 ${formatDate(a.Date)}
+      </div>
+
+      <div class="activity-info">
+        ⏰ ${formatTime(a.StartTime)}
+        ～ ${formatTime(a.EndTime)}
+      </div>
+
+      <div class="activity-info">
+        📍 ${a.VenueName || ""}
+      </div>
+
+      <div class="activity-info">
+        💰 ${a.Fee || 0}
+      </div>
+
+      <button
+        type="button"
+        onclick="openActivity('${a.ActivityID}')">
+
+        ${t("enterActivity")}
+
+      </button>
+
+    `;
+
+      box.appendChild(card);
+    });
+  }
+
+  /* =========================
+   日期格式
+========================= */
+
+  function formatDate(d) {
+    if (!d) {
+      return "";
+    }
+
+    const date = new Date(d);
+
+    if (isNaN(date.getTime())) {
+      return String(d).substring(0, 10);
+    }
+
+    return (
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0")
+    );
+  }
+
+  /* =========================
+   时间格式
+========================= */
+
+  function formatTime(t) {
+    if (!t) {
+      return "";
+    }
+
+    // 如果是 Date 对象转换后的字符串
+    const str = String(t);
+
+    // 处理：
+    // 1899-12-30 18:00:00
+    // 1899-12-30T18:00:00
+    const match = str.match(/(?:T|\s)(\d{1,2}):(\d{2})/);
+
+    if (match) {
+      return String(match[1]).padStart(2, "0") + ":" + match[2];
+    }
+
+    return str.substring(0, 5);
+  }
+
+  /* =========================
+   活动详情
+========================= */
+
+  function openActivity(activityID) {
+    if (!activityID) {
+      alert("没有找到 ActivityID");
+      return;
+    }
+
+    const url =
+      "https://script.google.com/macros/s/AKfycbytMNkX7m-3KE79Izj1i4o2TucGVoJB6vAqjsl3RjTxe-bPfkKWBwHh_gg3Ag4guLgGtg/exec?page=activity&id=" +
+      encodeURIComponent(activityID);
+
+    console.log("打开活动:", url);
+
+    window.open(url, "_blank");
+  }
+
+  /* =========================
+   本周 / 本月
+========================= */
+
+  function setPeriod(period, button) {
+    currentPeriod = period;
+
+    document.querySelectorAll(".filter-btn").forEach(function (btn) {
+      btn.classList.remove("active");
+    });
+
+    if (button) {
+      button.classList.add("active");
+    }
+
+    /*
+     * 选择本周 / 本月时
+     * 清除具体日期
+     */
+
+    if (period !== "all") {
+      const dateInput = document.getElementById("searchDate");
+
+      if (dateInput) {
+        dateInput.value = "";
+      }
+    }
+
+    if (typeof searchActivities === "function") {
+      searchActivities();
+    }
+  }
+
+  /* =========================
+   查找活动
+========================= */
+  /* =========================
+   查找活动
+========================= */
+
+  /* =========================
+   选择日期
+========================= */
+
+  function selectDate() {
+    const dateInput = document.getElementById("searchDate");
+
+    const venueInput = document.getElementById("searchVenue");
+
+    // 选择日期时，清除场地
+    if (dateInput.value) {
+      venueInput.value = "";
+
+      // 指定日期优先于周期
+      currentPeriod = "all";
+
+      document.querySelectorAll(".filter-btn").forEach(function (btn) {
+        btn.classList.remove("active");
+      });
+
+      const allButton = document.querySelector(
+        ".filter-btn[onclick*=\"setPeriod('all'\"]",
+      );
+
+      if (allButton) {
+        allButton.classList.add("active");
+      }
+    }
+
+    searchActivities();
+  }
+
+  /* =========================
+   选择场地
+========================= */
+
+  /* =========================
+   选择场地
+========================= */
+
+  function selectVenue() {
+    const dateInput = document.getElementById("searchDate");
+
+    const venueInput = document.getElementById("searchVenue");
+
+    // 选择场地时，清除具体日期
+    if (venueInput.value) {
+      dateInput.value = "";
+
+      // 指定场地优先于「本周 / 本月」
+      currentPeriod = "all";
+
+      // 更新顶部周期按钮状态
+      document.querySelectorAll(".filter-btn").forEach(function (btn) {
+        btn.classList.remove("active");
+      });
+
+      // 「全部」按钮设为 active
+      const allButton = document.querySelector(
+        ".filter-btn[onclick*=\"setPeriod('all'\"]",
+      );
+
+      if (allButton) {
+        allButton.classList.add("active");
+      }
+    }
+
+    // 重新筛选活动
+    searchActivities();
+  }
+
+  /* =========================
+   查找活动 / 周期筛选
+========================= */
+
+  function searchActivities() {
+    const dateInput = document.getElementById("searchDate");
+
+    const venueInput = document.getElementById("searchVenue");
+
+    const date = dateInput ? dateInput.value : "";
+
+    const venue = venueInput ? venueInput.value : "";
+
+    // 从完整活动列表开始筛选
+    let list = allActivities.slice();
+
+    /* =========================
+     1. 指定日期
+  ========================= */
+
+    if (date) {
+      list = list.filter(function (a) {
+        return formatDate(a.Date) === date;
+      });
+    }
+
+    /* =========================
+     2. 指定场地
+  ========================= */
+
+    if (venue) {
+      list = list.filter(function (a) {
+        return String(a.VenueName || "").trim() === String(venue).trim();
+      });
+    }
+
+    /* =========================
+     3. 本周 / 本月
+  ========================= */
+
+    // 只有没有指定具体日期时，
+    // 才使用「本周 / 本月」
+    if (!date && currentPeriod !== "all") {
+      const now = new Date();
+
+      // 去掉时间，避免时区 / 时分秒造成比较问题
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      /* =========================
+       本周
+       星期一 ～ 星期日
+    ========================= */
+
+      if (currentPeriod === "week") {
+        const day = today.getDay();
+
+        // JavaScript:
+        // Sunday = 0
+        // Monday = 1
+        // ...
+        // Saturday = 6
+
+        const diffToMonday = day === 0 ? -6 : 1 - day;
+
+        const weekStart = new Date(today);
+
+        weekStart.setDate(today.getDate() + diffToMonday);
+
+        const weekEnd = new Date(weekStart);
+
+        weekEnd.setDate(weekStart.getDate() + 6);
+
+        list = list.filter(function (a) {
+          const activityDate = parseActivityDate(a.Date);
+
+          if (!activityDate) {
+            return false;
+          }
+
+          return activityDate >= weekStart && activityDate <= weekEnd;
+        });
+      }
+
+      /* =========================
+       本月
+    ========================= */
+
+      if (currentPeriod === "month") {
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        list = list.filter(function (a) {
+          const activityDate = parseActivityDate(a.Date);
+
+          if (!activityDate) {
+            return false;
+          }
+
+          return activityDate >= monthStart && activityDate <= monthEnd;
+        });
+      }
+    }
+
+    /* =========================
+     显示结果
+  ========================= */
+
+    renderActivities(list);
+  }
+
+  /* =========================
+   活动日期转换
+========================= */
+
+  function parseActivityDate(value) {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  function openNotificationSettings() {
+    window.top.location.href = "https://kougaku8.github.io/badminton-icon/";
+  }
+</script>

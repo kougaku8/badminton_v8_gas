@@ -1,0 +1,1318 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+
+    <!-- ★★★ 手机显示关键设置 ★★★ -->
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <style>
+      /* =========================================================
+       RESET
+       ========================================================= */
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        width: 100%;
+        min-height: 100vh;
+
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+
+        font-size: 16px;
+
+        background: #f5f5f5;
+        color: #333;
+
+        overflow-x: hidden;
+      }
+
+      /* =========================================================
+       PC
+       ========================================================= */
+
+      .container {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: #ef6c00;
+        color: white;
+
+        padding: 22px;
+
+        border-radius: 14px;
+
+        margin-bottom: 15px;
+      }
+
+      .header h1 {
+        margin: 0 0 8px 0;
+
+        font-size: 24px;
+        line-height: 1.3;
+      }
+
+      .header p {
+        margin: 0;
+
+        font-size: 16px;
+        line-height: 1.5;
+
+        opacity: 0.9;
+      }
+
+      .card {
+        width: 100%;
+
+        background: white;
+
+        padding: 20px;
+
+        border-radius: 12px;
+
+        margin-bottom: 15px;
+
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .section-title {
+        font-size: 18px;
+
+        font-weight: bold;
+
+        margin-bottom: 15px;
+
+        line-height: 1.4;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      label {
+        display: block;
+
+        font-size: 16px;
+
+        font-weight: bold;
+
+        margin-bottom: 7px;
+
+        color: #333;
+
+        line-height: 1.4;
+      }
+
+      .required {
+        color: #d32f2f;
+      }
+
+      input,
+      select,
+      textarea {
+        display: block;
+
+        width: 100%;
+
+        padding: 12px;
+
+        border: 1px solid #ccc;
+
+        border-radius: 8px;
+
+        background: white;
+
+        color: #333;
+
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+
+        font-size: 16px;
+
+        line-height: 1.4;
+
+        outline: none;
+      }
+
+      textarea {
+        min-height: 100px;
+
+        resize: vertical;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #ef6c00;
+
+        box-shadow: 0 0 0 2px rgba(239, 108, 0, 0.15);
+      }
+
+      .row {
+        display: flex;
+
+        gap: 12px;
+      }
+
+      .row .form-group {
+        flex: 1;
+
+        min-width: 0;
+      }
+
+      .venue-info {
+        margin-top: 8px;
+
+        padding: 10px;
+
+        background: #f5f9ff;
+
+        border-radius: 8px;
+
+        color: #555;
+
+        font-size: 14px;
+
+        line-height: 1.6;
+      }
+
+      .activity-id {
+        background: #fff3e0;
+
+        padding: 10px;
+
+        border-radius: 8px;
+
+        color: #e65100;
+
+        font-weight: bold;
+
+        margin-bottom: 15px;
+      }
+
+      .button {
+        display: block;
+
+        width: 100%;
+
+        padding: 14px;
+
+        border: 0;
+
+        border-radius: 9px;
+
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+
+        font-size: 17px;
+
+        font-weight: bold;
+
+        line-height: 1.4;
+
+        cursor: pointer;
+      }
+
+      .submit-button {
+        background: #ef6c00;
+
+        color: white;
+      }
+
+      .submit-button:disabled {
+        background: #ffb74d;
+
+        cursor: not-allowed;
+      }
+
+      .secondary-button {
+        background: #eeeeee;
+
+        color: #333;
+
+        margin-top: 10px;
+      }
+
+      .success-card {
+        background: #e8f5e9;
+
+        border: 1px solid #81c784;
+
+        color: #1b5e20;
+      }
+
+      .error-card {
+        background: #ffebee;
+
+        border: 1px solid #ef9a9a;
+
+        color: #b71c1c;
+      }
+
+      /* =========================================================
+       ★★★★★★★★★★★★★★★★★★★★★★★★★
+       ★
+       ★   强制手机模式
+       ★
+       ★★★★★★★★★★★★★★★★★★★★★★★★★
+       ========================================================= */
+
+      body.mobile-mode {
+        width: 100vw !important;
+
+        min-width: 100vw !important;
+
+        max-width: 100vw !important;
+
+        padding: 0 !important;
+
+        margin: 0 !important;
+
+        font-size: 32px !important;
+
+        background: #f5f5f5 !important;
+
+        overflow-x: hidden !important;
+      }
+
+      /* =========================================================
+       手机 Container
+       ========================================================= */
+
+      body.mobile-mode .container {
+        width: 100vw !important;
+
+        max-width: none !important;
+
+        min-width: 100vw !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+      }
+
+      /* =========================================================
+       手机 Header
+       ========================================================= */
+
+      body.mobile-mode .header {
+        width: 100vw !important;
+
+        margin: 0 !important;
+
+        padding: 32px 24px 32px 24px !important;
+
+        border-radius: 0 !important;
+
+        background: #ef6c00 !important;
+      }
+
+      body.mobile-mode .header h1 {
+        margin: 0 0 16px 0 !important;
+
+        font-size: 44px !important;
+
+        line-height: 1.3 !important;
+      }
+
+      body.mobile-mode .header p {
+        font-size: 30px !important;
+
+        line-height: 1.5 !important;
+      }
+
+      /* =========================================================
+       手机 Card
+       ========================================================= */
+
+      body.mobile-mode .card {
+        width: 100vw !important;
+
+        max-width: none !important;
+
+        margin: 0 0 12px 0 !important;
+
+        padding: 32px 24px !important;
+
+        border-radius: 0 !important;
+
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      }
+
+      /* =========================================================
+       手机 Section Title
+       ========================================================= */
+
+      body.mobile-mode .section-title {
+        font-size: 36px !important;
+
+        line-height: 1.4 !important;
+
+        margin-bottom: 28px !important;
+
+        font-weight: bold !important;
+      }
+
+      /* =========================================================
+       手机 Label
+       ========================================================= */
+
+      body.mobile-mode label {
+        font-size: 32px !important;
+
+        line-height: 1.4 !important;
+
+        margin-bottom: 14px !important;
+
+        font-weight: bold !important;
+      }
+
+      /* =========================================================
+       手机 Form
+       ========================================================= */
+
+      body.mobile-mode .form-group {
+        margin-bottom: 30px !important;
+      }
+
+      /* =========================================================
+       手机输入框
+       ========================================================= */
+
+      body.mobile-mode input,
+      body.mobile-mode select,
+      body.mobile-mode textarea {
+        width: 100% !important;
+
+        min-width: 100% !important;
+
+        max-width: 100% !important;
+
+        min-height: 82px !important;
+
+        padding: 18px 16px !important;
+
+        border: 2px solid #bbb !important;
+
+        border-radius: 12px !important;
+
+        font-size: 32px !important;
+
+        line-height: 1.4 !important;
+
+        background: white !important;
+
+        color: #222 !important;
+      }
+
+      /* =========================================================
+       手机活动选择
+       ========================================================= */
+
+      body.mobile-mode #activitySelector {
+        min-height: 88px !important;
+
+        font-size: 30px !important;
+
+        padding: 18px !important;
+      }
+
+      /* =========================================================
+       手机场地选择
+       ========================================================= */
+
+      body.mobile-mode #venueID {
+        min-height: 88px !important;
+
+        font-size: 30px !important;
+
+        padding: 18px !important;
+      }
+
+      /* =========================================================
+       手机日期
+       ========================================================= */
+
+      body.mobile-mode input[type="date"] {
+        min-height: 82px !important;
+
+        font-size: 32px !important;
+      }
+
+      /* =========================================================
+       手机时间
+       ========================================================= */
+
+      body.mobile-mode input[type="time"] {
+        min-height: 82px !important;
+
+        font-size: 32px !important;
+      }
+
+      /* =========================================================
+       手机 datetime
+       ========================================================= */
+
+      body.mobile-mode input[type="datetime-local"] {
+        min-height: 82px !important;
+
+        font-size: 29px !important;
+      }
+
+      /* =========================================================
+       手机 number
+       ========================================================= */
+
+      body.mobile-mode input[type="number"] {
+        min-height: 82px !important;
+
+        font-size: 32px !important;
+      }
+
+      /* =========================================================
+       手机 textarea
+       ========================================================= */
+
+      body.mobile-mode textarea {
+        min-height: 220px !important;
+
+        font-size: 32px !important;
+      }
+
+      /* =========================================================
+       手机 Row
+       ========================================================= */
+
+      body.mobile-mode .row {
+        display: flex !important;
+
+        flex-direction: column !important;
+
+        width: 100% !important;
+
+        gap: 0 !important;
+      }
+
+      body.mobile-mode .row .form-group {
+        width: 100% !important;
+
+        min-width: 100% !important;
+
+        max-width: 100% !important;
+
+        flex: none !important;
+      }
+
+      /* =========================================================
+       手机 Venue Info
+       ========================================================= */
+
+      body.mobile-mode .venue-info {
+        width: 100% !important;
+
+        padding: 20px !important;
+
+        margin-top: 14px !important;
+
+        border-radius: 12px !important;
+
+        font-size: 28px !important;
+
+        line-height: 1.7 !important;
+      }
+
+      /* =========================================================
+       手机 Activity ID
+       ========================================================= */
+
+      body.mobile-mode .activity-id {
+        width: 100% !important;
+
+        padding: 18px !important;
+
+        margin-bottom: 28px !important;
+
+        border-radius: 12px !important;
+
+        font-size: 28px !important;
+
+        line-height: 1.5 !important;
+      }
+
+      /* =========================================================
+       手机 Button
+       ========================================================= */
+
+      body.mobile-mode .button {
+        width: 100% !important;
+
+        min-height: 90px !important;
+
+        padding: 20px 16px !important;
+
+        border-radius: 12px !important;
+
+        font-size: 34px !important;
+
+        line-height: 1.3 !important;
+
+        font-weight: bold !important;
+      }
+
+      body.mobile-mode .secondary-button {
+        margin-top: 16px !important;
+      }
+
+      /* =========================================================
+       手机成功提示
+       ========================================================= */
+
+      body.mobile-mode .success-card,
+      body.mobile-mode .error-card {
+        font-size: 30px !important;
+
+        line-height: 1.7 !important;
+      }
+
+      body.mobile-mode .success-card h2 {
+        font-size: 40px !important;
+
+        line-height: 1.4 !important;
+      }
+
+      body.mobile-mode .success-card p {
+        font-size: 30px !important;
+
+        line-height: 1.7 !important;
+      }
+
+      /* =========================================================
+       小手机
+       ========================================================= */
+
+      @media only screen and (max-width: 380px) {
+        body.mobile-mode .header h1 {
+          font-size: 38px !important;
+        }
+
+        body.mobile-mode .header p {
+          font-size: 27px !important;
+        }
+
+        body.mobile-mode .section-title {
+          font-size: 32px !important;
+        }
+
+        body.mobile-mode label {
+          font-size: 28px !important;
+        }
+
+        body.mobile-mode input,
+        body.mobile-mode select,
+        body.mobile-mode textarea {
+          font-size: 28px !important;
+        }
+
+        body.mobile-mode .button {
+          font-size: 30px !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- =====================================================
+         Header
+         ===================================================== -->
+
+      <div class="header">
+        <h1>✏️ 修改活动</h1>
+
+        <p>修改已有羽球活动资料</p>
+      </div>
+
+      <!-- =====================================================
+         选择活动
+         ===================================================== -->
+
+      <div class="card">
+        <div class="section-title">📋 选择活动</div>
+
+        <select id="activitySelector" onchange="loadSelectedActivity()">
+          <option value="">⏳ 正在加载活动……</option>
+        </select>
+      </div>
+
+      <!-- =====================================================
+         Form
+         ===================================================== -->
+
+      <div id="formArea" style="display: none">
+        <div class="card">
+          <div id="activityIDBox" class="activity-id"></div>
+
+          <div class="section-title">🏸 活动资料</div>
+
+          <!-- 活动名称 -->
+
+          <div class="form-group">
+            <label>
+              活动名称
+
+              <span class="required"> * </span>
+            </label>
+
+            <input type="text" id="title" />
+          </div>
+
+          <!-- 活动场地 -->
+
+          <div class="form-group">
+            <label>
+              📍 活动场地
+
+              <span class="required"> * </span>
+            </label>
+
+            <select id="venueID" onchange="showVenueInfo()"></select>
+
+            <div id="venueInfo" class="venue-info" style="display: none"></div>
+          </div>
+
+          <!-- 日期 -->
+
+          <div class="form-group">
+            <label>
+              📅 活动日期
+
+              <span class="required"> * </span>
+            </label>
+
+            <input type="date" id="activityDate" />
+          </div>
+
+          <!-- 时间 -->
+
+          <div class="row">
+            <div class="form-group">
+              <label>
+                🕐 开始时间
+
+                <span class="required"> * </span>
+              </label>
+
+              <input type="time" id="startTime" />
+            </div>
+
+            <div class="form-group">
+              <label>
+                🕐 结束时间
+
+                <span class="required"> * </span>
+              </label>
+
+              <input type="time" id="endTime" />
+            </div>
+          </div>
+
+          <!-- 球场 / 人数 -->
+
+          <div class="row">
+            <div class="form-group">
+              <label>
+                🏸 球场数量
+
+                <span class="required"> * </span>
+              </label>
+
+              <input type="number" id="courtCount" min="1" step="1" />
+            </div>
+
+            <div class="form-group">
+              <label>
+                👥 报名人数上限
+
+                <span class="required"> * </span>
+              </label>
+
+              <input type="number" id="capacity" min="1" step="1" />
+            </div>
+          </div>
+
+          <!-- 费用 -->
+
+          <div class="form-group">
+            <label>
+              💴 活动费用
+
+              <span class="required"> * </span>
+            </label>
+
+            <input type="number" id="fee" min="0" step="1" />
+          </div>
+
+          <!-- 报名截止 -->
+
+          <div class="form-group">
+            <label> ⏰ 报名截止时间 </label>
+
+            <input type="datetime-local" id="registrationDeadline" />
+          </div>
+
+          <!-- 活动说明 -->
+
+          <div class="form-group">
+            <label> 📋 活动说明 </label>
+
+            <textarea id="description"></textarea>
+          </div>
+
+          <!-- 保存 -->
+
+          <button
+            type="button"
+            id="saveButton"
+            class="button submit-button"
+            onclick="saveActivity()"
+          >
+            💾 保存修改
+          </button>
+
+          <!-- 返回 -->
+
+          <button
+            type="button"
+            class="button secondary-button"
+            onclick="goBack()"
+          >
+            ← 返回活动列表
+          </button>
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      /* =========================================================
+       ★★★ 强制检测手机 ★★★
+       ========================================================= */
+
+      (function () {
+        function enableMobileMode() {
+          const isMobile =
+            window.innerWidth <= 600 ||
+            /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+          if (isMobile) {
+            document.body.classList.add("mobile-mode");
+          }
+        }
+
+        enableMobileMode();
+
+        window.addEventListener("resize", enableMobileMode);
+      })();
+
+      /* =========================================================
+       数据
+       ========================================================= */
+
+      let activities = [];
+
+      let venues = [];
+
+      /* =========================================================
+       页面加载
+       ========================================================= */
+
+      window.onload = function () {
+        loadVenues();
+
+        loadActivities();
+      };
+
+      /* =========================================================
+       读取场地
+       ========================================================= */
+
+      function loadVenues() {
+        google.script.run
+
+          .withSuccessHandler(function (list) {
+            venues = list || [];
+
+            const select = document.getElementById("venueID");
+
+            select.innerHTML = `
+              <option value="">
+                请选择活动场地
+              </option>
+            `;
+
+            venues.forEach(function (v) {
+              const option = document.createElement("option");
+
+              option.value = v.VenueID;
+
+              option.textContent = v.VenueName;
+
+              select.appendChild(option);
+            });
+          })
+
+          .withFailureHandler(function (error) {
+            showError("读取场地失败：" + (error.message || error));
+          })
+
+          .getActiveVenues();
+      }
+
+      /* =========================================================
+       读取活动
+       ========================================================= */
+
+      function loadActivities() {
+        google.script.run
+
+          .withSuccessHandler(function (list) {
+            activities = list || [];
+
+            const select = document.getElementById("activitySelector");
+
+            select.innerHTML = `
+              <option value="">
+                请选择要修改的活动
+              </option>
+            `;
+
+            activities.forEach(function (a) {
+              const option = document.createElement("option");
+
+              option.value = a.ActivityID;
+
+              option.textContent = formatActivityOption(a);
+
+              select.appendChild(option);
+            });
+          })
+
+          .withFailureHandler(function (error) {
+            showError("读取活动失败：" + (error.message || error));
+          })
+
+          .getActivitiesForEdit();
+      }
+
+      /* =========================================================
+       活动文字
+       ========================================================= */
+
+      function formatActivityOption(a) {
+        return a.Date + " " + (a.Title || "") + " ｜ " + (a.VenueName || "");
+      }
+
+      /* =========================================================
+       载入活动
+       ========================================================= */
+
+      function loadSelectedActivity() {
+        const id = document.getElementById("activitySelector").value;
+
+        if (!id) {
+          document.getElementById("formArea").style.display = "none";
+
+          return;
+        }
+
+        const activity = activities.find(function (a) {
+          return String(a.ActivityID) === String(id);
+        });
+
+        if (!activity) {
+          showError("找不到活动");
+
+          return;
+        }
+
+        document.getElementById("activityIDBox").textContent =
+          "🆔 ActivityID：" + activity.ActivityID;
+
+        document.getElementById("title").value = cleanTitle(activity.Title);
+
+        document.getElementById("venueID").value = activity.VenueID || "";
+
+        document.getElementById("activityDate").value = activity.Date || "";
+
+        document.getElementById("startTime").value = activity.StartTime || "";
+
+        document.getElementById("endTime").value = activity.EndTime || "";
+
+        document.getElementById("courtCount").value = activity.CourtCount || 1;
+
+        document.getElementById("capacity").value = activity.Capacity || 1;
+
+        document.getElementById("fee").value = activity.Fee || 0;
+
+        document.getElementById("registrationDeadline").value =
+          normalizeDateTimeLocal(activity.RegistrationDeadline);
+
+        document.getElementById("description").value =
+          activity.Description || "";
+
+        showVenueInfo();
+
+        document.getElementById("formArea").style.display = "block";
+
+        clearResult();
+      }
+
+      /* =========================================================
+       清理标题
+       ========================================================= */
+
+      function cleanTitle(title) {
+        return String(title || "")
+          .replace(/^\d{1,2}\/\d{1,2}\s*/, "")
+
+          .trim();
+      }
+
+      /* =========================================================
+       日期转换
+       ========================================================= */
+
+      function normalizeDateTimeLocal(value) {
+        if (!value) {
+          return "";
+        }
+
+        const text = String(value).trim();
+
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(text)) {
+          return text;
+        }
+
+        let match = text.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
+
+        if (match) {
+          return match[1] + "T" + match[2] + ":" + match[3];
+        }
+
+        match = text.match(
+          /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\s+(\d{1,2}):(\d{2})/,
+        );
+
+        if (match) {
+          return (
+            match[1] +
+            "-" +
+            String(match[2]).padStart(2, "0") +
+            "-" +
+            String(match[3]).padStart(2, "0") +
+            "T" +
+            String(match[4]).padStart(2, "0") +
+            ":" +
+            match[5]
+          );
+        }
+
+        return "";
+      }
+
+      /* =========================================================
+       场地资料
+       ========================================================= */
+
+      function showVenueInfo() {
+        const venueID = document.getElementById("venueID").value;
+
+        const info = document.getElementById("venueInfo");
+
+        const venue = venues.find(function (v) {
+          return String(v.VenueID) === String(venueID);
+        });
+
+        if (!venue) {
+          info.style.display = "none";
+
+          info.innerHTML = "";
+
+          return;
+        }
+
+        let html = "";
+
+        if (venue.Address) {
+          html += "📍 " + escapeHtml(venue.Address) + "<br>";
+        }
+
+        if (venue.Description) {
+          html += "ℹ️ " + escapeHtml(venue.Description) + "<br>";
+        }
+
+        if (venue.Access) {
+          html += "🚇 " + escapeHtml(venue.Access) + "<br>";
+        }
+
+        if (venue.Parking) {
+          html += "🚗 " + escapeHtml(venue.Parking);
+        }
+
+        if (html) {
+          info.innerHTML = html;
+
+          info.style.display = "block";
+        } else {
+          info.style.display = "none";
+        }
+      }
+
+      /* =========================================================
+       保存
+       ========================================================= */
+
+      function saveActivity() {
+        clearResult();
+
+        const id = document.getElementById("activitySelector").value;
+
+        if (!id) {
+          showError("请先选择活动");
+
+          return;
+        }
+
+        const data = {
+          activityID: id,
+
+          title: document.getElementById("title").value.trim(),
+
+          venueID: document.getElementById("venueID").value,
+
+          activityDate: document.getElementById("activityDate").value,
+
+          startTime: document.getElementById("startTime").value,
+
+          endTime: document.getElementById("endTime").value,
+
+          courtCount: Number(document.getElementById("courtCount").value),
+
+          capacity: Number(document.getElementById("capacity").value),
+
+          fee: Number(document.getElementById("fee").value),
+
+          registrationDeadline: document.getElementById("registrationDeadline")
+            .value,
+
+          description: document.getElementById("description").value.trim(),
+        };
+
+        if (!data.title) {
+          showError("请输入活动名称");
+
+          return;
+        }
+
+        if (!data.venueID) {
+          showError("请选择活动场地");
+
+          return;
+        }
+
+        if (!data.activityDate) {
+          showError("请选择活动日期");
+
+          return;
+        }
+
+        if (!data.startTime) {
+          showError("请选择开始时间");
+
+          return;
+        }
+
+        if (!data.endTime) {
+          showError("请选择结束时间");
+
+          return;
+        }
+
+        if (data.startTime >= data.endTime) {
+          showError("结束时间必须晚于开始时间");
+
+          return;
+        }
+
+        if (!Number.isInteger(data.courtCount) || data.courtCount <= 0) {
+          showError("球场数量必须大于 0");
+
+          return;
+        }
+
+        if (!Number.isInteger(data.capacity) || data.capacity <= 0) {
+          showError("报名人数上限必须大于 0");
+
+          return;
+        }
+
+        if (isNaN(data.fee) || data.fee < 0) {
+          showError("活动费用不能小于 0");
+
+          return;
+        }
+
+        const button = document.getElementById("saveButton");
+
+        button.disabled = true;
+
+        button.textContent = "⏳ 正在保存……";
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            button.disabled = false;
+
+            button.textContent = "💾 保存修改";
+
+            if (!res || !res.success) {
+              showError(res && res.message ? res.message : "修改失败");
+
+              return;
+            }
+
+            showSuccess(res);
+          })
+
+          .withFailureHandler(function (error) {
+            button.disabled = false;
+
+            button.textContent = "💾 保存修改";
+
+            showError(error.message || error);
+          })
+
+          .updateActivity(data);
+      }
+
+      /* =========================================================
+       成功
+       ========================================================= */
+
+      function showSuccess(res) {
+        document.getElementById("result").innerHTML = `
+
+        <div class="card success-card">
+
+          <h2>
+            ✅ 活动修改成功
+          </h2>
+
+          <p>
+            🆔 ActivityID：
+            ${escapeHtml(res.activityID)}
+          </p>
+
+          <p>
+            🏸
+            ${escapeHtml(res.title)}
+          </p>
+
+          <p>
+            ${escapeHtml(res.message || "活动修改成功")}
+          </p>
+
+          <button
+            type="button"
+            class="button submit-button"
+            onclick="goBack()"
+          >
+            ← 返回活动列表
+          </button>
+
+        </div>
+
+      `;
+      }
+
+      /* =========================================================
+       错误
+       ========================================================= */
+
+      function showError(message) {
+        document.getElementById("result").innerHTML = `
+
+        <div class="card error-card">
+
+          ❌
+          ${escapeHtml(String(message))}
+
+        </div>
+
+      `;
+      }
+
+      /* =========================================================
+       清除
+       ========================================================= */
+
+      function clearResult() {
+        document.getElementById("result").innerHTML = "";
+      }
+
+      /* =========================================================
+       返回
+       ========================================================= */
+
+      function goBack() {
+        const url =
+          "https://script.google.com/macros/s/AKfycbytMNkX7m-3KE79Izj1i4o2TucGVoJB6vAqjsl3RjTxe-bPfkKWBwHh_gg3Ag4guLgGtg/exec?page=index";
+
+        window.top.location.href = url;
+      }
+
+      /* =========================================================
+       HTML 安全
+       ========================================================= */
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+    </script>
+  </body>
+</html>
