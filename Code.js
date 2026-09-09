@@ -764,6 +764,18 @@ function doPost(e) {
     }
 
     // =====================================================
+    // PWA 保存管理员 FCM Token
+    // =====================================================
+
+    if (data.action === "saveAdminFCMToken") {
+      const result = saveAdminFCMToken(data.token);
+
+      return ContentService.createTextOutput(
+        JSON.stringify(result),
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // =====================================================
     // PWA Check-in API
     // =====================================================
     if (data.action === "pwaCheckin") {
