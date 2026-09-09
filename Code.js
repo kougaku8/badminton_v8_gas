@@ -686,16 +686,16 @@ function copyActivity(sourceActivityID, newDate, newTitle) {
 
     appendRow(CONFIG.SHEETS.ACTIVITIES, row);
 
-try {
-  sendActivityNewNotificationToV2_({
-    title: newTitle || "",
-    activityDate: newDate || "",
-    startTime: source.StartTime || "",
-    endTime: source.EndTime || "",
-  });
-} catch (error) {
-  console.error("V2 ACTIVITY_NEW 通知送信失败:", error);
-}
+    try {
+      sendActivityNewNotificationToV2_({
+        title: newTitle || "",
+        activityDate: newDate || "",
+        startTime: source.StartTime || "",
+        endTime: source.EndTime || "",
+      });
+    } catch (error) {
+      console.error("V2 ACTIVITY_NEW 通知送信失败:", error);
+    }
 
     // ==================================================
     // 返回新活动
@@ -749,72 +749,54 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
 
-// =====================================================
-// PWA 管理员登录
-// =====================================================
+    // =====================================================
+    // PWA 管理员登录
+    // =====================================================
 
-if (data.action === "checkAdminPassword") {
+    if (data.action === "checkAdminPassword") {
+      const success = checkAdminPassword(data.password);
 
-  const success = checkAdminPassword(data.password);
-
-  return ContentService
-    .createTextOutput(
-      JSON.stringify({
-        success: success
-      })
-    )
-    .setMimeType(ContentService.MimeType.JSON);
-}
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          success: success,
+        }),
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
 
     // =====================================================
     // PWA Check-in API
     // =====================================================
     if (data.action === "pwaCheckin") {
-
       // 获取活动列表
       if (data.type === "getActivities") {
-        return ContentService
-          .createTextOutput(
-            JSON.stringify(apiGetDashboardActivities())
-          )
-          .setMimeType(ContentService.MimeType.JSON);
+        return ContentService.createTextOutput(
+          JSON.stringify(apiGetDashboardActivities()),
+        ).setMimeType(ContentService.MimeType.JSON);
       }
 
       // 获取签到名单
       if (data.type === "getCheckinList") {
-        return ContentService
-          .createTextOutput(
-            JSON.stringify(
-              apiGetCheckinList(data.activityID)
-            )
-          )
-          .setMimeType(ContentService.MimeType.JSON);
+        return ContentService.createTextOutput(
+          JSON.stringify(apiGetCheckinList(data.activityID)),
+        ).setMimeType(ContentService.MimeType.JSON);
       }
 
       // 执行签到
       if (data.type === "checkin") {
-        return ContentService
-          .createTextOutput(
-            JSON.stringify(
-              apiCheckinRegistration(
-                data.registrationID,
-                data.paymentMethod
-              )
-            )
-          )
-          .setMimeType(ContentService.MimeType.JSON);
+        return ContentService.createTextOutput(
+          JSON.stringify(
+            apiCheckinRegistration(data.registrationID, data.paymentMethod),
+          ),
+        ).setMimeType(ContentService.MimeType.JSON);
       }
 
-      return ContentService
-        .createTextOutput(
-          JSON.stringify({
-            success: false,
-            message: "未知的 PWA API type"
-          })
-        )
-        .setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          success: false,
+          message: "未知的 PWA API type",
+        }),
+      ).setMimeType(ContentService.MimeType.JSON);
     }
-
 
     // =====================================================
     // 原来的管理员 FCM Token 功能
@@ -826,24 +808,18 @@ if (data.action === "checkAdminPassword") {
 
     saveAdminFCMToken(data.token);
 
-    return ContentService
-      .createTextOutput(
-        JSON.stringify({
-          success: true
-        })
-      )
-      .setMimeType(ContentService.MimeType.JSON);
-
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        success: true,
+      }),
+    ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-
-    return ContentService
-      .createTextOutput(
-        JSON.stringify({
-          success: false,
-          error: error.message
-        })
-      )
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -1906,8 +1882,5 @@ function apiCheckinRegistration(registrationID, paymentMethod) {
     };
   }
 
-  return checkinRegistration(
-    registrationID,
-    paymentMethod || "UNPAID"
-  );
+  return checkinRegistration(registrationID, paymentMethod || "UNPAID");
 }
