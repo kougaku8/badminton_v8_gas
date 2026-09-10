@@ -782,7 +782,7 @@ function doPost(e) {
       // 获取活动列表
       if (data.type === "getActivities") {
         return ContentService.createTextOutput(
-          JSON.stringify(apiGetDashboardActivities()),
+          JSON.stringify(apiGetPWAActivities()),
         ).setMimeType(ContentService.MimeType.JSON);
       }
 
@@ -1867,6 +1867,13 @@ function sendRegistrationCancelledNotificationToV2_(data) {
  */
 function apiGetDashboardActivities() {
   return getDashboardActivities();
+}
+
+/**
+ * PWA 获取活动列表
+ */
+function apiGetPWAActivities() {
+  return getActivities();
 }
 
 /**
