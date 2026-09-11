@@ -786,6 +786,12 @@ function doPost(e) {
         ).setMimeType(ContentService.MimeType.JSON);
       }
 
+      if (data.type === "getActivityDetail") {
+        return ContentService.createTextOutput(
+          JSON.stringify(apiGetPWAActivityDetail(data.activityID)),
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+
       // 获取签到名单
       if (data.type === "getCheckinList") {
         return ContentService.createTextOutput(
@@ -1874,6 +1880,13 @@ function apiGetDashboardActivities() {
  */
 function apiGetPWAActivities() {
   return getActivities();
+}
+
+/**
+ * PWA 获取活动详情
+ */
+function apiGetPWAActivityDetail(activityID) {
+  return getActivityDetail(activityID);
 }
 
 /**
