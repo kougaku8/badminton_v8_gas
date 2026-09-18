@@ -789,26 +789,27 @@ function doPost(e) {
       // 提交多个活动报名
       if (data.type === "registerActivities") {
         return ContentService.createTextOutput(
-          JSON.stringify(
-            registerActivities(data.data || data)
-          )
+          JSON.stringify(registerActivities(data.data || data)),
         ).setMimeType(ContentService.MimeType.JSON);
       }
 
       // 获取我的报名
       if (data.type === "getMyRegistrations") {
         return ContentService.createTextOutput(
-          JSON.stringify(
-            getMyRegistrations(data.contactValue || "")
-          )
+          JSON.stringify(getMyRegistrations(data.contactValue || "")),
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // PWA 取消报名
+      if (data.type === "cancelRegistration") {
+        return ContentService.createTextOutput(
+          JSON.stringify(cancelRegistration(data.registrationID || "")),
         ).setMimeType(ContentService.MimeType.JSON);
       }
 
       if (data.type === "getActivityDetail") {
         return ContentService.createTextOutput(
-          JSON.stringify(
-            apiGetPWAActivityDetail(data.activityID)
-          )
+          JSON.stringify(apiGetPWAActivityDetail(data.activityID)),
         ).setMimeType(ContentService.MimeType.JSON);
       }
 
