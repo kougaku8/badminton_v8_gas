@@ -291,6 +291,32 @@ function registerActivitiesCore(data) {
   }
 
   /**************************************************
+   * Idempotency Check
+   *
+   * 防止同一个 clientRequestID 重复报名
+   **************************************************/
+
+  const clientRequestID = normalizeString(data.clientRequestID);
+
+  if (clientRequestID) {
+    const duplicateResult = checkProcessedRequest(clientRequestID);
+
+    if (duplicateResult) {
+      return {
+        success: true,
+
+        duplicate: true,
+
+        message: "该请求已经处理",
+
+        clientRequestID: clientRequestID,
+
+        data: [],
+      };
+    }
+  }
+
+  /**************************************************
    * Activity IDs
    **************************************************/
 
@@ -644,6 +670,14 @@ function registerActivitiesCore(data) {
   /**************************************************
    * 全部成功
    **************************************************/
+
+  /*
+   * 全部报名成功后，
+   * 才记录 clientRequestID。
+   */
+  if (clientRequestID) {
+    saveProcessedRequest(clientRequestID);
+  }
 
   return {
     success: true,
@@ -2532,4 +2566,55 @@ function testGetRegistrationGroupDetail() {
   const result = getRegistrationGroupDetail("GRP260825093011756");
 
   Logger.log(JSON.stringify(result, null, 2));
+}
+
+/****************************************************
+ * ==================================================
+ * Processed Request - Idempotency Check
+ * ==================================================
+ ****************************************************/
+
+function checkProcessedRequest(clientRequestID) {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("ProcessedRequests");
+
+  if (!sheet || !clientRequestID) {
+    return false;
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  // 只有表头，没有数据
+  if (lastRow < 2) {
+    return false;
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  return values.some(function (row) {
+    return String(row[0]).trim() === String(clientRequestID).trim();
+  });
+}
+
+/****************************************************
+ * ==================================================
+ * Processed Request - Save
+ * ==================================================
+ ****************************************************/
+
+function saveProcessedRequest(clientRequestID) {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName("ProcessedRequests");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("ProcessedRequests");
+
+    sheet.getRange(1, 1, 1, 2).setValues([["ClientRequestID", "CreatedAt"]]);
+  }
+
+  if (!clientRequestID) {
+    return;
+  }
+
+  sheet.appendRow([clientRequestID, new Date()]);
 }
