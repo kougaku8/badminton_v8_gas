@@ -299,7 +299,10 @@ function registerActivitiesCore(data) {
   const clientRequestID = normalizeString(data.clientRequestID);
 
   if (clientRequestID) {
-    const duplicateResult = checkProcessedRequest(clientRequestID);
+    const duplicateResult = checkProcessedRequest(
+      clientRequestID,
+      "REGISTRATION",
+    );
 
     if (duplicateResult) {
       return {
@@ -676,7 +679,7 @@ function registerActivitiesCore(data) {
    * 才记录 clientRequestID。
    */
   if (clientRequestID) {
-    saveProcessedRequest(clientRequestID);
+    saveProcessedRequest(clientRequestID, "REGISTRATION");
   }
 
   return {
@@ -2570,29 +2573,96 @@ function testGetRegistrationGroupDetail() {
 
 /****************************************************
  * ==================================================
+ * Processed Request - Request Type
+ * ==================================================
+ *
+ * REQ-xxxx
+ *     → REGISTRATION
+ *
+ * CHECKIN-xxxx
+ *     → CHECKIN
+ ****************************************************/
+
+function getProcessedRequestType(clientRequestID) {
+  const id = normalizeString(clientRequestID).toUpperCase();
+
+  if (!id) {
+    return "";
+  }
+
+  if (id.indexOf("REQ-") === 0) {
+    return "REGISTRATION";
+  }
+
+  if (id.indexOf("CHECKIN-") === 0) {
+    return "CHECKIN";
+  }
+
+  return "";
+}
+
+/****************************************************
+ * ==================================================
  * Processed Request - Idempotency Check
  * ==================================================
  ****************************************************/
 
 function checkProcessedRequest(clientRequestID) {
+  const requestID = normalizeString(clientRequestID);
+
+  if (!requestID) {
+    return false;
+  }
+
+  const requestType = getProcessedRequestType(requestID);
+
+  /*
+   * 未知类型不参与幂等检查。
+   *
+   * 目前只接受：
+   *
+   * REQ-
+   * CHECKIN-
+   */
+  if (!requestType) {
+    return false;
+  }
+
   const ss = SpreadsheetApp.getActive();
+
   const sheet = ss.getSheetByName("ProcessedRequests");
 
-  if (!sheet || !clientRequestID) {
+  if (!sheet) {
     return false;
   }
 
   const lastRow = sheet.getLastRow();
 
-  // 只有表头，没有数据
   if (lastRow < 2) {
     return false;
   }
 
-  const values = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  const lastColumn = Math.max(sheet.getLastColumn(), 3);
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
 
   return values.some(function (row) {
-    return String(row[0]).trim() === String(clientRequestID).trim();
+    const savedRequestID = normalizeString(row[0]);
+
+    const savedRequestType = normalizeString(row[1]);
+
+    /*
+     * 新格式：
+     *
+     * A = ClientRequestID
+     * B = RequestType
+     * C = CreatedAt
+     */
+    if (savedRequestID === requestID && savedRequestType === requestType) {
+      return true;
+    }
+
+    return false;
   });
 }
 
@@ -2603,18 +2673,59 @@ function checkProcessedRequest(clientRequestID) {
  ****************************************************/
 
 function saveProcessedRequest(clientRequestID) {
+  const requestID = normalizeString(clientRequestID);
+
+  if (!requestID) {
+    return;
+  }
+
+  const requestType = getProcessedRequestType(requestID);
+
+  if (!requestType) {
+    Logger.log("ProcessedRequests：未知 ClientRequestID 类型：" + requestID);
+
+    return;
+  }
+
   const ss = SpreadsheetApp.getActive();
+
   let sheet = ss.getSheetByName("ProcessedRequests");
 
   if (!sheet) {
     sheet = ss.insertSheet("ProcessedRequests");
 
-    sheet.getRange(1, 1, 1, 2).setValues([["ClientRequestID", "CreatedAt"]]);
+    sheet
+      .getRange(1, 1, 1, 3)
+      .setValues([["ClientRequestID", "RequestType", "CreatedAt"]]);
+  } else {
+    const lastColumn = Math.max(sheet.getLastColumn(), 3);
+
+    const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+
+    if (!headers[0]) {
+      sheet.getRange(1, 1).setValue("ClientRequestID");
+    }
+
+    if (!headers[1]) {
+      sheet.getRange(1, 2).setValue("RequestType");
+    }
+
+    if (!headers[2]) {
+      sheet.getRange(1, 3).setValue("CreatedAt");
+    }
   }
 
-  if (!clientRequestID) {
+  /*
+   * 再次检查。
+   *
+   * 当前 withLock() 已经提供并发保护，
+   * 这里属于第二层保险。
+   */
+  if (checkProcessedRequest(requestID)) {
     return;
   }
 
-  sheet.appendRow([clientRequestID, new Date()]);
+  sheet.appendRow([requestID, requestType, new Date()]);
+
+  SpreadsheetApp.flush();
 }

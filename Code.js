@@ -824,7 +824,11 @@ function doPost(e) {
       if (data.type === "checkin") {
         return ContentService.createTextOutput(
           JSON.stringify(
-            apiCheckinRegistration(data.registrationID, data.paymentMethod),
+            apiCheckinRegistration(
+              data.registrationID,
+              data.paymentMethod,
+              data.clientRequestID,
+            ),
           ),
         ).setMimeType(ContentService.MimeType.JSON);
       }
@@ -1927,7 +1931,12 @@ function apiGetCheckinList(activityID) {
 /**
  * PWA 执行签到
  */
-function apiCheckinRegistration(registrationID, paymentMethod) {
+
+function apiCheckinRegistration(
+  registrationID,
+  paymentMethod,
+  clientRequestID,
+) {
   if (!registrationID) {
     return {
       success: false,
@@ -1935,5 +1944,16 @@ function apiCheckinRegistration(registrationID, paymentMethod) {
     };
   }
 
-  return checkinRegistration(registrationID, paymentMethod || "UNPAID");
+  if (!clientRequestID) {
+    return {
+      success: false,
+      message: "clientRequestID不能为空",
+    };
+  }
+
+  return checkinRegistration(
+    registrationID,
+    paymentMethod || "UNPAID",
+    clientRequestID,
+  );
 }

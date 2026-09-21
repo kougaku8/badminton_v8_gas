@@ -8,13 +8,47 @@
  *
  ****************************************************/
 
-function checkinRegistration(registrationID, paymentMethod) {
+function checkinRegistration(registrationID, paymentMethod, clientRequestID) {
   return withLock(function () {
-    return checkinRegistrationCore(registrationID, paymentMethod);
+    return checkinRegistrationCore(
+      registrationID,
+      paymentMethod,
+      clientRequestID,
+    );
   });
 }
 
-function checkinRegistrationCore(registrationID, paymentMethod) {
+function checkinRegistrationCore(
+  registrationID,
+  paymentMethod,
+  clientRequestID,
+) {
+  /**************************************************
+   * Idempotency Check
+   *
+   * 防止同一个 CHECKIN-xxx 重复签到
+   **************************************************/
+
+  const requestID = normalizeString(clientRequestID);
+
+  if (requestID) {
+    const duplicateResult = checkProcessedRequest(requestID);
+
+    if (duplicateResult) {
+      return {
+        success: true,
+
+        duplicate: true,
+
+        message: "该签到请求已经处理",
+
+        clientRequestID: requestID,
+
+        registrationID: registrationID,
+      };
+    }
+  }
+
   const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
 
   const registration = registrations.find(
@@ -82,6 +116,17 @@ function checkinRegistrationCore(registrationID, paymentMethod) {
 
     row,
   );
+
+  /**************************************************
+   * Idempotency Save
+   *
+   * 只有签到记录成功写入后，
+   * 才把 CHECKIN-xxx 标记为已处理。
+   **************************************************/
+
+  if (requestID) {
+    saveProcessedRequest(requestID);
+  }
 
   return {
     success: true,

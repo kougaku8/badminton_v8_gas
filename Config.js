@@ -14,6 +14,8 @@ const CONFIG = {
 
     CHECKINS: "Checkins",
 
+    PROCESSED_REQUESTS: "ProcessedRequests",
+
     NOTIFICATIONS: "Notifications",
 
     DEVICES: "Devices",
