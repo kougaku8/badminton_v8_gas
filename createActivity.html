@@ -1,483 +1,27 @@
 <!doctype html>
 <html>
-<head>
-  <base target="_top">
+  <head>
+    <base target="_top" />
 
-  <!-- =====================================================
+    <!-- =====================================================
        📱 手机显示设置
   ===================================================== -->
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
-  >
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+    />
 
-  <style>
-
-    /* =====================================================
+    <style>
+      /* =====================================================
        基础设置
     ===================================================== */
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      max-width: 100%;
-
-      margin: 0;
-      padding: 0;
-
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Noto Sans SC",
-        "Microsoft YaHei",
-        Arial,
-        sans-serif;
-
-      font-size: 18px;
-      line-height: 1.6;
-
-      background: #f5f5f5;
-      color: #222;
-    }
-
-
-    /* =====================================================
-       主容器
-    ===================================================== */
-
-    .container {
-      width: 100%;
-      max-width: none;
-
-      min-height: 100vh;
-      min-height: 100dvh;
-
-      margin: 0;
-
-      padding:
-        max(8px, env(safe-area-inset-top))
-        0
-        max(24px, env(safe-area-inset-bottom));
-    }
-
-
-    /* =====================================================
-       顶部标题
-    ===================================================== */
-
-    .header {
-      width: 100%;
-
-      background: #1976d2;
-      color: white;
-
-      padding: 24px 16px;
-
-      border-radius: 0;
-
-      margin-bottom: 12px;
-    }
-
-    .header h1 {
-      margin: 0 0 10px 0;
-
-      font-size: 48px;
-      line-height: 1.25;
-
-      font-weight: 700;
-    }
-
-    .header p {
-      margin: 0;
-
-      font-size: 32px;
-      line-height: 1.45;
-
-      opacity: 0.95;
-    }
-
-
-    /* =====================================================
-       卡片
-    ===================================================== */
-
-    .card {
-      width: 100%;
-
-      background: white;
-
-      padding: 20px 12px;
-
-      border-radius: 10px;
-
-      margin-bottom: 12px;
-
-      box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.06);
-    }
-
-
-    /* =====================================================
-       区域标题
-    ===================================================== */
-
-    .section-title {
-      font-size: 42px;
-
-      font-weight: bold;
-
-      margin: 0 0 18px 0;
-
-      line-height: 1.35;
-    }
-
-
-    /* =====================================================
-       表单
-    ===================================================== */
-
-    .form-group {
-      width: 100%;
-
-      margin-bottom: 20px;
-    }
-
-
-    /* =====================================================
-       Label
-    ===================================================== */
-
-    label {
-      display: block;
-
-      font-size: 32px;
-
-      font-weight: bold;
-
-      margin-bottom: 8px;
-
-      color: #222;
-
-      line-height: 1.4;
-    }
-
-    .required {
-      color: #d32f2f;
-
-      font-size: 34px;
-    }
-
-
-    /* =====================================================
-       输入框 / 下拉框 / 文本框
-    ===================================================== */
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-
-      min-height: 68px;
-
-      padding: 11px 14px;
-
-      border: 3px solid #888;
-
-      border-radius: 10px;
-
-      font-family: inherit;
-
-      font-size: 32px;
-
-      line-height: 1.4;
-
-      background: white;
-
-      color: #222;
-
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-
-    /* =====================================================
-       输入框焦点
-    ===================================================== */
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
-
-      border-color: #1976d2;
-
-      border-width: 4px;
-
-      box-shadow:
-        0 0 0 5px rgba(25, 118, 210, 0.18);
-    }
-
-
-    /* =====================================================
-       活动说明
-    ===================================================== */
-
-    textarea {
-      min-height: 200px;
-
-      resize: vertical;
-    }
-
-
-    /* =====================================================
-       两列
-    ===================================================== */
-
-    .row {
-      display: flex;
-
-      gap: 12px;
-
-      width: 100%;
-    }
-
-    .row .form-group {
-      flex: 1;
-
-      min-width: 0;
-    }
-
-
-    /* =====================================================
-       场地说明
-    ===================================================== */
-
-    .venue-info {
-      width: 100%;
-
-      margin-top: 8px;
-
-      padding: 12px;
-
-      background: #f5f9ff;
-
-      border-radius: 9px;
-
-      color: #444;
-
-      font-size: 28px;
-
-      line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       提示文字
-    ===================================================== */
-
-    .hint {
-      color: #666;
-
-      font-size: 26px;
-
-      margin-top: 6px;
-
-      line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       按钮
-    ===================================================== */
-
-    .button {
-      width: 100%;
-
-      min-height: 76px;
-
-      padding: 13px 16px;
-
-      border: 0;
-
-      border-radius: 12px;
-
-      font-family: inherit;
-
-      font-size: 34px;
-
-      line-height: 1.3;
-
-      font-weight: bold;
-
-      cursor: pointer;
-
-      -webkit-tap-highlight-color: transparent;
-
-      touch-action: manipulation;
-    }
-
-
-    /* =====================================================
-       创建活动按钮
-    ===================================================== */
-
-    .submit-button {
-      background: #1976d2;
-
-      color: white;
-    }
-
-    .submit-button:hover {
-      background: #1565c0;
-    }
-
-    .submit-button:active {
-      background: #0d47a1;
-
-      transform: scale(0.99);
-    }
-
-    .submit-button:disabled {
-      background: #90caf9;
-
-      cursor: not-allowed;
-
-      transform: none;
-    }
-
-
-    /* =====================================================
-       返回按钮
-    ===================================================== */
-
-    .secondary-button {
-      background: #eeeeee;
-
-      color: #333;
-
-      margin-top: 10px;
-    }
-
-    .secondary-button:active {
-      background: #dddddd;
-
-      transform: scale(0.99);
-    }
-
-
-    /* =====================================================
-       成功页面
-    ===================================================== */
-
-    .success-card {
-      width: 100%;
-
-      background: #e8f5e9;
-
-      border: 3px solid #81c784;
-
-      color: #1b5e20;
-    }
-
-    .success-title {
-      font-size: 42px;
-
-      font-weight: bold;
-
-      margin-bottom: 18px;
-
-      line-height: 1.35;
-    }
-
-    .success-item {
-      width: 100%;
-
-      background: white;
-
-      padding: 14px;
-
-      border-radius: 9px;
-
-      margin-bottom: 10px;
-    }
-
-    .success-label {
-      color: #666;
-
-      font-size: 26px;
-
-      margin-bottom: 4px;
-
-      line-height: 1.4;
-    }
-
-    .success-value {
-      font-weight: bold;
-
-      font-size: 32px;
-
-      color: #222;
-
-      line-height: 1.45;
-
-      word-break: break-word;
-    }
-
-
-    /* =====================================================
-       错误
-    ===================================================== */
-
-    .error-card {
-      width: 100%;
-
-      background: #ffebee;
-
-      border: 3px solid #ef9a9a;
-
-      color: #b71c1c;
-
-      font-size: 32px;
-
-      line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       Loading
-    ===================================================== */
-
-    .loading {
-      width: 100%;
-
-      color: #666;
-
-      text-align: center;
-
-      padding: 25px 12px;
-
-      font-size: 32px;
-
-      line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       📱 手机专用
-    ===================================================== */
-
-    @media screen and (max-width: 600px) {
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
 
       html,
       body {
@@ -490,25 +34,450 @@
         overflow-x: hidden;
       }
 
-      .container,
-      .header,
-      .card {
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Noto Sans SC", "Microsoft YaHei",
+          Arial, sans-serif;
+
+        font-size: 18px;
+        line-height: 1.6;
+
+        background: #f5f5f5;
+        color: #222;
+      }
+
+      /* =====================================================
+       主容器
+    ===================================================== */
+
+      .container {
         width: 100%;
         max-width: none;
+
+        min-height: 100vh;
+        min-height: 100dvh;
+
+        margin: 0;
+
+        padding: max(8px, env(safe-area-inset-top)) 0
+          max(24px, env(safe-area-inset-bottom));
       }
+
+      /* =====================================================
+       顶部标题
+    ===================================================== */
+
+      .header {
+        width: 100%;
+
+        background: #1976d2;
+        color: white;
+
+        padding: 24px 16px;
+
+        border-radius: 0;
+
+        margin-bottom: 12px;
+      }
+
+      .header h1 {
+        margin: 0 0 10px 0;
+
+        font-size: 48px;
+        line-height: 1.25;
+
+        font-weight: 700;
+      }
+
+      .header p {
+        margin: 0;
+
+        font-size: 32px;
+        line-height: 1.45;
+
+        opacity: 0.95;
+      }
+
+      /* =====================================================
+       卡片
+    ===================================================== */
+
+      .card {
+        width: 100%;
+
+        background: white;
+
+        padding: 20px 12px;
+
+        border-radius: 10px;
+
+        margin-bottom: 12px;
+
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      /* =====================================================
+       区域标题
+    ===================================================== */
+
+      .section-title {
+        font-size: 42px;
+
+        font-weight: bold;
+
+        margin: 0 0 18px 0;
+
+        line-height: 1.35;
+      }
+
+      /* =====================================================
+       表单
+    ===================================================== */
+
+      .form-group {
+        width: 100%;
+
+        margin-bottom: 20px;
+      }
+
+      /* =====================================================
+       Label
+    ===================================================== */
+
+      label {
+        display: block;
+
+        font-size: 32px;
+
+        font-weight: bold;
+
+        margin-bottom: 8px;
+
+        color: #222;
+
+        line-height: 1.4;
+      }
+
+      .required {
+        color: #d32f2f;
+
+        font-size: 34px;
+      }
+
+      /* =====================================================
+       输入框 / 下拉框 / 文本框
+    ===================================================== */
 
       input,
       select,
-      textarea,
-      button {
+      textarea {
         width: 100%;
-        max-width: 100%;
+
+        min-height: 68px;
+
+        padding: 11px 14px;
+
+        border: 3px solid #888;
+
+        border-radius: 10px;
+
+        font-family: inherit;
+
+        font-size: 32px;
+
+        line-height: 1.4;
+
+        background: white;
+
+        color: #222;
+
+        -webkit-appearance: none;
+        appearance: none;
       }
 
-    }
+      /* =====================================================
+       输入框焦点
+    ===================================================== */
 
-  </style>
-</head>
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+
+        border-color: #1976d2;
+
+        border-width: 4px;
+
+        box-shadow: 0 0 0 5px rgba(25, 118, 210, 0.18);
+      }
+
+      /* =====================================================
+       活动说明
+    ===================================================== */
+
+      textarea {
+        min-height: 200px;
+
+        resize: vertical;
+      }
+
+      /* =====================================================
+       两列
+    ===================================================== */
+
+      .row {
+        display: flex;
+
+        gap: 12px;
+
+        width: 100%;
+      }
+
+      .row .form-group {
+        flex: 1;
+
+        min-width: 0;
+      }
+
+      /* =====================================================
+       场地说明
+    ===================================================== */
+
+      .venue-info {
+        width: 100%;
+
+        margin-top: 8px;
+
+        padding: 12px;
+
+        background: #f5f9ff;
+
+        border-radius: 9px;
+
+        color: #444;
+
+        font-size: 28px;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+       提示文字
+    ===================================================== */
+
+      .hint {
+        color: #666;
+
+        font-size: 26px;
+
+        margin-top: 6px;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+       按钮
+    ===================================================== */
+
+      .button {
+        width: 100%;
+
+        min-height: 76px;
+
+        padding: 13px 16px;
+
+        border: 0;
+
+        border-radius: 12px;
+
+        font-family: inherit;
+
+        font-size: 34px;
+
+        line-height: 1.3;
+
+        font-weight: bold;
+
+        cursor: pointer;
+
+        -webkit-tap-highlight-color: transparent;
+
+        touch-action: manipulation;
+      }
+
+      /* =====================================================
+       创建活动按钮
+    ===================================================== */
+
+      .submit-button {
+        background: #1976d2;
+
+        color: white;
+      }
+
+      .submit-button:hover {
+        background: #1565c0;
+      }
+
+      .submit-button:active {
+        background: #0d47a1;
+
+        transform: scale(0.99);
+      }
+
+      .submit-button:disabled {
+        background: #90caf9;
+
+        cursor: not-allowed;
+
+        transform: none;
+      }
+
+      /* =====================================================
+       返回按钮
+    ===================================================== */
+
+      .secondary-button {
+        background: #eeeeee;
+
+        color: #333;
+
+        margin-top: 10px;
+      }
+
+      .secondary-button:active {
+        background: #dddddd;
+
+        transform: scale(0.99);
+      }
+
+      /* =====================================================
+       成功页面
+    ===================================================== */
+
+      .success-card {
+        width: 100%;
+
+        background: #e8f5e9;
+
+        border: 3px solid #81c784;
+
+        color: #1b5e20;
+      }
+
+      .success-title {
+        font-size: 42px;
+
+        font-weight: bold;
+
+        margin-bottom: 18px;
+
+        line-height: 1.35;
+      }
+
+      .success-item {
+        width: 100%;
+
+        background: white;
+
+        padding: 14px;
+
+        border-radius: 9px;
+
+        margin-bottom: 10px;
+      }
+
+      .success-label {
+        color: #666;
+
+        font-size: 26px;
+
+        margin-bottom: 4px;
+
+        line-height: 1.4;
+      }
+
+      .success-value {
+        font-weight: bold;
+
+        font-size: 32px;
+
+        color: #222;
+
+        line-height: 1.45;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+       错误
+    ===================================================== */
+
+      .error-card {
+        width: 100%;
+
+        background: #ffebee;
+
+        border: 3px solid #ef9a9a;
+
+        color: #b71c1c;
+
+        font-size: 32px;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+       Loading
+    ===================================================== */
+
+      .loading {
+        width: 100%;
+
+        color: #666;
+
+        text-align: center;
+
+        padding: 25px 12px;
+
+        font-size: 32px;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+       📱 手机专用
+    ===================================================== */
+
+      @media screen and (max-width: 600px) {
+        html,
+        body {
+          width: 100%;
+          max-width: 100%;
+
+          margin: 0;
+          padding: 0;
+
+          overflow-x: hidden;
+        }
+
+        .container,
+        .header,
+        .card {
+          width: 100%;
+          max-width: none;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
   <body>
     <div class="container">
       <!-- =========================
@@ -1269,11 +1238,19 @@
       // 返回活动列表
       // ========================================
 
+      /*
       function goBack() {
         const url = WEB_APP_URL + "?page=index";
 
         console.log("返回活动列表:", url);
 
+        window.top.location.href = url;
+      }
+      */
+
+      function goBack() {
+        const url = "https://kougaku8.github.io/badminton_pwa/";
+        console.log("返回活动列表:", url);
         window.top.location.href = url;
       }
 
