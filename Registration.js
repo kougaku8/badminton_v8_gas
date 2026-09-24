@@ -1137,15 +1137,31 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * V1 → V2
+   * V1 → Notification Queue
    * REGISTRATION_OK
    *
-   * 只有正式报名 CONFIRMED 才发送。
+   * 第一阶段：
+   *
+   * 不再直接调用 V2。
+   *
+   * Registration
+   *      ↓
+   * Queue PENDING
+   *      ↓
+   * 立即返回报名成功
+   *
+   * Trigger
+   *      ↓
+   * V2
+   *      ↓
+   * FCM
+   *
+   * 只有正式报名 CONFIRMED 才进入 Queue。
    **************************************************/
 
   if (status === CONFIG.STATUS.CONFIRMED) {
     try {
-      sendRegistrationOkNotificationToV2_({
+      const queueResult = enqueueRegistrationOkNotification({
         activityID: activityID,
 
         activityTitle: activity.Title || "",
@@ -1160,10 +1176,18 @@ function registerOneActivityCore(data) {
 
         capacity: capacity,
       });
-    } catch (error) {
+
       Logger.log(
-        "V1 → V2 REGISTRATION_OK 通知失败: " + (error.message || error),
+        "REGISTRATION_OK 已进入 NotificationQueue：" +
+          JSON.stringify(queueResult),
       );
+    } catch (error) {
+      /*
+       * Queue 写入失败需要记录。
+       *
+       * 这里暂时不让 FCM 阻塞报名。
+       */
+      Logger.log("REGISTRATION_OK Queue 写入失败: " + (error.message || error));
     }
   }
 
@@ -2332,7 +2356,7 @@ function promoteWaitlistCore(activityID) {
    **************************************************/
 
   try {
-    sendRegistrationOkNotificationToV2_({
+    const queueResult = enqueueRegistrationOkNotification({
       activityID: targetActivityID,
 
       activityTitle: activity.Title || "",
@@ -2347,9 +2371,14 @@ function promoteWaitlistCore(activityID) {
 
       capacity: capacity,
     });
+
+    Logger.log(
+      "候补转正 REGISTRATION_OK 已进入 NotificationQueue：" +
+        JSON.stringify(queueResult),
+    );
   } catch (error) {
     Logger.log(
-      "候补自动转正 REGISTRATION_OK 通知失败: " + (error.message || error),
+      "候补转正 REGISTRATION_OK Queue 写入失败: " + (error.message || error),
     );
   }
 
@@ -2728,4 +2757,253 @@ function saveProcessedRequest(clientRequestID) {
   sheet.appendRow([requestID, requestType, new Date()]);
 
   SpreadsheetApp.flush();
+}
+
+/****************************************************
+ * ==================================================
+ * Notification Queue
+ * ==================================================
+ *
+ * 第一阶段：
+ *
+ * Registration
+ *      ↓
+ * NotificationQueue
+ *      ↓
+ * PENDING
+ *      ↓
+ * Trigger
+ *      ↓
+ * sendRegistrationOkNotificationToV2_()
+ *      ↓
+ * SENT
+ *
+ ****************************************************/
+
+/**
+ * 创建 NotificationQueue Sheet
+ *
+ * 如果不存在则自动创建。
+ */
+function getNotificationQueueSheet() {
+  const ss = SpreadsheetApp.getActive();
+
+  let sheet = ss.getSheetByName("NotificationQueue");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("NotificationQueue");
+
+    sheet
+      .getRange(1, 1, 1, 7)
+      .setValues([
+        [
+          "QueueID",
+          "Type",
+          "Status",
+          "CreatedAt",
+          "ProcessedAt",
+          "Payload",
+          "ErrorMessage",
+        ],
+      ]);
+  }
+
+  return sheet;
+}
+
+/**
+ * 生成 Queue ID
+ */
+function generateNotificationQueueID() {
+  return generateID("Q");
+}
+
+/**
+ * 写入 Notification Queue
+ *
+ * 注意：
+ *
+ * 这里只负责写 Queue。
+ *
+ * 不发送 FCM。
+ * 不调用 V2。
+ * 不等待设备。
+ */
+function enqueueRegistrationOkNotification(payload) {
+  if (!payload) {
+    throw new Error("Notification Queue Payload 为空");
+  }
+
+  const sheet = getNotificationQueueSheet();
+
+  const queueID = generateNotificationQueueID();
+
+  const now = new Date();
+
+  sheet.appendRow([
+    queueID,
+
+    "REGISTRATION_OK",
+
+    "PENDING",
+
+    now,
+
+    "",
+
+    JSON.stringify(payload),
+
+    "",
+  ]);
+
+  SpreadsheetApp.flush();
+
+  return {
+    success: true,
+
+    queueID: queueID,
+
+    status: "PENDING",
+  };
+}
+
+/**
+ * 后台处理 Notification Queue
+ *
+ * 由 Time-driven Trigger 调用。
+ *
+ * 例如：
+ *
+ * 每分钟执行一次。
+ */
+function processNotificationQueue() {
+  const sheet = getNotificationQueueSheet();
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow <= 1) {
+    return {
+      success: true,
+
+      processed: 0,
+
+      message: "没有待处理通知",
+    };
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 7);
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+
+  const processed = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const rowNumber = i + 2;
+
+    const queueID = normalizeString(values[i][0]);
+
+    const type = normalizeString(values[i][1]);
+
+    const status = normalizeString(values[i][2]);
+
+    const payloadString = normalizeString(values[i][5]);
+
+    /*
+     * 只处理 PENDING。
+     */
+    if (status !== "PENDING") {
+      continue;
+    }
+
+    /*
+     * 第一阶段只处理 REGISTRATION_OK。
+     */
+    if (type !== "REGISTRATION_OK") {
+      continue;
+    }
+
+    if (!payloadString) {
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue("Payload 为空");
+
+      continue;
+    }
+
+    let payload;
+
+    try {
+      payload = JSON.parse(payloadString);
+    } catch (error) {
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet
+        .getRange(rowNumber, 7)
+        .setValue("Payload JSON 解析失败：" + (error.message || error));
+
+      continue;
+    }
+
+    /*
+     * V2
+     *
+     * 这里才真正发送。
+     */
+    try {
+      Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
+
+      const result = sendRegistrationOkNotificationToV2_(payload);
+
+      Logger.log("NotificationQueue V2 返回：" + JSON.stringify(result));
+
+      /*
+       * 发送成功。
+       */
+      sheet.getRange(rowNumber, 3).setValue("SENT");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue("");
+
+      processed.push({
+        queueID: queueID,
+
+        status: "SENT",
+      });
+    } catch (error) {
+      /*
+       * 发送失败。
+       *
+       * 先记录 FAILED。
+       *
+       * 不影响已经成功的报名。
+       */
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue(error.message || String(error));
+
+      Logger.log(
+        "NotificationQueue 发送失败：" +
+          queueID +
+          " / " +
+          (error.message || error),
+      );
+    }
+  }
+
+  SpreadsheetApp.flush();
+
+  return {
+    success: true,
+
+    processed: processed.length,
+
+    data: processed,
+  };
 }
