@@ -549,22 +549,65 @@ function testBatchCopyActivities() {
 
 /****************************************************
  * Dashboard Activity List
+ *
+ * 规则：
+ * 1. OPEN / PAUSED 才进入 Dashboard
+ * 2. 尚未结束的活动优先
+ * 3. 已结束活动排在后面
  ****************************************************/
 
 function getDashboardActivities() {
   const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
 
+  const now = new Date();
+
   return activities
-    .filter(
-      (a) =>
+
+    .filter(function (a) {
+      return (
         a.Status === CONFIG.STATUS.ACTIVITY_OPEN ||
-        a.Status === CONFIG.STATUS.ACTIVITY_PAUSED,
-    )
-    .map((a) => {
+        a.Status === CONFIG.STATUS.ACTIVITY_PAUSED
+      );
+    })
+
+    .map(function (a) {
+      const endDateTime = parseActivityEndDateTime(a.ActivityDate, a.EndTime);
+
+      const expired = endDateTime && endDateTime < now;
+
+      return {
+        ActivityID: a.ActivityID,
+        Title: a.Title || "",
+        Date: a.ActivityDate || "",
+        StartTime: a.StartTime || "",
+        EndTime: a.EndTime || "",
+        Status: a.Status || "",
+        Expired: !!expired,
+
+        // 用于排序
+        SortTime: endDateTime ? endDateTime.getTime() : Number.MAX_SAFE_INTEGER,
+      };
+    })
+
+    .sort(function (a, b) {
+      // 未过期优先
+      if (a.Expired !== b.Expired) {
+        return a.Expired ? 1 : -1;
+      }
+
+      // 同类型按照活动结束时间排序
+      return a.SortTime - b.SortTime;
+    })
+
+    .map(function (a) {
       return {
         ActivityID: a.ActivityID,
         Title: a.Title,
-        Date: a.ActivityDate,
+        Date: a.Date,
+        StartTime: a.StartTime,
+        EndTime: a.EndTime,
+        Status: a.Status,
+        Expired: a.Expired,
       };
     });
 }
@@ -844,16 +887,129 @@ function getExpiredActivityPreview(activityID) {
 }
 
 /****************************************************
- * 删除指定的过期活动
+ * 获取活动删除预览
+ *
+ * 用于：
+ * 1. 删除过期活动
+ * 2. 删除管理员当前选定的活动
+ *
+ * 注意：
+ * 不限制活动是否已经结束。
  ****************************************************/
 
-function deleteExpiredActivity(activityID) {
+function getActivityDeletePreview(activityID) {
   if (!activityID) {
     return {
       success: false,
       message: "缺少 ActivityID",
     };
   }
+
+  const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
+
+  const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
+
+  const checkins = sheetToJson(CONFIG.SHEETS.CHECKINS);
+
+  const activity = activities.find(function (a) {
+    return String(a.ActivityID) === String(activityID);
+  });
+
+  if (!activity) {
+    return {
+      success: false,
+      message: "找不到这个活动",
+    };
+  }
+
+  const activityRegistrations = registrations.filter(function (r) {
+    return String(r.ActivityID) === String(activityID);
+  });
+
+  const registrationIDs = new Set(
+    activityRegistrations.map(function (r) {
+      return String(r.RegistrationID);
+    }),
+  );
+
+  const activityCheckins = checkins.filter(function (c) {
+    return (
+      String(c.ActivityID) === String(activityID) ||
+      registrationIDs.has(String(c.RegistrationID))
+    );
+  });
+
+  const endDateTime = parseActivityEndDateTime(
+    activity.ActivityDate,
+    activity.EndTime,
+  );
+
+  const expired = endDateTime ? endDateTime < new Date() : false;
+
+  return {
+    success: true,
+
+    activity: {
+      ActivityID: activity.ActivityID,
+
+      Title: activity.Title || "",
+
+      Date: activity.ActivityDate || "",
+
+      StartTime: activity.StartTime || "",
+
+      EndTime: activity.EndTime || "",
+
+      Status: activity.Status || "",
+    },
+
+    expired: expired,
+
+    registrationCount: activityRegistrations.length,
+
+    checkinCount: activityCheckins.length,
+
+    /*
+     * 你的付款目前是在 CHECKINS
+     * 的 PaymentMethod 中统计。
+     *
+     * 所以这里也把付款记录数量统计出来。
+     */
+
+    paymentCount: activityCheckins.filter(function (c) {
+      return c.PaymentMethod && String(c.PaymentMethod).trim() !== "";
+    }).length,
+  };
+}
+
+/****************************************************
+ * 删除指定的过期活动
+ ****************************************************/
+/****************************************************
+ * 删除指定活动
+ *
+ * 功能：
+ * 1. 可以删除任何管理员选定的活动
+ * 2. 不限制活动是否已经结束
+ * 3. 删除 ACTIVITIES
+ * 4. 删除 REGISTRATIONS
+ * 5. 删除 CHECKINS
+ *
+ * 注意：
+ * 前端必须先进行二次确认。
+ ****************************************************/
+
+function deleteActivity(activityID) {
+  if (!activityID) {
+    return {
+      success: false,
+      message: "缺少 ActivityID",
+    };
+  }
+
+  /****************************************************
+   * 读取活动
+   ****************************************************/
 
   const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
 
@@ -869,37 +1025,10 @@ function deleteExpiredActivity(activityID) {
   }
 
   /****************************************************
-   * 再次检查活动是否真的已经结束
-   *
-   * 防止前端显示过期，但管理员操作时活动状态已经变化。
+   * 读取报名
    ****************************************************/
-
-  const endDateTime = parseActivityEndDateTime(
-    activity.ActivityDate,
-    activity.EndTime,
-  );
-
-  if (!endDateTime) {
-    return {
-      success: false,
-      message: "无法判断活动结束时间",
-    };
-  }
-
-  if (endDateTime >= new Date()) {
-    return {
-      success: false,
-      message: "这个活动还没有结束，不能删除",
-    };
-  }
 
   const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
-
-  const checkins = sheetToJson(CONFIG.SHEETS.CHECKINS);
-
-  /****************************************************
-   * 找出该活动的报名
-   ****************************************************/
 
   const activityRegistrations = registrations.filter(function (r) {
     return String(r.ActivityID) === String(activityID);
@@ -912,8 +1041,10 @@ function deleteExpiredActivity(activityID) {
   );
 
   /****************************************************
-   * 找出该活动的签到记录
+   * 读取签到
    ****************************************************/
+
+  const checkins = sheetToJson(CONFIG.SHEETS.CHECKINS);
 
   const activityCheckins = checkins.filter(function (c) {
     return (
@@ -926,18 +1057,13 @@ function deleteExpiredActivity(activityID) {
    * 获取 Sheet
    ****************************************************/
 
-  const activitiesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    CONFIG.SHEETS.ACTIVITIES,
-  );
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  const registrationsSheet =
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-      CONFIG.SHEETS.REGISTRATIONS,
-    );
+  const activitiesSheet = ss.getSheetByName(CONFIG.SHEETS.ACTIVITIES);
 
-  const checkinsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    CONFIG.SHEETS.CHECKINS,
-  );
+  const registrationsSheet = ss.getSheetByName(CONFIG.SHEETS.REGISTRATIONS);
+
+  const checkinsSheet = ss.getSheetByName(CONFIG.SHEETS.CHECKINS);
 
   if (!activitiesSheet) {
     throw new Error("找不到 ACTIVITIES Sheet");
@@ -953,54 +1079,72 @@ function deleteExpiredActivity(activityID) {
 
   /****************************************************
    * 删除 CHECKINS
-   *
-   * 同时按照 ActivityID 和 RegistrationID 判断
-   * 防止异常数据残留。
    ****************************************************/
 
-  deleteRowsByCondition(checkinsSheet, function (row, headers) {
-    const activityIndex = headers.indexOf("ActivityID");
+  const deletedCheckins = deleteRowsByCondition(
+    checkinsSheet,
+    function (row, headers) {
+      const activityIndex = headers.indexOf("ActivityID");
 
-    const registrationIndex = headers.indexOf("RegistrationID");
+      const registrationIndex = headers.indexOf("RegistrationID");
 
-    const rowActivityID = activityIndex >= 0 ? String(row[activityIndex]) : "";
+      const rowActivityID =
+        activityIndex >= 0 ? String(row[activityIndex]) : "";
 
-    const rowRegistrationID =
-      registrationIndex >= 0 ? String(row[registrationIndex]) : "";
+      const rowRegistrationID =
+        registrationIndex >= 0 ? String(row[registrationIndex]) : "";
 
-    return (
-      rowActivityID === String(activityID) ||
-      registrationIDs.has(rowRegistrationID)
-    );
-  });
+      return (
+        rowActivityID === String(activityID) ||
+        registrationIDs.has(rowRegistrationID)
+      );
+    },
+  );
 
   /****************************************************
    * 删除 REGISTRATIONS
    ****************************************************/
 
-  deleteRowsByCondition(registrationsSheet, function (row, headers) {
-    const activityIndex = headers.indexOf("ActivityID");
+  const deletedRegistrations = deleteRowsByCondition(
+    registrationsSheet,
+    function (row, headers) {
+      const activityIndex = headers.indexOf("ActivityID");
 
-    if (activityIndex === -1) {
-      return false;
-    }
+      if (activityIndex === -1) {
+        return false;
+      }
 
-    return String(row[activityIndex]) === String(activityID);
-  });
+      return String(row[activityIndex]) === String(activityID);
+    },
+  );
 
   /****************************************************
    * 删除 ACTIVITIES
    ****************************************************/
 
-  deleteRowsByCondition(activitiesSheet, function (row, headers) {
-    const activityIndex = headers.indexOf("ActivityID");
+  const deletedActivities = deleteRowsByCondition(
+    activitiesSheet,
+    function (row, headers) {
+      const activityIndex = headers.indexOf("ActivityID");
 
-    if (activityIndex === -1) {
-      return false;
-    }
+      if (activityIndex === -1) {
+        return false;
+      }
 
-    return String(row[activityIndex]) === String(activityID);
-  });
+      return String(row[activityIndex]) === String(activityID);
+    },
+  );
+
+  /****************************************************
+   * 最终确认
+   ****************************************************/
+
+  if (deletedActivities === 0) {
+    return {
+      success: false,
+      message: "活动删除失败：没有找到对应的活动记录",
+    };
+  }
 
   /****************************************************
    * 返回结果
@@ -1013,9 +1157,15 @@ function deleteExpiredActivity(activityID) {
 
     Title: activity.Title || "",
 
-    deletedRegistrations: activityRegistrations.length,
+    deletedActivities: deletedActivities,
 
-    deletedCheckins: activityCheckins.length,
+    deletedRegistrations: deletedRegistrations,
+
+    deletedCheckins: deletedCheckins,
+
+    deletedPayments: activityCheckins.filter(function (c) {
+      return c.PaymentMethod && String(c.PaymentMethod).trim() !== "";
+    }).length,
   };
 }
 
@@ -1034,23 +1184,49 @@ function deleteRowsByCondition(sheet, condition) {
 
   const headers = values[0];
 
-  const rowsToDelete = [];
+  const rowsToKeep = [headers];
+
+  let deletedCount = 0;
 
   for (let i = 1; i < values.length; i++) {
-    if (condition(values[i], headers)) {
-      rowsToDelete.push(i + 1);
+    const row = values[i];
+
+    if (condition(row, headers)) {
+      deletedCount++;
+    } else {
+      rowsToKeep.push(row);
     }
   }
 
   /*
-   * 必须从最后一行开始删除。
+   * 没有需要删除的记录
    */
 
-  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
-    sheet.deleteRow(rowsToDelete[i]);
+  if (deletedCount === 0) {
+    return 0;
   }
 
-  return rowsToDelete.length;
+  /*
+   * 清除原来的数据区域
+   *
+   * 保留 Header
+   */
+
+  if (values.length > 1) {
+    sheet.getRange(2, 1, values.length - 1, headers.length).clearContent();
+  }
+
+  /*
+   * 一次性写回需要保留的数据
+   */
+
+  if (rowsToKeep.length > 1) {
+    sheet
+      .getRange(2, 1, rowsToKeep.length - 1, headers.length)
+      .setValues(rowsToKeep.slice(1));
+  }
+
+  return deletedCount;
 }
 
 /****************************************************

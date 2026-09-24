@@ -813,18 +813,36 @@
 
         </p>
 
+      <p>
+  📊 活动状态：
 
-        <p>
-          📊 活动状态：
+  <strong>
+    ${escapeHtml(a.Status || "-")}
+  </strong>
+</p>
 
-          <strong>
-            ${escapeHtml(a.Status || "-")}
-          </strong>
+<hr>
 
-        </p>
+<button
+  type="button"
+  class="cancel-button"
+  onclick="previewDeleteActivity('${escapeJs(a.ActivityID)}')">
 
-      </div>
+  🗑️ 删除这个活动
 
+</button>
+
+<p
+  style="
+    font-size:24px;
+    color:#777;
+    text-align:center;
+  "
+>
+  删除后，活动、报名、签到及付款记录都会永久删除。
+</p>
+
+</div>
 
       <!-- 签到统计 -->
 
@@ -1707,9 +1725,7 @@
           <button
             type="button"
             class="cancel-button"
-            onclick="previewDeleteExpiredActivity('${escapeJs(
-              activity.ActivityID,
-            )}')">
+            onclick="previewDeleteActivity('${escapeJs(activity.ActivityID)}')">
 
             🗑️ 删除这个活动
 
@@ -1730,13 +1746,12 @@
       }
 
       // ========================================
-      // 删除前预览
+      // 删除过期活动前：显示确认信息
       // ========================================
 
       function previewDeleteExpiredActivity(activityID) {
         if (!activityID) {
           alert("❌ 没有找到 ActivityID");
-
           return;
         }
 
@@ -1771,48 +1786,42 @@
               " 条\n" +
               "✅ 签到记录：" +
               Number(res.checkinCount || 0) +
+              " 条\n" +
+              "💰 付款记录：" +
+              Number(res.paymentCount || 0) +
               " 条\n\n" +
               "⚠️ 删除后无法恢复。\n" +
-              "活动、报名、签到和付款记录" +
-              "都会被删除。\n\n" +
+              "活动、报名、签到和付款记录都会被删除。\n\n" +
               "确定继续吗？";
 
-            const confirmed = window.confirm(message);
-
-            if (!confirmed) {
+            if (!window.confirm(message)) {
               return;
             }
 
-            deleteExpiredActivityFromDashboard(activityID);
+            deleteActivityFromDashboard(activityID);
           })
 
           .withFailureHandler(function (error) {
             alert("❌ 获取删除信息失败\n\n" + (error.message || error));
           })
 
-          .getExpiredActivityPreview(activityID);
+          .getActivityDeletePreview(activityID);
       }
 
       // ========================================
-      // 执行删除过期活动
+      // 执行删除活动
       // ========================================
 
-      function deleteExpiredActivityFromDashboard(activityID) {
+      function deleteActivityFromDashboard(activityID) {
         const box = document.getElementById("expiredActivities");
 
         box.innerHTML = `
-
-      <div class="card">
-
-        <div class="loading">
-
-          ⏳ 正在删除活动……
-
-        </div>
-
+    <div class="card">
+      <div class="loading">
+        ⏳ 正在删除活动……
       </div>
-
-    `;
+    </div>
+  `;
 
         google.script.run
 
@@ -1831,31 +1840,28 @@
               "✅ 活动删除成功：" +
                 escapeHtml(res.Title || res.ActivityID) +
                 "<br><br>" +
+                "删除活动记录：" +
+                Number(res.deletedActivities || 0) +
+                "<br>" +
                 "删除报名记录：" +
                 Number(res.deletedRegistrations || 0) +
                 "<br>" +
                 "删除签到记录：" +
-                Number(res.deletedCheckins || 0),
+                Number(res.deletedCheckins || 0) +
+                "<br>" +
+                "删除付款记录：" +
+                Number(res.deletedPayments || 0),
 
               "success",
             );
 
-            /*
-             * 重新加载活动列表
-             */
-
+            // 重新加载活动列表
             loadActivities();
 
-            /*
-             * 重新检查过期活动
-             */
-
+            // 重新加载过期活动
             loadExpiredActivities();
 
-            /*
-             * 清空当前 Dashboard
-             */
-
+            // 清空当前 Dashboard
             document.getElementById("result").innerHTML = "";
 
             document.getElementById("members").innerHTML = "";
@@ -1869,7 +1875,153 @@
             loadExpiredActivities();
           })
 
-          .deleteExpiredActivity(activityID);
+          .deleteActivity(activityID);
+      }
+
+      // ========================================
+      // 删除活动前预览
+      // ========================================
+
+      function previewDeleteActivity(activityID) {
+        if (!activityID) {
+          alert("❌ 没有找到 ActivityID");
+
+          return;
+        }
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              alert(
+                "❌ " + (res && res.message ? res.message : "无法读取活动资料"),
+              );
+
+              return;
+            }
+
+            const a = res.activity || {};
+
+            const message =
+              "⚠️ 确定要删除这个活动吗？\n\n" +
+              "🏸 活动：" +
+              (a.Title || "-") +
+              "\n" +
+              "📅 日期：" +
+              (a.Date || "-") +
+              "\n" +
+              "🕐 时间：" +
+              (a.StartTime || "-") +
+              " - " +
+              (a.EndTime || "-") +
+              "\n" +
+              "📊 状态：" +
+              (a.Status || "-") +
+              "\n\n" +
+              "📋 报名记录：" +
+              Number(res.registrationCount || 0) +
+              " 条\n" +
+              "✅ 签到记录：" +
+              Number(res.checkinCount || 0) +
+              " 条\n" +
+              "💰 付款记录：" +
+              Number(res.paymentCount || 0) +
+              " 条\n\n" +
+              "⚠️ 删除后无法恢复。\n" +
+              "活动、报名、签到和付款记录都会被删除。\n\n" +
+              "确定继续吗？";
+
+            const confirmed = window.confirm(message);
+
+            if (!confirmed) {
+              return;
+            }
+
+            deleteActivityFromDashboard(activityID);
+          })
+
+          .withFailureHandler(function (error) {
+            alert("❌ 获取删除信息失败\n\n" + (error.message || error));
+          })
+
+          .getActivityDeletePreview(activityID);
+      }
+
+      // ========================================
+      // 执行删除活动
+      // ========================================
+
+      function deleteActivityFromDashboard(activityID) {
+        const box = document.getElementById("message");
+
+        box.innerHTML = `
+
+    <div class="card">
+
+      <div class="loading">
+
+        ⏳ 正在删除活动……
+
+      </div>
+
+    </div>
+
+  `;
+
+        google.script.run
+
+          .withSuccessHandler(function (res) {
+            if (!res || !res.success) {
+              showMessage(
+                "❌ " + (res && res.message ? res.message : "删除活动失败"),
+                "error",
+              );
+
+              return;
+            }
+
+            showMessage(
+              "✅ 活动删除成功：" +
+                escapeHtml(res.Title || res.ActivityID) +
+                "<br><br>" +
+                "删除活动记录：" +
+                Number(res.deletedActivities || 0) +
+                "<br>" +
+                "删除报名记录：" +
+                Number(res.deletedRegistrations || 0) +
+                "<br>" +
+                "删除签到记录：" +
+                Number(res.deletedCheckins || 0) +
+                "<br>" +
+                "删除付款记录：" +
+                Number(res.deletedPayments || 0),
+              "success",
+            );
+
+            // 重新加载活动列表
+            loadActivities();
+
+            // 重新检查过期活动
+            loadExpiredActivities();
+
+            // 清空当前 Dashboard
+            document.getElementById("result").innerHTML = "";
+
+            document.getElementById("members").innerHTML = "";
+
+            closeRegistrationDetail();
+          })
+
+          .withFailureHandler(function (error) {
+            showMessage(
+              "❌ 删除活动失败<br><br>" + escapeHtml(error.message || error),
+              "error",
+            );
+
+            loadExpiredActivities();
+          })
+
+          .deleteActivity(activityID);
       }
 
       // ========================================
