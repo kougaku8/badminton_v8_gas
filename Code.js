@@ -1702,6 +1702,66 @@ function sendRegistrationOkNotificationToV2_(data) {
 
   const capacity = Number(data.capacity || 0);
 
+  const status = String(data.status || "").trim();
+
+  const isWaitlist = status === CONFIG.STATUS.WAITLIST;
+
+  const titleZh = isWaitlist ? "🏸 候补报名" : "🏸 报名成功";
+
+  const bodyZh = isWaitlist
+    ? participantName +
+      " 已报名 " +
+      activityTitle +
+      "，但目前已满员，已进入候补名单。\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "目前正式报名人数：" +
+      confirmedCount +
+      " / " +
+      capacity
+    : participantName +
+      " 已报名 " +
+      activityTitle +
+      "。\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "目前报名人数：" +
+      confirmedCount +
+      " / " +
+      capacity;
+
+  const titleJa = isWaitlist ? "🏸 キャンセル待ち登録" : "🏸 参加申込み完了";
+
+  const bodyJa = isWaitlist
+    ? participantName +
+      "さんは" +
+      activityTitle +
+      "に申し込みましたが、現在満員のためキャンセル待ちとなりました。\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "現在の参加者：" +
+      confirmedCount +
+      " / " +
+      capacity
+    : participantName +
+      "さんが" +
+      activityTitle +
+      "に申し込みました。\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "現在の参加人数：" +
+      confirmedCount +
+      " / " +
+      capacity;
+
   const payload = {
     action: "sendNotificationEvent",
 
@@ -1710,37 +1770,13 @@ function sendRegistrationOkNotificationToV2_(data) {
 
       eventType: "REGISTRATION_OK",
 
-      titleZh: "🏸 新报名通知",
+      titleZh: titleZh,
 
-      bodyZh:
-        participantName +
-        " 已报名 " +
-        activityTitle +
-        "。\n" +
-        activityDate +
-        " " +
-        startTime +
-        "\n" +
-        "目前报名人数：" +
-        confirmedCount +
-        " / " +
-        capacity,
+      bodyZh: bodyZh,
 
-      titleJa: "🏸 新しい参加申込み",
+      titleJa: titleJa,
 
-      bodyJa:
-        participantName +
-        "さんが" +
-        activityTitle +
-        "に申し込みました。\n" +
-        activityDate +
-        " " +
-        startTime +
-        "\n" +
-        "現在の参加人数：" +
-        confirmedCount +
-        " / " +
-        capacity,
+      bodyJa: bodyJa,
     },
   };
 
