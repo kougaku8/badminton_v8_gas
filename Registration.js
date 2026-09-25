@@ -1105,10 +1105,11 @@ function registerOneActivityCore(data) {
    **************************************************/
 
   try {
-    sendAdminFCMNotification(
-      "🏸 新しい参加申込み",
+    const adminQueueResult = enqueueAdminRegistrationNotification({
+      title: "🏸 新しい参加申込み",
 
-      "新しい参加申込みがあります。\n" +
+      message:
+        "新しい参加申込みがあります。\n" +
         "报名单：" +
         registrationGroupID +
         "\n" +
@@ -1131,9 +1132,13 @@ function registerOneActivityCore(data) {
         "\n" +
         "状態：" +
         (status || ""),
+    });
+
+    Logger.log(
+      "管理员通知已进入 NotificationQueue：" + JSON.stringify(adminQueueResult),
     );
   } catch (error) {
-    Logger.log("参加申込みFCM通知送信失败: " + error.message);
+    Logger.log("管理员通知 Queue 写入失败：" + (error.message || error));
   }
 
   /**************************************************
@@ -2387,12 +2392,13 @@ function promoteWaitlistCore(activityID) {
    **************************************************/
 
   try {
-    sendAdminFCMNotification(
-      "🏸 候补自动转正",
+    enqueueAdminRegistrationNotification({
+      title: "🏸 新しい参加申込み",
 
-      "候补参加者已自动转正。\n" +
+      message:
+        "新しい参加申込みがあります。\n" +
         "报名单：" +
-        (registrationGroupID || "") +
+        registrationGroupID +
         "\n" +
         "活动：" +
         (activity.Title || "") +
@@ -2401,15 +2407,21 @@ function promoteWaitlistCore(activityID) {
         (bookerName || "") +
         "\n" +
         "参加者：" +
-        (participantName || "") +
+        (name || "") +
         "\n" +
         "检索键：" +
-        (contactValue || "") +
+        contactValue +
         "\n" +
-        "状态：CONFIRMED",
-    );
+        "日期：" +
+        (activity.ActivityDate || "") +
+        " " +
+        (activity.StartTime || "") +
+        "\n" +
+        "状態：" +
+        (status || ""),
+    });
   } catch (error) {
-    Logger.log("候补自动转正管理员 FCM 通知失败: " + (error.message || error));
+    Logger.log("管理员通知 Queue 写入失败: " + (error.message || error));
   }
 
   return {
@@ -2867,6 +2879,44 @@ function enqueueRegistrationOkNotification(payload) {
   };
 }
 
+function enqueueAdminRegistrationNotification(payload) {
+  if (!payload) {
+    throw new Error("Admin Notification Queue Payload 为空");
+  }
+
+  const sheet = getNotificationQueueSheet();
+
+  const queueID = generateNotificationQueueID();
+
+  const now = new Date();
+
+  sheet.appendRow([
+    queueID,
+
+    "ADMIN_REGISTRATION",
+
+    "PENDING",
+
+    now,
+
+    "",
+
+    JSON.stringify(payload),
+
+    "",
+  ]);
+
+  SpreadsheetApp.flush();
+
+  return {
+    success: true,
+
+    queueID: queueID,
+
+    status: "PENDING",
+  };
+}
+
 /**
  * 后台处理 Notification Queue
  *
@@ -2909,19 +2959,25 @@ function processNotificationQueue() {
     const payloadString = normalizeString(values[i][5]);
 
     /*
-     * 只处理 PENDING。
+     * 只处理 PENDING
      */
     if (status !== "PENDING") {
       continue;
     }
 
     /*
-     * 第一阶段只处理 REGISTRATION_OK。
+     * 支持两种通知：
+     *
+     * REGISTRATION_OK
+     * ADMIN_REGISTRATION
      */
-    if (type !== "REGISTRATION_OK") {
+    if (type !== "REGISTRATION_OK" && type !== "ADMIN_REGISTRATION") {
       continue;
     }
 
+    /*
+     * Payload 检查
+     */
     if (!payloadString) {
       sheet.getRange(rowNumber, 3).setValue("FAILED");
 
@@ -2949,19 +3005,31 @@ function processNotificationQueue() {
     }
 
     /*
-     * V2
-     *
-     * 这里才真正发送。
+     * 真正发送
      */
     try {
-      Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
+      let result;
 
-      const result = sendRegistrationOkNotificationToV2_(payload);
+      /**********************************************
+       * REGISTRATION_OK
+       **********************************************/
+      if (type === "REGISTRATION_OK") {
+        Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
 
-      Logger.log("NotificationQueue V2 返回：" + JSON.stringify(result));
+        result = sendRegistrationOkNotificationToV2_(payload);
+      } else if (type === "ADMIN_REGISTRATION") {
+        /**********************************************
+         * ADMIN_REGISTRATION
+         **********************************************/
+        Logger.log("NotificationQueue → ADMIN_REGISTRATION → " + queueID);
+
+        result = sendAdminFCMNotification(payload.title, payload.message);
+      }
+
+      Logger.log("NotificationQueue 发送结果：" + JSON.stringify(result));
 
       /*
-       * 发送成功。
+       * 成功
        */
       sheet.getRange(rowNumber, 3).setValue("SENT");
 
@@ -2972,15 +3040,13 @@ function processNotificationQueue() {
       processed.push({
         queueID: queueID,
 
+        type: type,
+
         status: "SENT",
       });
     } catch (error) {
       /*
-       * 发送失败。
-       *
-       * 先记录 FAILED。
-       *
-       * 不影响已经成功的报名。
+       * 失败
        */
       sheet.getRange(rowNumber, 3).setValue("FAILED");
 
@@ -2991,6 +3057,8 @@ function processNotificationQueue() {
       Logger.log(
         "NotificationQueue 发送失败：" +
           queueID +
+          " / " +
+          type +
           " / " +
           (error.message || error),
       );
@@ -3006,4 +3074,28 @@ function processNotificationQueue() {
 
     data: processed,
   };
+}
+
+function enqueueAdminRegistrationNotification(data) {
+  if (!data) {
+    throw new Error("管理员通知资料为空");
+  }
+
+  const title = normalizeString(data.title) || "🏸 新しい参加申込み";
+
+  const message = normalizeString(data.message);
+
+  if (!message) {
+    throw new Error("管理员通知 Message 为空");
+  }
+
+  return enqueueNotificationQueue({
+    type: "ADMIN_REGISTRATION",
+
+    payload: {
+      title: title,
+
+      message: message,
+    },
+  });
 }
