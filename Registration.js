@@ -1154,7 +1154,7 @@ function cancelRegistrationCore(registrationID) {
    **************************************************/
 
   try {
-    sendRegistrationCancelledNotificationToV2_({
+    enqueueRegistrationCancelledNotification({
       activityID: activityID,
 
       activityTitle: cancelActivity.Title || "",
@@ -1170,7 +1170,9 @@ function cancelRegistrationCore(registrationID) {
       registrationID: targetID,
     });
   } catch (error) {
-    Logger.log("取消报名 V2 通知失败：" + (error.message || error));
+    Logger.log(
+      "取消报名 Notification Queue 写入失败：" + (error.message || error),
+    );
   }
 
   let promoted = null;
@@ -1345,7 +1347,7 @@ function cancelRegistrationGroupCore(registrationGroupID) {
         return;
       }
 
-      sendRegistrationCancelledNotificationToV2_({
+      enqueueRegistrationCancelledNotification({
         activityID: item.activityID,
 
         activityTitle: activity.Title || "",
@@ -2245,6 +2247,32 @@ function enqueueRegistrationOkNotification(payload) {
   };
 }
 
+function enqueueRegistrationCancelledNotification(payload) {
+  if (!payload) {
+    throw new Error("Notification Queue Payload 为空");
+  }
+
+  const sheet = getNotificationQueueSheet();
+
+  const queueID = generateNotificationQueueID();
+
+  sheet.appendRow([
+    queueID,
+    "REGISTRATION_CANCELLED",
+    "PENDING",
+    new Date(),
+    "",
+    JSON.stringify(payload),
+    "",
+  ]);
+
+  return {
+    success: true,
+    queueID: queueID,
+    status: "PENDING",
+  };
+}
+
 /****************************************************
  * ADMIN Queue
  *
@@ -2345,7 +2373,11 @@ function processNotificationQueue() {
       continue;
     }
 
-    if (type !== "REGISTRATION_OK" && type !== "ADMIN_REGISTRATION") {
+    if (
+      type !== "REGISTRATION_OK" &&
+      type !== "REGISTRATION_CANCELLED" &&
+      type !== "ADMIN_REGISTRATION"
+    ) {
       continue;
     }
 
@@ -2384,14 +2416,12 @@ function processNotificationQueue() {
 
       if (type === "REGISTRATION_OK") {
         Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
-
         result = sendRegistrationOkNotificationToV2_(payload);
+      } else if (type === "REGISTRATION_CANCELLED") {
+        Logger.log("NotificationQueue → REGISTRATION_CANCELLED → " + queueID);
+        result = sendRegistrationCancelledNotificationToV2_(payload);
       } else if (type === "ADMIN_REGISTRATION") {
-        /**********************************************
-         * ADMIN_REGISTRATION
-         **********************************************/
         Logger.log("NotificationQueue → ADMIN_REGISTRATION → " + queueID);
-
         result = sendAdminFCMNotification(payload.title, payload.message);
       }
 
