@@ -88,6 +88,10 @@ function sheetToJson(sheetName) {
 function appendRow(sheetName, row) {
   const sheet = getSheet(sheetName);
 
+  if (!sheet) {
+    throw new Error("Missing Sheet: " + sheetName);
+  }
+
   sheet.appendRow(row);
 }
 
@@ -123,9 +127,7 @@ function generateID(prefix) {
 
   const timestamp = Utilities.formatDate(
     now,
-
     Session.getScriptTimeZone(),
-
     "yyMMddHHmmss",
   );
 

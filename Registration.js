@@ -5,28 +5,40 @@
  *
  * ContactValue = 「我的报名」唯一检索键
  *
- * 规则：
+ * 性能目标：
  *
- * 1. 优先使用当前参加人的 ContactValue
- * 2. 多人报名时，每个人使用自己的 ContactValue
- * 3. 单人报名兼容 data.contactValue
- * 4. 兼容 searchKey / retrievalKey / 检索键
- * 5. 如果完全没有填写，后端自动生成 CV...
- * 6. 写入 Registration Sheet 时根据 Header 定位 ContactValue
- * 7. 写入后验证 ContactValue，确保不会写错列
+ * 报名请求：
+ *     1～3 秒优先
+ *
+ * FCM 通知：
+ *     异步 Queue
+ *     延迟没关系
+ *
+ * 流程：
+ *
+ * Registration
+ *      ↓
+ * Registration Sheet
+ *      ↓
+ * NotificationQueue
+ *      ↓
+ * 立即返回报名成功
+ *
+ * Time-driven Trigger
+ *      ↓
+ * processNotificationQueue()
+ *      ↓
+ * V2
+ *      ↓
+ * FCM
  ****************************************************/
 
 /****************************************************
  * ==================================================
- * 1. ContactValue 工具
+ * 1. ContactValue
  * ==================================================
  ****************************************************/
 
-/**
- * 从对象中读取第一个有效值
- *
- * 用于兼容不同版本前端字段名称。
- */
 function firstNonEmptyValue(values) {
   if (!Array.isArray(values)) {
     return "";
@@ -43,17 +55,6 @@ function firstNonEmptyValue(values) {
   return "";
 }
 
-/**
- * 从参加人对象中读取 ContactValue
- *
- * 优先级：
- *
- * participant.contactValue
- * participant.ContactValue
- * participant.searchKey
- * participant.retrievalKey
- * participant.检索键
- */
 function getParticipantContactValue(participant) {
   if (!participant) {
     return "";
@@ -61,26 +62,18 @@ function getParticipantContactValue(participant) {
 
   return firstNonEmptyValue([
     participant.contactValue,
-
     participant.ContactValue,
 
     participant.searchKey,
-
     participant.SearchKey,
 
     participant.retrievalKey,
-
     participant.RetrievalKey,
 
     participant["检索键"],
   ]);
 }
 
-/**
- * 从顶层 data 中读取 ContactValue
- *
- * 用于兼容旧版单人报名。
- */
 function getRootContactValue(data) {
   if (!data) {
     return "";
@@ -88,30 +81,18 @@ function getRootContactValue(data) {
 
   return firstNonEmptyValue([
     data.contactValue,
-
     data.ContactValue,
 
     data.searchKey,
-
     data.SearchKey,
 
     data.retrievalKey,
-
     data.RetrievalKey,
 
     data["检索键"],
   ]);
 }
 
-/**
- * 自动生成 ContactValue
- *
- * 只有用户没有填写检索键时才使用。
- *
- * 格式：
- *
- * CV + 年月日时分秒 + 随机数字
- */
 function generateContactValue() {
   const now = new Date();
 
@@ -135,21 +116,6 @@ function generateContactValue() {
   return "CV" + year + month + day + hour + minute + second + random;
 }
 
-/**
- * 最终确定 ContactValue
- *
- * 非常重要：
- *
- * participantValue 优先。
- *
- * 如果 participant 没有：
- *
- * 单人时才使用 rootValue。
- *
- * 如果仍然没有：
- *
- * 自动生成。
- */
 function resolveContactValue(participantValue, rootValue, participantCount) {
   const participantContact = normalizeString(participantValue);
 
@@ -157,13 +123,6 @@ function resolveContactValue(participantValue, rootValue, participantCount) {
     return participantContact;
   }
 
-  /*
-   * 只有单人报名才允许使用
-   * 顶层 ContactValue。
-   *
-   * 这样可以避免多人报名时
-   * 把第一个人的检索键复制给所有人。
-   */
   if (participantCount === 1) {
     const rootContact = normalizeString(rootValue);
 
@@ -172,11 +131,6 @@ function resolveContactValue(participantValue, rootValue, participantCount) {
     }
   }
 
-  /*
-   * 完全没有填写。
-   *
-   * 后端自动生成。
-   */
   return generateContactValue();
 }
 
@@ -192,15 +146,10 @@ function registerActivity(data) {
   });
 }
 
-/****************************************************
- * 单活动报名 Core
- ****************************************************/
-
 function registerActivityCore(data) {
   if (!data) {
     return {
       success: false,
-
       message: "没有收到报名资料",
     };
   }
@@ -212,7 +161,6 @@ function registerActivityCore(data) {
   if (!activityID) {
     return {
       success: false,
-
       message: "请选择活动",
     };
   }
@@ -220,7 +168,6 @@ function registerActivityCore(data) {
   if (!name) {
     return {
       success: false,
-
       message: "请输入姓名",
     };
   }
@@ -229,16 +176,9 @@ function registerActivityCore(data) {
 
   const bookerName = normalizeString(data.bookerName) || name;
 
-  /*
-   * 单人报名：
-   *
-   * 这里直接解析 ContactValue。
-   */
   const contactValue = resolveContactValue(
     getParticipantContactValue(data),
-
     getRootContactValue(data),
-
     1,
   );
 
@@ -265,7 +205,7 @@ function registerActivityCore(data) {
 
 /****************************************************
  * ==================================================
- * 3. 多活动 / 多人报名 API
+ * 3. 多活动 / 多人报名
  * ==================================================
  ****************************************************/
 
@@ -275,34 +215,23 @@ function registerActivities(data) {
   });
 }
 
-/****************************************************
- * 多活动 / 多人报名 Core
- ****************************************************/
-
 function registerActivitiesCore(data) {
   if (!data) {
     return {
       success: false,
-
       message: "没有收到报名资料",
-
       data: [],
     };
   }
 
   /**************************************************
-   * Idempotency Check
-   *
-   * 防止同一个 clientRequestID 重复报名
+   * Idempotency
    **************************************************/
 
   const clientRequestID = normalizeString(data.clientRequestID);
 
   if (clientRequestID) {
-    const duplicateResult = checkProcessedRequest(
-      clientRequestID,
-      "REGISTRATION",
-    );
+    const duplicateResult = checkProcessedRequest(clientRequestID);
 
     if (duplicateResult) {
       return {
@@ -325,9 +254,6 @@ function registerActivitiesCore(data) {
 
   let activityIDs = data.activityIDs;
 
-  /*
-   * 兼容旧版 activityID
-   */
   if (!Array.isArray(activityIDs) && data.activityID) {
     activityIDs = [data.activityID];
   }
@@ -344,17 +270,12 @@ function registerActivitiesCore(data) {
       return id !== "";
     });
 
-  /*
-   * 去重
-   */
   activityIDs = Array.from(new Set(activityIDs));
 
   if (activityIDs.length === 0) {
     return {
       success: false,
-
       message: "请选择至少一个活动",
-
       data: [],
     };
   }
@@ -365,12 +286,6 @@ function registerActivitiesCore(data) {
 
   let participants = data.participants;
 
-  /*
-   * 兼容旧版：
-   *
-   * 没有 participants 数组时，
-   * 使用 data.name。
-   */
   if (!Array.isArray(participants)) {
     const name = normalizeString(data.name);
 
@@ -389,19 +304,6 @@ function registerActivitiesCore(data) {
     ];
   }
 
-  /**************************************************
-   * 顶层 ContactValue
-   *
-   * 兼容：
-   *
-   * {
-   *   contactValue: "6666",
-   *   participants: [...]
-   * }
-   *
-   * 这种前端结构。
-   **************************************************/
-
   const rootContactValue = getRootContactValue(data);
 
   /**************************************************
@@ -414,9 +316,6 @@ function registerActivitiesCore(data) {
         return null;
       }
 
-      /*
-       * 读取当前参加人自己的 ContactValue。
-       */
       const participantContactValue = getParticipantContactValue(participant);
 
       return {
@@ -440,9 +339,7 @@ function registerActivitiesCore(data) {
   if (participants.length === 0) {
     return {
       success: false,
-
       message: "至少需要一名参加者",
-
       data: [],
     };
   }
@@ -472,33 +369,13 @@ function registerActivitiesCore(data) {
   if (participants.length === 0) {
     return {
       success: false,
-
       message: "至少需要一名有效参加者",
-
       data: [],
     };
   }
 
   /**************************************************
-   * 最终确定每个人的 ContactValue
-   *
-   * 这是本次修改最重要的部分。
-   *
-   * 单人：
-   *
-   * participant.contactValue
-   *      ↓
-   * data.contactValue
-   *      ↓
-   * 自动生成
-   *
-   * 多人：
-   *
-   * participant[0].contactValue
-   * participant[1].contactValue
-   * participant[2].contactValue
-   *
-   * 每个人完全独立。
+   * 每个人独立 ContactValue
    **************************************************/
 
   participants = participants.map(function (participant) {
@@ -531,22 +408,12 @@ function registerActivitiesCore(data) {
 
   const bookerName = normalizeString(data.bookerName) || firstParticipantName;
 
-  /**************************************************
-   * Message
-   **************************************************/
-
   const message = normalizeString(data.message);
-
-  /**************************************************
-   * Registration Group
-   **************************************************/
 
   const registrationGroupID = generateUniqueRegistrationGroupID();
 
   /**************************************************
    * 执行报名
-   *
-   * participants × activities
    **************************************************/
 
   const results = [];
@@ -556,11 +423,6 @@ function registerActivitiesCore(data) {
       let result;
 
       try {
-        /*
-         * 这里传入的 contactValue
-         *
-         * 一定是当前 participant 自己的。
-         */
         result = registerOneActivityCore({
           registrationGroupID: registrationGroupID,
 
@@ -674,12 +536,8 @@ function registerActivitiesCore(data) {
    * 全部成功
    **************************************************/
 
-  /*
-   * 全部报名成功后，
-   * 才记录 clientRequestID。
-   */
   if (clientRequestID) {
-    saveProcessedRequest(clientRequestID, "REGISTRATION");
+    saveProcessedRequest(clientRequestID);
   }
 
   return {
@@ -705,7 +563,7 @@ function registerActivitiesCore(data) {
 
 /****************************************************
  * ==================================================
- * 4. 单个 Activity 实际报名 Core
+ * 4. 单个 Activity 实际报名
  * ==================================================
  ****************************************************/
 
@@ -713,7 +571,6 @@ function registerOneActivityCore(data) {
   if (!data) {
     return {
       success: false,
-
       message: "没有收到报名资料",
     };
   }
@@ -728,39 +585,22 @@ function registerOneActivityCore(data) {
 
   const contactType = normalizeString(data.contactType) || "NONE";
 
-  /*
-   * 最终 ContactValue。
-   *
-   * 到这里绝对不能再从 BookerName
-   * 获取任何东西。
-   */
   let contactValue = normalizeString(data.contactValue);
 
-  /*
-   * 如果 Core 被其他旧代码直接调用，
-   * 也兼容其他字段名称。
-   */
   if (!contactValue) {
     contactValue = firstNonEmptyValue([
       data.ContactValue,
 
       data.searchKey,
-
       data.SearchKey,
 
       data.retrievalKey,
-
       data.RetrievalKey,
 
       data["检索键"],
     ]);
   }
 
-  /*
-   * 最终仍然没有：
-   *
-   * 自动生成。
-   */
   if (!contactValue) {
     contactValue = generateContactValue();
   }
@@ -814,7 +654,7 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * 读取活动
+   * Activity
    **************************************************/
 
   const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
@@ -838,7 +678,7 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * 活动状态
+   * Activity Status
    **************************************************/
 
   const activityStatus = normalizeString(activity.Status).toUpperCase();
@@ -870,17 +710,13 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * 读取报名记录
+   * Registrations
    **************************************************/
 
   const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
 
   /**************************************************
-   * 重复报名检查
-   *
-   * 同一个活动 + 同一个姓名
-   *
-   * CONFIRMED / WAITLIST
+   * Duplicate
    **************************************************/
 
   const duplicate = registrations.some(function (r) {
@@ -913,7 +749,7 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * 当前正式报名人数
+   * Confirmed Count
    **************************************************/
 
   const confirmedCount = registrations.filter(function (r) {
@@ -924,7 +760,7 @@ function registerOneActivityCore(data) {
   }).length;
 
   /**************************************************
-   * 活动容量
+   * Capacity
    **************************************************/
 
   let capacity = Number(activity.Capacity);
@@ -934,7 +770,7 @@ function registerOneActivityCore(data) {
   }
 
   /**************************************************
-   * 判断报名状态
+   * Status
    **************************************************/
 
   let status;
@@ -952,11 +788,7 @@ function registerOneActivityCore(data) {
   const registrationID = generateUniqueRegistrationID();
 
   /**************************************************
-   * 写入 Registration Sheet
-   *
-   * 这里不再假设 ContactValue 是第 5 列。
-   *
-   * 根据 Sheet Header 写入。
+   * Registration Sheet
    **************************************************/
 
   const sheet = getSheet(CONFIG.SHEETS.REGISTRATIONS);
@@ -994,11 +826,6 @@ function registerOneActivityCore(data) {
 
     ContactType: contactType,
 
-    /*
-     * ★★★ 最重要 ★★★
-     *
-     * 这里写入当前参加人的 ContactValue。
-     */
     ContactValue: contactValue,
 
     Level: level,
@@ -1031,7 +858,7 @@ function registerOneActivityCore(data) {
   };
 
   /**************************************************
-   * 根据 Header 创建完整 row
+   * 根据 Header 创建 row
    **************************************************/
 
   const row = headers.map(function (header) {
@@ -1043,69 +870,31 @@ function registerOneActivityCore(data) {
   });
 
   /*
-   * 写入前最后一次保护：
-   *
-   * 强制把 ContactValue 放到
-   * Sheet Header 找到的位置。
+   * 最后一次保护：
+   * ContactValue 一定写入 Header 对应列。
    */
   row[contactValueIndex] = contactValue;
 
   /**************************************************
-   * 追加
+   * 写入
+   *
+   * ★ 不再 flush
+   * ★ 不再写入后重新读取验证
+   *
+   * 这是报名速度优化的关键。
    **************************************************/
 
   appendRow(CONFIG.SHEETS.REGISTRATIONS, row);
 
   /**************************************************
-   * 写入后验证
+   * 管理员通知
    *
-   * 防止：
-   *
-   * Header 顺序变化
-   * appendRow 异常
-   * ContactValue 写错列
-   **************************************************/
-
-  const writtenLastRow = sheet.getLastRow();
-
-  const savedContactValue = normalizeString(
-    sheet.getRange(writtenLastRow, contactValueIndex + 1).getValue(),
-  );
-
-  if (savedContactValue !== contactValue) {
-    /*
-     * 再次直接写入正确 ContactValue。
-     */
-    sheet
-      .getRange(writtenLastRow, contactValueIndex + 1)
-      .setValue(contactValue);
-
-    SpreadsheetApp.flush();
-
-    /*
-     * 再检查一次。
-     */
-    const verifyContactValue = normalizeString(
-      sheet.getRange(writtenLastRow, contactValueIndex + 1).getValue(),
-    );
-
-    if (verifyContactValue !== contactValue) {
-      throw new Error(
-        "ContactValue 写入失败：应为 [" +
-          contactValue +
-          "]，实际为 [" +
-          verifyContactValue +
-          "]",
-      );
-    }
-  }
-
-  /**************************************************
-   * 管理员 FCM 通知
+   * 只写 Queue。
+   * 不发送 FCM。
    **************************************************/
 
   try {
-    const adminQueueResult = enqueueAdminRegistrationNotification({
+    enqueueAdminRegistrationNotification({
       title: "🏸 新しい参加申込み",
 
       message:
@@ -1133,71 +922,45 @@ function registerOneActivityCore(data) {
         "状態：" +
         (status || ""),
     });
-
-    Logger.log(
-      "管理员通知已进入 NotificationQueue：" + JSON.stringify(adminQueueResult),
-    );
   } catch (error) {
     Logger.log("管理员通知 Queue 写入失败：" + (error.message || error));
   }
 
   /**************************************************
-   * V1 → Notification Queue
-   * REGISTRATION_OK
+   * REGISTRATION_OK Queue
    *
-   * 第一阶段：
-   *
-   * 不再直接调用 V2。
-   *
-   * Registration
-   *      ↓
-   * Queue PENDING
-   *      ↓
-   * 立即返回报名成功
-   *
-   * Trigger
-   *      ↓
-   * V2
-   *      ↓
-   * FCM
-   *
-   * 只有正式报名 CONFIRMED 才进入 Queue。
+   * ★ CONFIRMED / WAITLIST 都发送
+   * ★ 只要报名记录成功写入，就发送
+   * ★ 不发送 V2
+   * ★ 不发送 FCM
+   * ★ 不等待通知
    **************************************************/
 
-  if (status === CONFIG.STATUS.CONFIRMED) {
-    try {
-      const queueResult = enqueueRegistrationOkNotification({
-        activityID: activityID,
+  try {
+    enqueueRegistrationOkNotification({
+      activityID: activityID,
 
-        activityTitle: activity.Title || "",
+      activityTitle: activity.Title || "",
 
-        activityDate: activity.ActivityDate || "",
+      activityDate: activity.ActivityDate || "",
 
-        startTime: activity.StartTime || "",
+      startTime: activity.StartTime || "",
 
-        participantName: name || "",
+      participantName: name || "",
 
-        confirmedCount: confirmedCount + 1,
+      status: status,
 
-        capacity: capacity,
-      });
+      confirmedCount:
+        confirmedCount + (status === CONFIG.STATUS.CONFIRMED ? 1 : 0),
 
-      Logger.log(
-        "REGISTRATION_OK 已进入 NotificationQueue：" +
-          JSON.stringify(queueResult),
-      );
-    } catch (error) {
-      /*
-       * Queue 写入失败需要记录。
-       *
-       * 这里暂时不让 FCM 阻塞报名。
-       */
-      Logger.log("REGISTRATION_OK Queue 写入失败: " + (error.message || error));
-    }
+      capacity: capacity,
+    });
+  } catch (error) {
+    Logger.log("REGISTRATION_OK Queue 写入失败：" + (error.message || error));
   }
 
   /**************************************************
-   * 返回
+   * Return
    **************************************************/
 
   return {
@@ -1213,9 +976,6 @@ function registerOneActivityCore(data) {
 
     contactType: contactType,
 
-    /*
-     * 返回真正写入 Sheet 的值。
-     */
     contactValue: contactValue,
 
     activityID: activityID,
@@ -1243,102 +1003,22 @@ function registerOneActivityCore(data) {
 
 /****************************************************
  * ==================================================
- * 5. Generate Unique Registration ID
+ * 5. Registration ID
  * ==================================================
  ****************************************************/
 
 function generateUniqueRegistrationID() {
-  const sheet = getSheet(CONFIG.SHEETS.REGISTRATIONS);
-
-  if (!sheet) {
-    throw new Error("Missing Sheet: " + CONFIG.SHEETS.REGISTRATIONS);
-  }
-
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow <= 1) {
-    return generateID("REG");
-  }
-
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-
-  const idIndex = headers.indexOf("RegistrationID");
-
-  if (idIndex === -1) {
-    throw new Error("Registrations 表缺少 RegistrationID 字段");
-  }
-
-  const ids = sheet.getRange(2, idIndex + 1, lastRow - 1, 1).getValues();
-
-  const existing = {};
-
-  ids.forEach(function (row) {
-    const id = normalizeString(row[0]);
-
-    if (id) {
-      existing[id] = true;
-    }
-  });
-
-  for (let i = 0; i < 20; i++) {
-    const id = generateID("REG");
-
-    if (!existing[id]) {
-      return id;
-    }
-  }
-
-  throw new Error("无法生成唯一报名编号，请稍后再试");
+  return generateID("REG");
 }
 
 /****************************************************
  * ==================================================
- * 6. Generate Unique Registration Group ID
+ * 6. Registration Group ID
  * ==================================================
  ****************************************************/
 
 function generateUniqueRegistrationGroupID() {
-  const sheet = getSheet(CONFIG.SHEETS.REGISTRATIONS);
-
-  if (!sheet) {
-    throw new Error("Missing Sheet: " + CONFIG.SHEETS.REGISTRATIONS);
-  }
-
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow <= 1) {
-    return generateID("GRP");
-  }
-
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-
-  const groupIndex = headers.indexOf("RegistrationGroupID");
-
-  if (groupIndex === -1) {
-    throw new Error("Registrations 表缺少 RegistrationGroupID 字段");
-  }
-
-  const values = sheet.getRange(2, groupIndex + 1, lastRow - 1, 1).getValues();
-
-  const existing = {};
-
-  values.forEach(function (row) {
-    const id = normalizeString(row[0]);
-
-    if (id) {
-      existing[id] = true;
-    }
-  });
-
-  for (let i = 0; i < 20; i++) {
-    const id = generateID("GRP");
-
-    if (!existing[id]) {
-      return id;
-    }
-  }
-
-  throw new Error("无法生成唯一报名组编号，请稍后再试");
+  return generateID("GRP");
 }
 
 /****************************************************
@@ -1359,7 +1039,6 @@ function cancelRegistrationCore(registrationID) {
   if (!targetID) {
     return {
       success: false,
-
       message: "报名编号不能为空",
     };
   }
@@ -1375,7 +1054,6 @@ function cancelRegistrationCore(registrationID) {
   if (data.length <= 1) {
     return {
       success: false,
-
       message: "报名记录不存在",
     };
   }
@@ -1411,7 +1089,6 @@ function cancelRegistrationCore(registrationID) {
   if (targetRow === -1) {
     return {
       success: false,
-
       message: "报名记录不存在",
     };
   }
@@ -1424,7 +1101,6 @@ function cancelRegistrationCore(registrationID) {
   ) {
     return {
       success: false,
-
       message: "该报名已经取消",
     };
   }
@@ -1435,10 +1111,8 @@ function cancelRegistrationCore(registrationID) {
     sheet.getRange(targetRow, updatedIndex + 1).setValue(new Date());
   }
 
-  SpreadsheetApp.flush();
-
   /**************************************************
-   * 读取取消报名者资料
+   * 读取取消报名者
    **************************************************/
 
   const cancelNameIndex = headers.indexOf("Name");
@@ -1462,7 +1136,7 @@ function cancelRegistrationCore(registrationID) {
   }
 
   /**************************************************
-   * 读取活动资料
+   * Activity
    **************************************************/
 
   const cancelActivities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
@@ -1473,21 +1147,14 @@ function cancelRegistrationCore(registrationID) {
     }) || {};
 
   /**************************************************
-   * V2 → REGISTRATION_CANCELLED
+   * Cancel Notification
+   *
+   * 取消报名暂时继续直接 V2，
+   * 不影响本次报名成功速度。
    **************************************************/
 
   try {
-    Logger.log("===== 开始发送取消报名通知 =====");
-
-    Logger.log("registrationID = " + targetID);
-
-    Logger.log("activityID = " + activityID);
-
-    Logger.log("participantName = " + cancelParticipantName);
-
-    Logger.log("contactValue = " + cancelContactValue);
-
-    const notificationResult = sendRegistrationCancelledNotificationToV2_({
+    sendRegistrationCancelledNotificationToV2_({
       activityID: activityID,
 
       activityTitle: cancelActivity.Title || "",
@@ -1502,14 +1169,8 @@ function cancelRegistrationCore(registrationID) {
 
       registrationID: targetID,
     });
-
-    Logger.log("取消报名通知函数返回 = " + JSON.stringify(notificationResult));
-
-    Logger.log("===== 取消报名通知函数执行结束 =====");
   } catch (error) {
-    Logger.log("取消报名 V2 通知失败: " + (error.message || error));
-
-    Logger.log("错误堆栈 = " + (error.stack || ""));
+    Logger.log("取消报名 V2 通知失败：" + (error.message || error));
   }
 
   let promoted = null;
@@ -1551,7 +1212,6 @@ function cancelRegistrationGroupCore(registrationGroupID) {
   if (!targetGroupID) {
     return {
       success: false,
-
       message: "报名组编号不能为空",
     };
   }
@@ -1567,7 +1227,6 @@ function cancelRegistrationGroupCore(registrationGroupID) {
   if (data.length <= 1) {
     return {
       success: false,
-
       message: "报名记录不存在",
     };
   }
@@ -1636,7 +1295,7 @@ function cancelRegistrationGroupCore(registrationGroupID) {
   const activitiesToPromote = {};
 
   /**************************************************
-   * 第一阶段：全部取消
+   * 第一阶段：取消
    **************************************************/
 
   rows.forEach(function (item) {
@@ -1659,6 +1318,10 @@ function cancelRegistrationGroupCore(registrationGroupID) {
       activityID: item.activityID,
 
       previousStatus: item.status,
+
+      participantName: item.participantName,
+
+      contactValue: item.contactValue,
     });
 
     if (item.status === CONFIG.STATUS.CONFIRMED) {
@@ -1666,36 +1329,23 @@ function cancelRegistrationGroupCore(registrationGroupID) {
     }
   });
 
-  SpreadsheetApp.flush();
-
   /**************************************************
-   * 第二阶段：发送取消报名通知
+   * 第二阶段：取消通知
    **************************************************/
+
+  const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
 
   cancelled.forEach(function (item) {
     try {
-      const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
-
       const activity = activities.find(function (a) {
         return normalizeString(a.ActivityID) === item.activityID;
       });
 
       if (!activity) {
-        Logger.log("取消报名通知：找不到活动 " + item.activityID);
         return;
       }
 
-      Logger.log("===== 开始发送取消报名通知 =====");
-
-      Logger.log("registrationID = " + item.registrationID);
-
-      Logger.log("activityID = " + item.activityID);
-
-      Logger.log("participantName = " + item.participantName);
-
-      Logger.log("contactValue = " + item.contactValue);
-
-      const notificationResult = sendRegistrationCancelledNotificationToV2_({
+      sendRegistrationCancelledNotificationToV2_({
         activityID: item.activityID,
 
         activityTitle: activity.Title || "",
@@ -1712,32 +1362,18 @@ function cancelRegistrationGroupCore(registrationGroupID) {
 
         registrationGroupID: targetGroupID,
       });
-
-      Logger.log(
-        "取消报名通知函数返回 = " + JSON.stringify(notificationResult),
-      );
-
-      Logger.log("===== 取消报名通知函数执行结束 =====");
     } catch (error) {
-      Logger.log("取消报名 V2 通知失败: " + (error.message || error));
-
-      Logger.log("错误堆栈 = " + (error.stack || ""));
+      Logger.log("取消报名 V2 通知失败：" + (error.message || error));
     }
   });
 
   /**************************************************
    * 第三阶段：统一补位
+   *
+   * ★ 修复原代码重复执行两次的问题
    **************************************************/
 
   const promoted = [];
-
-  Object.keys(activitiesToPromote).forEach(function (activityID) {
-    const result = promoteWaitlistCore(activityID);
-
-    if (result) {
-      promoted.push(result);
-    }
-  });
 
   Object.keys(activitiesToPromote).forEach(function (activityID) {
     const result = promoteWaitlistCore(activityID);
@@ -1776,7 +1412,6 @@ function getRegistrationDetail(registrationID) {
   if (!targetID) {
     return {
       success: false,
-
       message: "没有收到报名编号",
     };
   }
@@ -1828,9 +1463,6 @@ function getRegistrationDetail(registrationID) {
 
       ContactType: registration.ContactType || "",
 
-      /*
-       * ★ ContactValue
-       */
       ContactValue: registration.ContactValue || "",
 
       Level: registration.Level || "",
@@ -1894,7 +1526,6 @@ function getRegistrationGroupDetail(registrationGroupID) {
   if (!targetGroupID) {
     return {
       success: false,
-
       message: "没有收到报名组编号",
     };
   }
@@ -1932,9 +1563,6 @@ function getRegistrationGroupDetail(registrationGroupID) {
 
         contactType: r.ContactType || "",
 
-        /*
-         * ★ 每个人自己的 ContactValue
-         */
         contactValue: r.ContactValue || "",
 
         level: r.Level || "",
@@ -2003,7 +1631,7 @@ function getRegistrationGroupDetail(registrationGroupID) {
 
 /****************************************************
  * ==================================================
- * 11. My Registration API
+ * 11. My Registration
  * ==================================================
  ****************************************************/
 
@@ -2013,9 +1641,7 @@ function getMyRegistrations(contactValue) {
   if (!targetContact) {
     return {
       success: true,
-
       count: 0,
-
       data: [],
     };
   }
@@ -2031,9 +1657,7 @@ function getMyRegistrations(contactValue) {
   if (myRegistrations.length === 0) {
     return {
       success: true,
-
       count: 0,
-
       data: [],
     };
   }
@@ -2064,10 +1688,6 @@ function getMyRegistrations(contactValue) {
 
       Name: r.Name || "",
 
-      /*
-       * 返回 ContactValue，
-       * 方便前端确认检索键。
-       */
       ContactValue: r.ContactValue || "",
 
       Title: activity.Title || "",
@@ -2180,7 +1800,7 @@ function promoteWaitlistCore(activityID) {
   }
 
   /**************************************************
-   * 当前正式人数
+   * Confirmed Count
    **************************************************/
 
   let confirmedCount = 0;
@@ -2199,7 +1819,7 @@ function promoteWaitlistCore(activityID) {
   }
 
   /**************************************************
-   * 找候补
+   * Waitlist Candidates
    **************************************************/
 
   const candidates = [];
@@ -2235,10 +1855,6 @@ function promoteWaitlistCore(activityID) {
     return null;
   }
 
-  /**************************************************
-   * 最早报名优先
-   **************************************************/
-
   candidates.sort(function (a, b) {
     return a.createdAt - b.createdAt;
   });
@@ -2256,8 +1872,6 @@ function promoteWaitlistCore(activityID) {
   if (updatedIndex !== -1) {
     sheet.getRange(candidateRow, updatedIndex + 1).setValue(new Date());
   }
-
-  SpreadsheetApp.flush();
 
   /**************************************************
    * Registration ID
@@ -2318,16 +1932,7 @@ function promoteWaitlistCore(activityID) {
   }
 
   /**************************************************
-   * 通知
-   **************************************************/
-
-  /**************************************************
-   * 自动转正通知
-   *
-   * WAITLIST → CONFIRMED
-   *
-   * ContactValue 必须使用当前被转正参加人的
-   * ContactValue。
+   * WAITLIST_PROMOTED
    **************************************************/
 
   try {
@@ -2351,17 +1956,15 @@ function promoteWaitlistCore(activityID) {
       status: CONFIG.STATUS.CONFIRMED,
     });
   } catch (error) {
-    Logger.log("候补自动转正通知创建失败: " + (error.message || error));
+    Logger.log("候补自动转正通知创建失败：" + (error.message || error));
   }
 
   /**************************************************
-   * V2 → REGISTRATION_OK
-   *
-   * 候补转正后，也视为正式报名成功。
+   * REGISTRATION_OK Queue
    **************************************************/
 
   try {
-    const queueResult = enqueueRegistrationOkNotification({
+    enqueueRegistrationOkNotification({
       activityID: targetActivityID,
 
       activityTitle: activity.Title || "",
@@ -2376,19 +1979,26 @@ function promoteWaitlistCore(activityID) {
 
       capacity: capacity,
     });
-
-    Logger.log(
-      "候补转正 REGISTRATION_OK 已进入 NotificationQueue：" +
-        JSON.stringify(queueResult),
-    );
   } catch (error) {
     Logger.log(
-      "候补转正 REGISTRATION_OK Queue 写入失败: " + (error.message || error),
+      "候补转正 REGISTRATION_OK Queue 写入失败：" + (error.message || error),
     );
   }
 
   /**************************************************
-   * 管理员 FCM
+   * Admin Queue
+   *
+   * 修复原代码：
+   *
+   * 原来这里使用了不存在的：
+   *
+   * name
+   * status
+   *
+   * 现在使用：
+   *
+   * participantName
+   * CONFIG.STATUS.CONFIRMED
    **************************************************/
 
   try {
@@ -2407,7 +2017,7 @@ function promoteWaitlistCore(activityID) {
         (bookerName || "") +
         "\n" +
         "参加者：" +
-        (name || "") +
+        (participantName || "") +
         "\n" +
         "检索键：" +
         contactValue +
@@ -2418,10 +2028,10 @@ function promoteWaitlistCore(activityID) {
         (activity.StartTime || "") +
         "\n" +
         "状態：" +
-        (status || ""),
+        CONFIG.STATUS.CONFIRMED,
     });
   } catch (error) {
-    Logger.log("管理员通知 Queue 写入失败: " + (error.message || error));
+    Logger.log("管理员通知 Queue 写入失败：" + (error.message || error));
   }
 
   return {
@@ -2443,7 +2053,7 @@ function promoteWaitlistCore(activityID) {
 
 /****************************************************
  * ==================================================
- * 13. Normalize String
+ * 13. Normalize
  * ==================================================
  ****************************************************/
 
@@ -2455,29 +2065,392 @@ function normalizeString(value) {
   return String(value).trim();
 }
 
-/****************************************************
- * ==================================================
- * 14. Normalize Name
- * ==================================================
- ****************************************************/
-
 function normalizeName(value) {
   return normalizeString(value).replace(/\s+/g, "");
 }
 
 /****************************************************
  * ==================================================
- * 15. Tests
+ * 14. Processed Request
  * ==================================================
  ****************************************************/
 
-/**
- * 单人测试
+function getProcessedRequestType(clientRequestID) {
+  const id = normalizeString(clientRequestID).toUpperCase();
+
+  if (!id) {
+    return "";
+  }
+
+  if (id.indexOf("REQ-") === 0) {
+    return "REGISTRATION";
+  }
+
+  if (id.indexOf("CHECKIN-") === 0) {
+    return "CHECKIN";
+  }
+
+  return "";
+}
+
+function checkProcessedRequest(clientRequestID) {
+  const requestID = normalizeString(clientRequestID);
+
+  if (!requestID) {
+    return false;
+  }
+
+  const requestType = getProcessedRequestType(requestID);
+
+  if (!requestType) {
+    return false;
+  }
+
+  const ss = SpreadsheetApp.getActive();
+
+  const sheet = ss.getSheetByName("ProcessedRequests");
+
+  if (!sheet) {
+    return false;
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return false;
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 3);
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+
+  return values.some(function (row) {
+    const savedRequestID = normalizeString(row[0]);
+
+    const savedRequestType = normalizeString(row[1]);
+
+    return savedRequestID === requestID && savedRequestType === requestType;
+  });
+}
+
+function saveProcessedRequest(clientRequestID) {
+  const requestID = normalizeString(clientRequestID);
+
+  if (!requestID) {
+    return;
+  }
+
+  const requestType = getProcessedRequestType(requestID);
+
+  if (!requestType) {
+    Logger.log("ProcessedRequests：未知 ClientRequestID 类型：" + requestID);
+
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActive();
+
+  let sheet = ss.getSheetByName("ProcessedRequests");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("ProcessedRequests");
+
+    sheet
+      .getRange(1, 1, 1, 3)
+      .setValues([["ClientRequestID", "RequestType", "CreatedAt"]]);
+  }
+
+  if (checkProcessedRequest(requestID)) {
+    return;
+  }
+
+  sheet.appendRow([requestID, requestType, new Date()]);
+}
+
+/****************************************************
+ * ==================================================
+ * 15. Notification Queue
+ * ==================================================
+ ****************************************************/
+
+function getNotificationQueueSheet() {
+  const ss = SpreadsheetApp.getActive();
+
+  let sheet = ss.getSheetByName("NotificationQueue");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("NotificationQueue");
+
+    sheet
+      .getRange(1, 1, 1, 7)
+      .setValues([
+        [
+          "QueueID",
+          "Type",
+          "Status",
+          "CreatedAt",
+          "ProcessedAt",
+          "Payload",
+          "ErrorMessage",
+        ],
+      ]);
+  }
+
+  return sheet;
+}
+
+function generateNotificationQueueID() {
+  return generateID("Q");
+}
+
+/****************************************************
+ * REGISTRATION_OK Queue
  *
- * 预期：
+ * ★ 重要：
  *
- * ContactValue = 6666
- */
+ * 不再 SpreadsheetApp.flush()
+ ****************************************************/
+
+function enqueueRegistrationOkNotification(payload) {
+  if (!payload) {
+    throw new Error("Notification Queue Payload 为空");
+  }
+
+  const sheet = getNotificationQueueSheet();
+
+  const queueID = generateNotificationQueueID();
+
+  sheet.appendRow([
+    queueID,
+
+    "REGISTRATION_OK",
+
+    "PENDING",
+
+    new Date(),
+
+    "",
+
+    JSON.stringify(payload),
+
+    "",
+  ]);
+
+  return {
+    success: true,
+
+    queueID: queueID,
+
+    status: "PENDING",
+  };
+}
+
+/****************************************************
+ * ADMIN Queue
+ *
+ * ★ 只有这一份
+ ****************************************************/
+
+function enqueueAdminRegistrationNotification(data) {
+  if (!data) {
+    throw new Error("管理员通知资料为空");
+  }
+
+  const title = normalizeString(data.title) || "🏸 新しい参加申込み";
+
+  const message = normalizeString(data.message);
+
+  if (!message) {
+    throw new Error("管理员通知 Message 为空");
+  }
+
+  const sheet = getNotificationQueueSheet();
+
+  const queueID = generateNotificationQueueID();
+
+  sheet.appendRow([
+    queueID,
+
+    "ADMIN_REGISTRATION",
+
+    "PENDING",
+
+    new Date(),
+
+    "",
+
+    JSON.stringify({
+      title: title,
+
+      message: message,
+    }),
+
+    "",
+  ]);
+
+  return {
+    success: true,
+
+    queueID: queueID,
+
+    status: "PENDING",
+  };
+}
+
+/****************************************************
+ * ==================================================
+ * 16. Process Notification Queue
+ * ==================================================
+ *
+ * Time-driven Trigger：
+ *
+ * 每分钟一次
+ *
+ * 这个函数不参与用户报名响应。
+ ****************************************************/
+
+function processNotificationQueue() {
+  const sheet = getNotificationQueueSheet();
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow <= 1) {
+    return {
+      success: true,
+
+      processed: 0,
+
+      message: "没有待处理通知",
+    };
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 7);
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+
+  const processed = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const rowNumber = i + 2;
+
+    const queueID = normalizeString(values[i][0]);
+
+    const type = normalizeString(values[i][1]);
+
+    const status = normalizeString(values[i][2]);
+
+    const payloadString = normalizeString(values[i][5]);
+
+    if (status !== "PENDING") {
+      continue;
+    }
+
+    if (type !== "REGISTRATION_OK" && type !== "ADMIN_REGISTRATION") {
+      continue;
+    }
+
+    if (!payloadString) {
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue("Payload 为空");
+
+      continue;
+    }
+
+    let payload;
+
+    try {
+      payload = JSON.parse(payloadString);
+    } catch (error) {
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet
+        .getRange(rowNumber, 7)
+        .setValue("Payload JSON 解析失败：" + (error.message || error));
+
+      continue;
+    }
+
+    try {
+      let result;
+
+      /**********************************************
+       * REGISTRATION_OK
+       **********************************************/
+
+      if (type === "REGISTRATION_OK") {
+        Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
+
+        result = sendRegistrationOkNotificationToV2_(payload);
+      } else if (type === "ADMIN_REGISTRATION") {
+        /**********************************************
+         * ADMIN_REGISTRATION
+         **********************************************/
+        Logger.log("NotificationQueue → ADMIN_REGISTRATION → " + queueID);
+
+        result = sendAdminFCMNotification(payload.title, payload.message);
+      }
+
+      Logger.log("NotificationQueue 发送结果：" + JSON.stringify(result));
+
+      sheet.getRange(rowNumber, 3).setValue("SENT");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue("");
+
+      processed.push({
+        queueID: queueID,
+
+        type: type,
+
+        status: "SENT",
+      });
+    } catch (error) {
+      sheet.getRange(rowNumber, 3).setValue("FAILED");
+
+      sheet.getRange(rowNumber, 5).setValue(new Date());
+
+      sheet.getRange(rowNumber, 7).setValue(error.message || String(error));
+
+      Logger.log(
+        "NotificationQueue 发送失败：" +
+          queueID +
+          " / " +
+          type +
+          " / " +
+          (error.message || error),
+      );
+    }
+  }
+
+  /*
+   * 这里 flush 没问题。
+   *
+   * 因为这是后台 Trigger，
+   * 不影响用户报名接口。
+   */
+  SpreadsheetApp.flush();
+
+  return {
+    success: true,
+
+    processed: processed.length,
+
+    data: processed,
+  };
+}
+
+/****************************************************
+ * ==================================================
+ * 17. Tests
+ * ==================================================
+ ****************************************************/
+
 function testRegisterContactValue() {
   const result = registerActivities({
     activityIDs: ["ACT260825092719011"],
@@ -2504,14 +2477,6 @@ function testRegisterContactValue() {
   Logger.log(JSON.stringify(result, null, 2));
 }
 
-/**
- * 兼容前端把 ContactValue
- * 放在 data 顶层的测试。
- *
- * 预期：
- *
- * ContactValue = 6666
- */
 function testRegisterRootContactValue() {
   const result = registerActivities({
     activityIDs: ["ACT260825092719011"],
@@ -2534,15 +2499,6 @@ function testRegisterRootContactValue() {
   Logger.log(JSON.stringify(result, null, 2));
 }
 
-/**
- * 多人测试
- *
- * 预期：
- *
- * 中   → 6666
- * 李   → 7777
- * 王   → 8888
- */
 function testRegisterMultipleContactValues() {
   const result = registerActivities({
     activityIDs: ["ACT260825092719011"],
@@ -2585,517 +2541,20 @@ function testRegisterMultipleContactValues() {
   Logger.log(JSON.stringify(result, null, 2));
 }
 
-/**
- * 我的报名测试
- */
 function testGetMyRegistrations6666() {
   const result = getMyRegistrations("6666");
 
   Logger.log(JSON.stringify(result, null, 2));
 }
 
-/**
- * Detail 测试
- */
 function testGetRegistrationDetail() {
   const result = getRegistrationDetail("REG260825093012566");
 
   Logger.log(JSON.stringify(result, null, 2));
 }
 
-/**
- * Group Detail 测试
- */
 function testGetRegistrationGroupDetail() {
   const result = getRegistrationGroupDetail("GRP260825093011756");
 
   Logger.log(JSON.stringify(result, null, 2));
-}
-
-/****************************************************
- * ==================================================
- * Processed Request - Request Type
- * ==================================================
- *
- * REQ-xxxx
- *     → REGISTRATION
- *
- * CHECKIN-xxxx
- *     → CHECKIN
- ****************************************************/
-
-function getProcessedRequestType(clientRequestID) {
-  const id = normalizeString(clientRequestID).toUpperCase();
-
-  if (!id) {
-    return "";
-  }
-
-  if (id.indexOf("REQ-") === 0) {
-    return "REGISTRATION";
-  }
-
-  if (id.indexOf("CHECKIN-") === 0) {
-    return "CHECKIN";
-  }
-
-  return "";
-}
-
-/****************************************************
- * ==================================================
- * Processed Request - Idempotency Check
- * ==================================================
- ****************************************************/
-
-function checkProcessedRequest(clientRequestID) {
-  const requestID = normalizeString(clientRequestID);
-
-  if (!requestID) {
-    return false;
-  }
-
-  const requestType = getProcessedRequestType(requestID);
-
-  /*
-   * 未知类型不参与幂等检查。
-   *
-   * 目前只接受：
-   *
-   * REQ-
-   * CHECKIN-
-   */
-  if (!requestType) {
-    return false;
-  }
-
-  const ss = SpreadsheetApp.getActive();
-
-  const sheet = ss.getSheetByName("ProcessedRequests");
-
-  if (!sheet) {
-    return false;
-  }
-
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < 2) {
-    return false;
-  }
-
-  const lastColumn = Math.max(sheet.getLastColumn(), 3);
-
-  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
-
-  return values.some(function (row) {
-    const savedRequestID = normalizeString(row[0]);
-
-    const savedRequestType = normalizeString(row[1]);
-
-    /*
-     * 新格式：
-     *
-     * A = ClientRequestID
-     * B = RequestType
-     * C = CreatedAt
-     */
-    if (savedRequestID === requestID && savedRequestType === requestType) {
-      return true;
-    }
-
-    return false;
-  });
-}
-
-/****************************************************
- * ==================================================
- * Processed Request - Save
- * ==================================================
- ****************************************************/
-
-function saveProcessedRequest(clientRequestID) {
-  const requestID = normalizeString(clientRequestID);
-
-  if (!requestID) {
-    return;
-  }
-
-  const requestType = getProcessedRequestType(requestID);
-
-  if (!requestType) {
-    Logger.log("ProcessedRequests：未知 ClientRequestID 类型：" + requestID);
-
-    return;
-  }
-
-  const ss = SpreadsheetApp.getActive();
-
-  let sheet = ss.getSheetByName("ProcessedRequests");
-
-  if (!sheet) {
-    sheet = ss.insertSheet("ProcessedRequests");
-
-    sheet
-      .getRange(1, 1, 1, 3)
-      .setValues([["ClientRequestID", "RequestType", "CreatedAt"]]);
-  } else {
-    const lastColumn = Math.max(sheet.getLastColumn(), 3);
-
-    const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
-
-    if (!headers[0]) {
-      sheet.getRange(1, 1).setValue("ClientRequestID");
-    }
-
-    if (!headers[1]) {
-      sheet.getRange(1, 2).setValue("RequestType");
-    }
-
-    if (!headers[2]) {
-      sheet.getRange(1, 3).setValue("CreatedAt");
-    }
-  }
-
-  /*
-   * 再次检查。
-   *
-   * 当前 withLock() 已经提供并发保护，
-   * 这里属于第二层保险。
-   */
-  if (checkProcessedRequest(requestID)) {
-    return;
-  }
-
-  sheet.appendRow([requestID, requestType, new Date()]);
-
-  SpreadsheetApp.flush();
-}
-
-/****************************************************
- * ==================================================
- * Notification Queue
- * ==================================================
- *
- * 第一阶段：
- *
- * Registration
- *      ↓
- * NotificationQueue
- *      ↓
- * PENDING
- *      ↓
- * Trigger
- *      ↓
- * sendRegistrationOkNotificationToV2_()
- *      ↓
- * SENT
- *
- ****************************************************/
-
-/**
- * 创建 NotificationQueue Sheet
- *
- * 如果不存在则自动创建。
- */
-function getNotificationQueueSheet() {
-  const ss = SpreadsheetApp.getActive();
-
-  let sheet = ss.getSheetByName("NotificationQueue");
-
-  if (!sheet) {
-    sheet = ss.insertSheet("NotificationQueue");
-
-    sheet
-      .getRange(1, 1, 1, 7)
-      .setValues([
-        [
-          "QueueID",
-          "Type",
-          "Status",
-          "CreatedAt",
-          "ProcessedAt",
-          "Payload",
-          "ErrorMessage",
-        ],
-      ]);
-  }
-
-  return sheet;
-}
-
-/**
- * 生成 Queue ID
- */
-function generateNotificationQueueID() {
-  return generateID("Q");
-}
-
-/**
- * 写入 Notification Queue
- *
- * 注意：
- *
- * 这里只负责写 Queue。
- *
- * 不发送 FCM。
- * 不调用 V2。
- * 不等待设备。
- */
-function enqueueRegistrationOkNotification(payload) {
-  if (!payload) {
-    throw new Error("Notification Queue Payload 为空");
-  }
-
-  const sheet = getNotificationQueueSheet();
-
-  const queueID = generateNotificationQueueID();
-
-  const now = new Date();
-
-  sheet.appendRow([
-    queueID,
-
-    "REGISTRATION_OK",
-
-    "PENDING",
-
-    now,
-
-    "",
-
-    JSON.stringify(payload),
-
-    "",
-  ]);
-
-  SpreadsheetApp.flush();
-
-  return {
-    success: true,
-
-    queueID: queueID,
-
-    status: "PENDING",
-  };
-}
-
-function enqueueAdminRegistrationNotification(payload) {
-  if (!payload) {
-    throw new Error("Admin Notification Queue Payload 为空");
-  }
-
-  const sheet = getNotificationQueueSheet();
-
-  const queueID = generateNotificationQueueID();
-
-  const now = new Date();
-
-  sheet.appendRow([
-    queueID,
-
-    "ADMIN_REGISTRATION",
-
-    "PENDING",
-
-    now,
-
-    "",
-
-    JSON.stringify(payload),
-
-    "",
-  ]);
-
-  SpreadsheetApp.flush();
-
-  return {
-    success: true,
-
-    queueID: queueID,
-
-    status: "PENDING",
-  };
-}
-
-/**
- * 后台处理 Notification Queue
- *
- * 由 Time-driven Trigger 调用。
- *
- * 例如：
- *
- * 每分钟执行一次。
- */
-function processNotificationQueue() {
-  const sheet = getNotificationQueueSheet();
-
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow <= 1) {
-    return {
-      success: true,
-
-      processed: 0,
-
-      message: "没有待处理通知",
-    };
-  }
-
-  const lastColumn = Math.max(sheet.getLastColumn(), 7);
-
-  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
-
-  const processed = [];
-
-  for (let i = 0; i < values.length; i++) {
-    const rowNumber = i + 2;
-
-    const queueID = normalizeString(values[i][0]);
-
-    const type = normalizeString(values[i][1]);
-
-    const status = normalizeString(values[i][2]);
-
-    const payloadString = normalizeString(values[i][5]);
-
-    /*
-     * 只处理 PENDING
-     */
-    if (status !== "PENDING") {
-      continue;
-    }
-
-    /*
-     * 支持两种通知：
-     *
-     * REGISTRATION_OK
-     * ADMIN_REGISTRATION
-     */
-    if (type !== "REGISTRATION_OK" && type !== "ADMIN_REGISTRATION") {
-      continue;
-    }
-
-    /*
-     * Payload 检查
-     */
-    if (!payloadString) {
-      sheet.getRange(rowNumber, 3).setValue("FAILED");
-
-      sheet.getRange(rowNumber, 5).setValue(new Date());
-
-      sheet.getRange(rowNumber, 7).setValue("Payload 为空");
-
-      continue;
-    }
-
-    let payload;
-
-    try {
-      payload = JSON.parse(payloadString);
-    } catch (error) {
-      sheet.getRange(rowNumber, 3).setValue("FAILED");
-
-      sheet.getRange(rowNumber, 5).setValue(new Date());
-
-      sheet
-        .getRange(rowNumber, 7)
-        .setValue("Payload JSON 解析失败：" + (error.message || error));
-
-      continue;
-    }
-
-    /*
-     * 真正发送
-     */
-    try {
-      let result;
-
-      /**********************************************
-       * REGISTRATION_OK
-       **********************************************/
-      if (type === "REGISTRATION_OK") {
-        Logger.log("NotificationQueue → REGISTRATION_OK → " + queueID);
-
-        result = sendRegistrationOkNotificationToV2_(payload);
-      } else if (type === "ADMIN_REGISTRATION") {
-        /**********************************************
-         * ADMIN_REGISTRATION
-         **********************************************/
-        Logger.log("NotificationQueue → ADMIN_REGISTRATION → " + queueID);
-
-        result = sendAdminFCMNotification(payload.title, payload.message);
-      }
-
-      Logger.log("NotificationQueue 发送结果：" + JSON.stringify(result));
-
-      /*
-       * 成功
-       */
-      sheet.getRange(rowNumber, 3).setValue("SENT");
-
-      sheet.getRange(rowNumber, 5).setValue(new Date());
-
-      sheet.getRange(rowNumber, 7).setValue("");
-
-      processed.push({
-        queueID: queueID,
-
-        type: type,
-
-        status: "SENT",
-      });
-    } catch (error) {
-      /*
-       * 失败
-       */
-      sheet.getRange(rowNumber, 3).setValue("FAILED");
-
-      sheet.getRange(rowNumber, 5).setValue(new Date());
-
-      sheet.getRange(rowNumber, 7).setValue(error.message || String(error));
-
-      Logger.log(
-        "NotificationQueue 发送失败：" +
-          queueID +
-          " / " +
-          type +
-          " / " +
-          (error.message || error),
-      );
-    }
-  }
-
-  SpreadsheetApp.flush();
-
-  return {
-    success: true,
-
-    processed: processed.length,
-
-    data: processed,
-  };
-}
-
-function enqueueAdminRegistrationNotification(data) {
-  if (!data) {
-    throw new Error("管理员通知资料为空");
-  }
-
-  const title = normalizeString(data.title) || "🏸 新しい参加申込み";
-
-  const message = normalizeString(data.message);
-
-  if (!message) {
-    throw new Error("管理员通知 Message 为空");
-  }
-
-  return enqueueNotificationQueue({
-    type: "ADMIN_REGISTRATION",
-
-    payload: {
-      title: title,
-
-      message: message,
-    },
-  });
 }
