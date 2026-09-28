@@ -236,13 +236,9 @@ function registerActivitiesCore(data) {
     if (duplicateResult) {
       return {
         success: true,
-
         duplicate: true,
-
         message: "该请求已经处理",
-
         clientRequestID: clientRequestID,
-
         data: [],
       };
     }
@@ -292,13 +288,9 @@ function registerActivitiesCore(data) {
     participants = [
       {
         name: name,
-
         contactType: normalizeString(data.contactType) || "NONE",
-
         contactValue: getRootContactValue(data),
-
         level: normalizeString(data.level),
-
         parking: data.parking === true,
       },
     ];
@@ -381,21 +373,15 @@ function registerActivitiesCore(data) {
   participants = participants.map(function (participant) {
     const finalContactValue = resolveContactValue(
       participant.contactValue,
-
       rootContactValue,
-
       participants.length,
     );
 
     return {
       name: participant.name,
-
       contactType: participant.contactType,
-
       contactValue: finalContactValue,
-
       level: participant.level,
-
       parking: participant.parking,
     };
   });
@@ -411,6 +397,56 @@ function registerActivitiesCore(data) {
   const message = normalizeString(data.message);
 
   const registrationGroupID = generateUniqueRegistrationGroupID();
+
+  /**************************************************
+   * ★ 性能优化
+   *
+   * Activities 只读取一次
+   * Registrations 只读取一次
+   * Registrations Header 只读取一次
+   **************************************************/
+
+  const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
+
+  const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
+
+  const registrationSheet = getSheet(CONFIG.SHEETS.REGISTRATIONS);
+
+  if (!registrationSheet) {
+    throw new Error("Missing Sheet: " + CONFIG.SHEETS.REGISTRATIONS);
+  }
+
+  const lastColumn = registrationSheet.getLastColumn();
+
+  if (lastColumn <= 0) {
+    throw new Error("Registrations Sheet 没有 Header");
+  }
+
+  const headers = registrationSheet
+    .getRange(1, 1, 1, lastColumn)
+    .getValues()[0];
+
+  const contactValueIndex = headers.indexOf("ContactValue");
+
+  if (contactValueIndex === -1) {
+    throw new Error("Registrations 表缺少 ContactValue 字段");
+  }
+
+  /**************************************************
+   * ★ 建立共享 Context
+   **************************************************/
+
+  const registrationContext = {
+    activities: activities,
+
+    registrations: registrations,
+
+    sheet: registrationSheet,
+
+    headers: headers,
+
+    contactValueIndex: contactValueIndex,
+  };
 
   /**************************************************
    * 执行报名
@@ -441,6 +477,11 @@ function registerActivitiesCore(data) {
           parking: participant.parking,
 
           message: message,
+
+          /******************************************
+           * ★ 传入共享数据
+           ******************************************/
+          _registrationContext: registrationContext,
         });
       } catch (error) {
         result = {
@@ -575,6 +616,10 @@ function registerOneActivityCore(data) {
     };
   }
 
+  /**************************************************
+   * 基础资料
+   **************************************************/
+
   const registrationGroupID = normalizeString(data.registrationGroupID);
 
   const bookerName = normalizeString(data.bookerName);
@@ -590,13 +635,10 @@ function registerOneActivityCore(data) {
   if (!contactValue) {
     contactValue = firstNonEmptyValue([
       data.ContactValue,
-
       data.searchKey,
       data.SearchKey,
-
       data.retrievalKey,
       data.RetrievalKey,
-
       data["检索键"],
     ]);
   }
@@ -616,13 +658,9 @@ function registerOneActivityCore(data) {
   if (!activityID) {
     return {
       success: false,
-
       activityID: activityID,
-
       participantName: name,
-
       contactValue: contactValue,
-
       message: "活动编号为空",
     };
   }
@@ -630,13 +668,9 @@ function registerOneActivityCore(data) {
   if (!name) {
     return {
       success: false,
-
       activityID: activityID,
-
       participantName: name,
-
       contactValue: contactValue,
-
       message: "姓名不能为空",
     };
   }
@@ -644,20 +678,36 @@ function registerOneActivityCore(data) {
   if (!contactValue) {
     return {
       success: false,
-
       activityID: activityID,
-
       participantName: name,
-
+      contactValue: contactValue,
       message: "无法生成 ContactValue",
     };
   }
 
   /**************************************************
-   * Activity
+   * ★ 使用共享 Context
    **************************************************/
 
-  const activities = sheetToJson(CONFIG.SHEETS.ACTIVITIES);
+  const context = data._registrationContext;
+
+  if (!context) {
+    throw new Error("registerOneActivityCore 缺少 Registration Context");
+  }
+
+  const activities = context.activities;
+
+  const registrations = context.registrations;
+
+  const sheet = context.sheet;
+
+  const headers = context.headers;
+
+  const contactValueIndex = context.contactValueIndex;
+
+  /**************************************************
+   * Activity
+   **************************************************/
 
   const activity = activities.find(function (a) {
     return normalizeString(a.ActivityID) === activityID;
@@ -666,13 +716,9 @@ function registerOneActivityCore(data) {
   if (!activity) {
     return {
       success: false,
-
       activityID: activityID,
-
       participantName: name,
-
       contactValue: contactValue,
-
       message: "活动不存在：" + activityID,
     };
   }
@@ -696,33 +742,24 @@ function registerOneActivityCore(data) {
 
     return {
       success: false,
-
       activityID: activityID,
-
       participantName: name,
-
       contactValue: contactValue,
-
       title: activity.Title || "",
-
       message: message,
     };
   }
 
   /**************************************************
-   * Registrations
-   **************************************************/
-
-  const registrations = sheetToJson(CONFIG.SHEETS.REGISTRATIONS);
-
-  /**************************************************
    * Duplicate
    **************************************************/
+
+  const normalizedName = normalizeName(name);
 
   const duplicate = registrations.some(function (r) {
     const sameActivity = normalizeString(r.ActivityID) === activityID;
 
-    const sameName = normalizeName(r.Name) === normalizeName(name);
+    const sameName = normalizeName(r.Name) === normalizedName;
 
     const status = normalizeString(r.Status);
 
@@ -788,34 +825,10 @@ function registerOneActivityCore(data) {
   const registrationID = generateUniqueRegistrationID();
 
   /**************************************************
-   * Registration Sheet
+   * Row
    **************************************************/
-
-  const sheet = getSheet(CONFIG.SHEETS.REGISTRATIONS);
-
-  if (!sheet) {
-    throw new Error("Missing Sheet: " + CONFIG.SHEETS.REGISTRATIONS);
-  }
-
-  const lastColumn = sheet.getLastColumn();
-
-  if (lastColumn <= 0) {
-    throw new Error("Registrations Sheet 没有 Header");
-  }
-
-  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
-
-  const contactValueIndex = headers.indexOf("ContactValue");
-
-  if (contactValueIndex === -1) {
-    throw new Error("Registrations 表缺少 ContactValue 字段");
-  }
 
   const now = new Date();
-
-  /**************************************************
-   * rowData
-   **************************************************/
 
   const rowData = {
     RegistrationID: registrationID,
@@ -857,10 +870,6 @@ function registerOneActivityCore(data) {
     CheckinStatus: "NOT_CHECKED_IN",
   };
 
-  /**************************************************
-   * 根据 Header 创建 row
-   **************************************************/
-
   const row = headers.map(function (header) {
     if (Object.prototype.hasOwnProperty.call(rowData, header)) {
       return rowData[header];
@@ -869,28 +878,65 @@ function registerOneActivityCore(data) {
     return "";
   });
 
-  /*
-   * 最后一次保护：
-   * ContactValue 一定写入 Header 对应列。
-   */
   row[contactValueIndex] = contactValue;
 
   /**************************************************
-   * 写入
-   *
-   * ★ 不再 flush
-   * ★ 不再写入后重新读取验证
-   *
-   * 这是报名速度优化的关键。
+   * 写入 Registration
    **************************************************/
 
   appendRow(CONFIG.SHEETS.REGISTRATIONS, row);
 
   /**************************************************
-   * 管理员通知
+   * ★ 关键
    *
-   * 只写 Queue。
-   * 不发送 FCM。
+   * 更新内存中的 registrations。
+   *
+   * 后面的 participant/activity
+   * 不需要再次读取 Sheet。
+   **************************************************/
+
+  registrations.push({
+    RegistrationID: registrationID,
+
+    ActivityID: activityID,
+
+    Name: name,
+
+    ContactType: contactType,
+
+    ContactValue: contactValue,
+
+    Level: level,
+
+    Parking: parking,
+
+    Status: status,
+
+    FeeAmount: Number(activity.Fee) || 0,
+
+    PaymentStatus: "UNPAID",
+
+    PaymentMethod: "NONE",
+
+    PaidAt: "",
+
+    PaymentNote: "",
+
+    Message: normalizeString(data.message),
+
+    CreatedAt: now,
+
+    UpdatedAt: now,
+
+    RegistrationGroupID: registrationGroupID,
+
+    BookerName: bookerName,
+
+    CheckinStatus: "NOT_CHECKED_IN",
+  });
+
+  /**************************************************
+   * 管理员通知 Queue
    **************************************************/
 
   try {
@@ -928,12 +974,6 @@ function registerOneActivityCore(data) {
 
   /**************************************************
    * REGISTRATION_OK Queue
-   *
-   * ★ CONFIRMED / WAITLIST 都发送
-   * ★ 只要报名记录成功写入，就发送
-   * ★ 不发送 V2
-   * ★ 不发送 FCM
-   * ★ 不等待通知
    **************************************************/
 
   try {

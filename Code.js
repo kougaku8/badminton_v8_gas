@@ -1260,6 +1260,10 @@ function formatSheetDateTimeForInput(value) {
 
 function updateActivity(data) {
   return withLock(function () {
+    /**************************************************
+     * 1. 基础验证
+     **************************************************/
+
     if (!data) {
       throw new Error("没有收到活动资料");
     }
@@ -1292,6 +1296,10 @@ function updateActivity(data) {
       throw new Error("结束时间必须晚于开始时间");
     }
 
+    /**************************************************
+     * 2. 数值
+     **************************************************/
+
     const courtCount = Number(data.courtCount);
 
     const capacity = Number(data.capacity);
@@ -1310,6 +1318,10 @@ function updateActivity(data) {
       throw new Error("活动费用不能小于 0");
     }
 
+    /**************************************************
+     * 3. Activities Sheet
+     **************************************************/
+
     const sheet = getSpreadsheet().getSheetByName(CONFIG.SHEETS.ACTIVITIES);
 
     if (!sheet) {
@@ -1324,15 +1336,19 @@ function updateActivity(data) {
 
     const headers = values[0];
 
+    /**************************************************
+     * 4. ActivityID
+     **************************************************/
+
     const activityIDIndex = headers.indexOf("ActivityID");
 
     if (activityIDIndex < 0) {
       throw new Error("Activities 中找不到 ActivityID 列");
     }
 
-    // =========================
-    // 找到 ActivityID 对应行
-    // =========================
+    /**************************************************
+     * 5. 找 Activity 对应 Row
+     **************************************************/
 
     let rowNumber = -1;
 
@@ -1355,9 +1371,9 @@ function updateActivity(data) {
       throw new Error("找不到活动：" + data.activityID);
     }
 
-    // =========================
-    // 找列
-    // =========================
+    /**************************************************
+     * 6. 找列
+     **************************************************/
 
     function column(name) {
       const index = headers.indexOf(name);
@@ -1391,12 +1407,21 @@ function updateActivity(data) {
 
     const updatedCol = column("UpdatedAt");
 
-    // =========================
-    // 标题
-    //
-    // 避免：
-    // 8/30 8/30 活动
-    // =========================
+    /**************************************************
+     * 7. ★ 保存旧 Capacity
+     *
+     * 必须在写入新 Capacity 之前取得
+     **************************************************/
+
+    const oldCapacity = Number(rowData[capacityCol]) || 0;
+
+    /**************************************************
+     * 8. 标题处理
+     *
+     * 避免：
+     *
+     * 8/30 8/30 活动
+     **************************************************/
 
     let title = String(data.title).trim();
 
@@ -1412,18 +1437,19 @@ function updateActivity(data) {
       title = month + "/" + day + " " + cleanTitle;
     }
 
-    // =========================
-    // 保持 Status 不变
-    // =========================
+    /**************************************************
+     * 9. 保持 Status 不变
+     *
+     * 不修改：
+     *
+     * ActivityID
+     * Status
+     * CreatedAt
+     **************************************************/
 
-    // 不修改：
-    // ActivityID
-    // Status
-    // CreatedAt
-
-    // =========================
-    // 写入修改内容
-    // =========================
+    /**************************************************
+     * 10. 写入 Activities
+     **************************************************/
 
     sheet.getRange(rowNumber, titleCol + 1).setValue(title);
 
@@ -1451,22 +1477,254 @@ function updateActivity(data) {
 
     sheet.getRange(rowNumber, updatedCol + 1).setValue(new Date());
 
-    // =========================
-    // V2へ「活动修改」通知
-    // =========================
+    /**************************************************
+     * 11. ★ Capacity 增加
+     *
+     * 自动逐个候补转正
+     *
+     * 重要：
+     *
+     * 不看 RegistrationGroupID
+     * 不整组转正
+     *
+     * 每一条 Registration 独立处理
+     **************************************************/
+
+    let promotedCount = 0;
+
+    if (capacity > oldCapacity) {
+      /************************************************
+       * 11-1. 读取 Registrations
+       ************************************************/
+
+      const registrationSheet = getSpreadsheet().getSheetByName(
+        CONFIG.SHEETS.REGISTRATIONS,
+      );
+
+      if (!registrationSheet) {
+        throw new Error("找不到 Registrations 工作表");
+      }
+
+      const registrationValues = registrationSheet.getDataRange().getValues();
+
+      if (registrationValues.length >= 2) {
+        const registrationHeaders = registrationValues[0];
+
+        /**********************************************
+         * 11-2. 找 Registrations 列
+         **********************************************/
+
+        function registrationColumn(name) {
+          const index = registrationHeaders.indexOf(name);
+
+          if (index < 0) {
+            throw new Error("Registrations 中找不到 " + name + " 列");
+          }
+
+          return index;
+        }
+
+        const registrationIDCol = registrationColumn("RegistrationID");
+
+        const activityIDCol = registrationColumn("ActivityID");
+
+        const nameCol = registrationColumn("Name");
+
+        const statusCol = registrationColumn("Status");
+
+        const updatedAtCol = registrationColumn("UpdatedAt");
+
+        /**********************************************
+         * 11-3. 计算目前正式人数
+         **********************************************/
+
+        let confirmedCount = 0;
+
+        for (let i = 1; i < registrationValues.length; i++) {
+          const registrationActivityID = normalizeString(
+            registrationValues[i][activityIDCol],
+          );
+
+          const registrationStatus = normalizeString(
+            registrationValues[i][statusCol],
+          );
+
+          if (
+            registrationActivityID === String(data.activityID).trim() &&
+            registrationStatus === CONFIG.STATUS.CONFIRMED
+          ) {
+            confirmedCount++;
+          }
+        }
+
+        /**********************************************
+         * 11-4. 找候补
+         *
+         * registrations Sheet 本身的顺序
+         * 就是报名先后顺序。
+         *
+         * 因此这里从上到下逐个转正。
+         **********************************************/
+
+        for (let i = 1; i < registrationValues.length; i++) {
+          /********************************************
+           * 已经满员
+           ********************************************/
+
+          if (confirmedCount >= capacity) {
+            break;
+          }
+
+          const registrationActivityID = normalizeString(
+            registrationValues[i][activityIDCol],
+          );
+
+          const registrationStatus = normalizeString(
+            registrationValues[i][statusCol],
+          );
+
+          /********************************************
+           * 不是本活动
+           ********************************************/
+
+          if (registrationActivityID !== String(data.activityID).trim()) {
+            continue;
+          }
+
+          /********************************************
+           * 不是候补
+           ********************************************/
+
+          if (registrationStatus !== CONFIG.STATUS.WAITLIST) {
+            continue;
+          }
+
+          /********************************************
+           * RegistrationID
+           ********************************************/
+
+          const registrationID = normalizeString(
+            registrationValues[i][registrationIDCol],
+          );
+
+          if (!registrationID) {
+            Logger.log("跳过没有 RegistrationID 的候补 Row：" + (i + 1));
+
+            continue;
+          }
+
+          /********************************************
+           * Participant Name
+           ********************************************/
+
+          const participantName = normalizeString(
+            registrationValues[i][nameCol],
+          );
+
+          /********************************************
+           * ★ WAITLIST → CONFIRMED
+           ********************************************/
+
+          const now = new Date();
+
+          registrationSheet
+            .getRange(i + 1, statusCol + 1)
+            .setValue(CONFIG.STATUS.CONFIRMED);
+
+          registrationSheet.getRange(i + 1, updatedAtCol + 1).setValue(now);
+
+          /********************************************
+           * 更新计数
+           ********************************************/
+
+          confirmedCount++;
+
+          promotedCount++;
+
+          /********************************************
+           * ★ 写入自动转正通知 Queue
+           *
+           * 一个人一条 Queue。
+           *
+           * 不按照 RegistrationGroupID 合并。
+           ********************************************/
+
+          try {
+            enqueueRegistrationOkNotification({
+              activityID: String(data.activityID).trim(),
+
+              activityTitle: title,
+
+              activityDate: data.activityDate,
+
+              startTime: data.startTime,
+
+              participantName: participantName,
+
+              status: CONFIG.STATUS.CONFIRMED,
+
+              confirmedCount: confirmedCount,
+
+              capacity: capacity,
+
+              /****************************************
+               * ★ 非普通报名
+               *
+               * sendRegistrationOkNotificationToV2_
+               * 会根据 promoted 判断这是：
+               *
+               * WAITLIST_PROMOTE
+               ****************************************/
+
+              promoted: true,
+
+              registrationID: registrationID,
+            });
+
+            Logger.log(
+              "候补自动转正通知已加入 Queue：" +
+                participantName +
+                " / " +
+                registrationID,
+            );
+          } catch (error) {
+            /*
+             * 转正本身已经成功。
+             *
+             * 即使通知 Queue 写入失败，
+             * 也不要把已经转正的人改回候补。
+             */
+
+            Logger.log(
+              "候补转正通知 Queue 写入失败：" +
+                participantName +
+                " / " +
+                registrationID +
+                " / " +
+                (error.message || error),
+            );
+          }
+        }
+      }
+    }
+
+    /**************************************************
+     * 12. V2 活动修改通知
+     **************************************************/
 
     try {
       sendActivityUpdateNotificationToV2_({
         activityDate: data.activityDate,
+
         title: title,
       });
     } catch (error) {
       console.error("V2 ACTIVITY_UPDATE 通知送信失敗:", error);
     }
 
-    // =========================
-    // 返回
-    // =========================
+    /**************************************************
+     * 13. 返回
+     **************************************************/
 
     return {
       success: true,
@@ -1475,9 +1733,511 @@ function updateActivity(data) {
 
       title: title,
 
-      message: "活动修改成功",
+      message:
+        promotedCount > 0
+          ? "活动修改成功，已有 " + promotedCount + " 名候补自动转正"
+          : "活动修改成功",
+
+      promotedCount: promotedCount,
     };
   });
+}
+
+/* =========================================================
+ * 人数上限增加后
+ * 自动将候补转为正取
+ *
+ * 同时发送 REGISTRATION_OK Queue
+ * ========================================================= */
+
+function promoteWaitlistAfterCapacityIncrease(
+  activityID,
+  oldCapacity,
+  newCapacity,
+  activityInfo,
+) {
+  // =========================================================
+  // 只有人数上限增加时才处理
+  // =========================================================
+
+  if (Number(newCapacity) <= Number(oldCapacity)) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  // =========================================================
+  // Registrations Sheet
+  // =========================================================
+
+  const sheet = getSpreadsheet().getSheetByName(CONFIG.SHEETS.REGISTRATIONS);
+
+  if (!sheet) {
+    throw new Error("找不到 Registrations 工作表");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length < 2) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  const headers = values[0];
+
+  // =========================================================
+  // 找列
+  // =========================================================
+
+  function column(name) {
+    const index = headers.indexOf(name);
+
+    if (index < 0) {
+      throw new Error("Registrations 中找不到 " + name + " 列");
+    }
+
+    return index;
+  }
+
+  const activityIDCol = column("ActivityID");
+
+  const statusCol = column("Status");
+
+  const createdAtCol = column("CreatedAt");
+
+  const registrationIDCol = column("RegistrationID");
+
+  const updatedAtCol = column("UpdatedAt");
+
+  const nameCol = column("Name");
+
+  // =========================================================
+  // 当前正取人数 + 候补
+  // =========================================================
+
+  let confirmedCount = 0;
+
+  const waitlistRows = [];
+
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+
+    const rowActivityID = normalizeString(row[activityIDCol]);
+
+    if (rowActivityID !== String(activityID).trim()) {
+      continue;
+    }
+
+    const status = normalizeString(row[statusCol]);
+
+    // -----------------------------------------
+    // 正取
+    // -----------------------------------------
+
+    if (status === CONFIG.STATUS.CONFIRMED) {
+      confirmedCount++;
+
+      continue;
+    }
+
+    // -----------------------------------------
+    // 候补
+    // -----------------------------------------
+
+    if (status === CONFIG.STATUS.WAITLIST) {
+      waitlistRows.push({
+        sheetRow: i + 1,
+
+        createdAt: row[createdAtCol],
+
+        registrationID: row[registrationIDCol],
+
+        participantName: row[nameCol],
+      });
+    }
+  }
+
+  // =========================================================
+  // 已经达到新 Capacity
+  // =========================================================
+
+  if (confirmedCount >= Number(newCapacity)) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  // =========================================================
+  // 按 CreatedAt 排序
+  //
+  // 最早进入候补的人优先
+  // =========================================================
+
+  waitlistRows.sort(function (a, b) {
+    const timeA = getTimestampForSort(a.createdAt);
+
+    const timeB = getTimestampForSort(b.createdAt);
+
+    if (isNaN(timeA) && isNaN(timeB)) {
+      return 0;
+    }
+
+    if (isNaN(timeA)) {
+      return 1;
+    }
+
+    if (isNaN(timeB)) {
+      return -1;
+    }
+
+    return timeA - timeB;
+  });
+
+  // =========================================================
+  // 自动转正
+  // =========================================================
+
+  const promotedRegistrationIDs = [];
+
+  for (let i = 0; i < waitlistRows.length; i++) {
+    if (confirmedCount >= Number(newCapacity)) {
+      break;
+    }
+
+    const item = waitlistRows[i];
+
+    // =======================================================
+    // 修改 Status
+    // =======================================================
+
+    sheet
+      .getRange(item.sheetRow, statusCol + 1)
+      .setValue(CONFIG.STATUS.CONFIRMED);
+
+    // =======================================================
+    // 更新 UpdatedAt
+    // =======================================================
+
+    sheet.getRange(item.sheetRow, updatedAtCol + 1).setValue(new Date());
+
+    confirmedCount++;
+
+    promotedRegistrationIDs.push(String(item.registrationID));
+
+    // =======================================================
+    // ★ 自动转正通知
+    //
+    // 使用你现有的
+    // enqueueRegistrationOkNotification()
+    //
+    // 与正常报名成功时使用同一个 Queue。
+    // =======================================================
+
+    try {
+      enqueueRegistrationOkNotification({
+        activityID: activityID,
+
+        activityTitle: activityInfo.title || "",
+
+        activityDate: activityInfo.activityDate || "",
+
+        startTime: activityInfo.startTime || "",
+
+        participantName: item.participantName || "",
+
+        status: CONFIG.STATUS.CONFIRMED,
+
+        confirmedCount: confirmedCount,
+
+        capacity: Number(newCapacity),
+      });
+    } catch (error) {
+      // =====================================================
+      // 通知 Queue 失败不影响已经完成的转正
+      // =====================================================
+
+      Logger.log(
+        "候补转正 REGISTRATION_OK Queue 写入失败：" + (error.message || error),
+      );
+    }
+  }
+
+  // =========================================================
+  // 返回结果
+  // =========================================================
+
+  return {
+    promotedCount: promotedRegistrationIDs.length,
+
+    promotedRegistrationIDs: promotedRegistrationIDs,
+  };
+}
+
+/* =========================================================
+ * CreatedAt → 时间戳
+ *
+ * 用于候补排序
+ * ========================================================= */
+
+function getTimestampForSort(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return NaN;
+  }
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return NaN;
+  }
+
+  return date.getTime();
+}
+
+/* =========================================================
+ * ★ 人数上限增加后
+ *   自动将候补转为正取
+ *
+ * 规则：
+ *
+ * 1. 只有 Capacity 增加时执行
+ * 2. 每条 Registration 独立处理
+ * 3. 不使用 RegistrationGroupID
+ * 4. 只处理 WAITLIST
+ * 5. 按 CreatedAt 从早到晚转正
+ * 6. 已 CONFIRMED 不改变
+ * 7. 其他 Status 不处理
+ * 8. 更新转正记录的 UpdatedAt
+ * ========================================================= */
+
+function promoteWaitlistAfterCapacityIncrease(
+  activityID,
+  oldCapacity,
+  newCapacity,
+) {
+  // =========================================================
+  // 只有人数上限增加时才处理
+  // =========================================================
+
+  if (Number(newCapacity) <= Number(oldCapacity)) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  // =========================================================
+  // Registrations Sheet
+  // =========================================================
+
+  const sheet = getSpreadsheet().getSheetByName(CONFIG.SHEETS.REGISTRATIONS);
+
+  if (!sheet) {
+    throw new Error("找不到 Registrations 工作表");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length < 2) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  const headers = values[0];
+
+  // =========================================================
+  // 找列
+  // =========================================================
+
+  function column(name) {
+    const index = headers.indexOf(name);
+
+    if (index < 0) {
+      throw new Error("Registrations 中找不到 " + name + " 列");
+    }
+
+    return index;
+  }
+
+  const activityIDCol = column("ActivityID");
+
+  const statusCol = column("Status");
+
+  const createdAtCol = column("CreatedAt");
+
+  const registrationIDCol = column("RegistrationID");
+
+  const updatedAtCol = column("UpdatedAt");
+
+  // =========================================================
+  // 当前正取人数
+  // =========================================================
+
+  let confirmedCount = 0;
+
+  const waitlistRows = [];
+
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+
+    const rowActivityID = normalizeString(row[activityIDCol]);
+
+    if (rowActivityID !== String(activityID).trim()) {
+      continue;
+    }
+
+    const status = normalizeString(row[statusCol]);
+
+    // -----------------------------------------
+    // 正取
+    // -----------------------------------------
+
+    if (status === CONFIG.STATUS.CONFIRMED) {
+      confirmedCount++;
+
+      continue;
+    }
+
+    // -----------------------------------------
+    // 候补
+    // -----------------------------------------
+
+    if (status === CONFIG.STATUS.WAITLIST) {
+      waitlistRows.push({
+        sheetRow: i + 1,
+
+        createdAt: row[createdAtCol],
+
+        registrationID: row[registrationIDCol],
+      });
+    }
+  }
+
+  // =========================================================
+  // 如果目前正取人数已经达到新的 Capacity
+  // 就不需要转正
+  // =========================================================
+
+  if (confirmedCount >= Number(newCapacity)) {
+    return {
+      promotedCount: 0,
+
+      promotedRegistrationIDs: [],
+    };
+  }
+
+  // =========================================================
+  // 按 CreatedAt 排序
+  //
+  // 最早报名进入候补的人优先
+  // =========================================================
+
+  waitlistRows.sort(function (a, b) {
+    const timeA = getTimestampForSort(a.createdAt);
+
+    const timeB = getTimestampForSort(b.createdAt);
+
+    // 都无法判断时间
+    // 保持原来的 Sheet 顺序
+    if (isNaN(timeA) && isNaN(timeB)) {
+      return 0;
+    }
+
+    // A 没有有效时间
+    // 放后面
+    if (isNaN(timeA)) {
+      return 1;
+    }
+
+    // B 没有有效时间
+    // 放后面
+    if (isNaN(timeB)) {
+      return -1;
+    }
+
+    return timeA - timeB;
+  });
+
+  // =========================================================
+  // 自动转正
+  // =========================================================
+
+  const promotedRegistrationIDs = [];
+
+  for (let i = 0; i < waitlistRows.length; i++) {
+    // 新 Capacity 已经满了
+    if (confirmedCount >= Number(newCapacity)) {
+      break;
+    }
+
+    const item = waitlistRows[i];
+
+    // -----------------------------------------
+    // 修改 Status
+    // -----------------------------------------
+
+    sheet
+      .getRange(item.sheetRow, statusCol + 1)
+      .setValue(CONFIG.STATUS.CONFIRMED);
+
+    // -----------------------------------------
+    // 更新 UpdatedAt
+    // -----------------------------------------
+
+    sheet.getRange(item.sheetRow, updatedAtCol + 1).setValue(new Date());
+
+    confirmedCount++;
+
+    promotedRegistrationIDs.push(String(item.registrationID));
+  }
+
+  // =========================================================
+  // 返回结果
+  // =========================================================
+
+  return {
+    promotedCount: promotedRegistrationIDs.length,
+
+    promotedRegistrationIDs: promotedRegistrationIDs,
+  };
+}
+
+/* =========================================================
+ * CreatedAt → 时间戳
+ *
+ * 用于候补排序
+ * ========================================================= */
+
+function getTimestampForSort(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return NaN;
+  }
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return NaN;
+  }
+
+  return date.getTime();
 }
 
 function testCheckAdminFCMToken() {
@@ -1680,6 +2440,10 @@ function sendActivityUpdateNotificationToV2_(data) {
 }
 
 function sendRegistrationOkNotificationToV2_(data) {
+  if (!data) {
+    throw new Error("REGISTRATION_OK payload 为空");
+  }
+
   const v2Url = PropertiesService.getScriptProperties().getProperty(
     "V2_NOTIFICATION_API_URL",
   );
@@ -1689,6 +2453,10 @@ function sendRegistrationOkNotificationToV2_(data) {
       "V2_NOTIFICATION_API_URL が Script Properties に設定されていません。",
     );
   }
+
+  /***********************************************
+   * 基础资料
+   ***********************************************/
 
   const participantName = String(data.participantName || "").trim();
 
@@ -1704,12 +2472,80 @@ function sendRegistrationOkNotificationToV2_(data) {
 
   const status = String(data.status || "").trim();
 
-  const isWaitlist = status === CONFIG.STATUS.WAITLIST;
+  /***********************************************
+   * ★ 是否为候补自动转正
+   *
+   * promoted === true
+   *
+   * 表示：
+   * 原本 WAITLIST
+   * 现在已经 CONFIRMED
+   ***********************************************/
 
-  const titleZh = isWaitlist ? "🏸 候补报名" : "🏸 报名成功";
+  const promoted = data.promoted === true;
 
-  const bodyZh = isWaitlist
-    ? participantName +
+  /***********************************************
+   * 通知资料
+   ***********************************************/
+
+  let eventType = "REGISTRATION_OK";
+
+  let titleZh = "";
+
+  let bodyZh = "";
+
+  let titleJa = "";
+
+  let bodyJa = "";
+
+  /***********************************************
+   * ★ 1. 候补自动转正
+   ***********************************************/
+
+  if (promoted) {
+    eventType = "WAITLIST_PROMOTE";
+
+    titleZh = "🎉 候补转正";
+
+    bodyZh =
+      participantName +
+      " 的 " +
+      activityTitle +
+      " 候补报名已经转为正式报名！\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "目前正式报名人数：" +
+      confirmedCount +
+      " / " +
+      capacity;
+
+    titleJa = "🎉 キャンセル待ちから参加確定";
+
+    bodyJa =
+      participantName +
+      "さんの" +
+      activityTitle +
+      "のキャンセル待ちが、参加確定になりました！\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "現在の参加者：" +
+      confirmedCount +
+      " / " +
+      capacity;
+  } else if (status === CONFIG.STATUS.WAITLIST) {
+    /***********************************************
+     * 2. 普通候补
+     ***********************************************/
+    eventType = "REGISTRATION_OK";
+
+    titleZh = "🏸 候补报名";
+
+    bodyZh =
+      participantName +
       " 已报名 " +
       activityTitle +
       "，但目前已满员，已进入候补名单。\n" +
@@ -1720,8 +2556,33 @@ function sendRegistrationOkNotificationToV2_(data) {
       "目前正式报名人数：" +
       confirmedCount +
       " / " +
-      capacity
-    : participantName +
+      capacity;
+
+    titleJa = "🏸 キャンセル待ち登録";
+
+    bodyJa =
+      participantName +
+      "さんは" +
+      activityTitle +
+      "に申し込みましたが、現在満員のためキャンセル待ちとなりました。\n" +
+      activityDate +
+      " " +
+      startTime +
+      "\n" +
+      "現在の参加者：" +
+      confirmedCount +
+      " / " +
+      capacity;
+  } else {
+    /***********************************************
+     * 3. 普通报名成功
+     ***********************************************/
+    eventType = "REGISTRATION_OK";
+
+    titleZh = "🏸 报名成功";
+
+    bodyZh =
+      participantName +
       " 已报名 " +
       activityTitle +
       "。\n" +
@@ -1734,22 +2595,10 @@ function sendRegistrationOkNotificationToV2_(data) {
       " / " +
       capacity;
 
-  const titleJa = isWaitlist ? "🏸 キャンセル待ち登録" : "🏸 参加申込み完了";
+    titleJa = "🏸 参加申込み完了";
 
-  const bodyJa = isWaitlist
-    ? participantName +
-      "さんは" +
-      activityTitle +
-      "に申し込みましたが、現在満員のためキャンセル待ちとなりました。\n" +
-      activityDate +
-      " " +
-      startTime +
-      "\n" +
-      "現在の参加者：" +
-      confirmedCount +
-      " / " +
-      capacity
-    : participantName +
+    bodyJa =
+      participantName +
       "さんが" +
       activityTitle +
       "に申し込みました。\n" +
@@ -1761,6 +2610,11 @@ function sendRegistrationOkNotificationToV2_(data) {
       confirmedCount +
       " / " +
       capacity;
+  }
+
+  /***********************************************
+   * V2 Payload
+   ***********************************************/
 
   const payload = {
     action: "sendNotificationEvent",
@@ -1768,7 +2622,7 @@ function sendRegistrationOkNotificationToV2_(data) {
     data: {
       apiKey: getV1ApiKey_(),
 
-      eventType: "REGISTRATION_OK",
+      eventType: eventType,
 
       titleZh: titleZh,
 
@@ -1780,6 +2634,10 @@ function sendRegistrationOkNotificationToV2_(data) {
     },
   };
 
+  /***********************************************
+   * 发送 V2
+   ***********************************************/
+
   const response = UrlFetchApp.fetch(v2Url, {
     method: "post",
 
@@ -1790,19 +2648,33 @@ function sendRegistrationOkNotificationToV2_(data) {
     muteHttpExceptions: true,
   });
 
+  /***********************************************
+   * HTTP Response
+   ***********************************************/
+
   const statusCode = response.getResponseCode();
 
   const responseText = response.getContentText();
 
   console.log("V2 REGISTRATION_OK HTTP: " + statusCode);
 
+  console.log("V2 REGISTRATION_OK eventType: " + eventType);
+
   console.log("V2 REGISTRATION_OK response: " + responseText);
+
+  /***********************************************
+   * HTTP Error
+   ***********************************************/
 
   if (statusCode < 200 || statusCode >= 300) {
     throw new Error(
       "V2 REGISTRATION_OK HTTP error: " + statusCode + " / " + responseText,
     );
   }
+
+  /***********************************************
+   * JSON
+   ***********************************************/
 
   let result;
 
@@ -1812,11 +2684,19 @@ function sendRegistrationOkNotificationToV2_(data) {
     throw new Error("V2 REGISTRATION_OK 返回的 JSON 无法解析。");
   }
 
+  /***********************************************
+   * V2 Business Error
+   ***********************************************/
+
   if (!result.success) {
     throw new Error(
       "V2 REGISTRATION_OK failed: " + (result.message || "Unknown error"),
     );
   }
+
+  /***********************************************
+   * Success
+   ***********************************************/
 
   return result;
 }
