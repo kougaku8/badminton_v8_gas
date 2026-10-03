@@ -2515,6 +2515,84 @@ function processNotificationQueue() {
   };
 }
 
+function cleanupNotificationQueue() {
+  const sheet = getNotificationQueueSheet();
+
+  if (!sheet) {
+    Logger.log("NotificationQueue 不存在");
+    return;
+  }
+
+  const data = sheet.getDataRange().getValues();
+
+  if (data.length <= 1) {
+    Logger.log("NotificationQueue 没有需要清理的数据");
+    return;
+  }
+
+  const rowsToDelete = [];
+
+  // 第1行是表头，从第2行开始
+  for (let i = 1; i < data.length; i++) {
+    const status =
+      String(data[i][2] || "").trim().toUpperCase();
+
+    // PENDING / PROCESSING 不删除
+    if (
+      status === "PENDING" ||
+      status === "PROCESSING"
+    ) {
+      continue;
+    }
+
+    // 其它状态全部删除
+    rowsToDelete.push(i + 1);
+  }
+
+  // 从后往前删除，避免行号变化
+  for (
+    let i = rowsToDelete.length - 1;
+    i >= 0;
+    i--
+  ) {
+    sheet.deleteRow(rowsToDelete[i]);
+  }
+
+  Logger.log(
+    "NotificationQueue 清理完成：" +
+    rowsToDelete.length +
+    " 条"
+  );
+}
+
+
+function createNotificationQueueCleanupTrigger() {
+  const functionName = "cleanupNotificationQueue";
+
+  const triggers = ScriptApp.getProjectTriggers();
+
+  // 删除已有的 cleanupNotificationQueue Trigger，
+  // 防止旧的时间设置继续存在
+  for (const trigger of triggers) {
+    if (
+      trigger.getHandlerFunction() === functionName
+    ) {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  }
+
+  // 每天凌晨 2 点执行
+  ScriptApp.newTrigger(functionName)
+    .timeBased()
+    .everyDays(1)
+    .atHour(2)
+    .create();
+
+  Logger.log(
+    "NotificationQueue 自动清理 Trigger 已设置为每天凌晨 2 点"
+  );
+}
+
 /****************************************************
  * ==================================================
  * 17. Tests
